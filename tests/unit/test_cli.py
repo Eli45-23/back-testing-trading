@@ -32,6 +32,7 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "calculate-ema-separation" in captured.out
     assert "detect-ema-crosses" in captured.out
     assert "calculate-cross-outcomes" in captured.out
+    assert "cross-stats" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:

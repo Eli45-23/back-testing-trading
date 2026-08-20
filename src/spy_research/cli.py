@@ -7,6 +7,7 @@ import json
 import sys
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -59,6 +60,11 @@ from spy_research.outcomes import (
     OutcomeSequenceError,
 )
 from spy_research.research_run import ResearchRun
+from spy_research.research_stats import (
+    Phase1CrossStatistics,
+    Phase1CrossStatisticsService,
+    StatisticsSequenceError,
+)
 
 
 def parse_iso_date(value: str) -> date:
@@ -417,6 +423,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed five-minute data root (default: data/processed)",
     )
 
+    cross_stats = subparsers.add_parser(
+        "cross-stats",
+        help="report descriptive statistics for frozen EMA-cross outcomes",
+    )
+    cross_stats.add_argument("--start", type=parse_iso_date, required=True)
+    cross_stats.add_argument("--end", type=parse_iso_date, required=True)
+    cross_stats.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    cross_stats.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    cross_stats.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -754,6 +785,39 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_cross_outcomes(result)
         return 0
 
+    if args.command == "cross-stats":
+        try:
+            config = load_research_config(args.config)
+            result = Phase1CrossStatisticsService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            StatisticsSequenceError,
+            OutcomeInputValidationError,
+            OutcomeSequenceError,
+            OppositeCrossSequenceError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate cross statistics: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate cross statistics: {exc}", file=sys.stderr)
+            return 2
+        _print_cross_statistics(result)
+        return 0
+
     if args.command in {"fetch-bars", "download-bars"}:
         try:
             settings = load_settings(config_path=args.config)
@@ -1053,6 +1117,82 @@ def _print_cross_outcomes(result: EmaCrossOutcomeContextResult) -> None:
             f"{time}  {event.direction.value}  {outcome.reference_price}  "
             f"{pairs}  {complete}  {next_cross}"
         )
+    print("Status: PASS")
+
+
+def _format_percentage(value: Decimal | None) -> str:
+    return f"{value.quantize(Decimal('0.01'))}%" if value is not None else "N/A"
+
+
+def _print_cross_statistics(result: Phase1CrossStatistics) -> None:
+    print("PHASE 1 EMA CROSS STATISTICS")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    print(
+        f"Sample: n={result.total_n}  bullish={result.bullish_n}  "
+        f"bearish={result.bearish_n}"
+    )
+    print(f"Percentiles: {result.percentile_method}")
+    overall = next(group for group in result.groups if group.name == "ALL")
+    print("Overall MFE/MAE")
+    for horizon in overall.horizons:
+        print(
+            f"{horizon.horizon}: eligible={horizon.eligible_n} "
+            f"excluded={horizon.excluded_incomplete_n}  "
+            f"MFE mean/median/p25/p75={horizon.mfe.mean}/{horizon.mfe.median}/"
+            f"{horizon.mfe.p25}/{horizon.mfe.p75}  "
+            f"MAE mean/median={horizon.mae.mean}/{horizon.mae.median}"
+        )
+        print(
+            "  Dollar hits: "
+            + "  ".join(
+                f">={item.threshold}:{item.reached_n}/{item.eligible_n}"
+                f" ({_format_percentage(item.percentage)})"
+                for item in horizon.dollar_thresholds
+            )
+        )
+        print(
+            f"  ATR hits (n={horizon.atr_eligible_n}, "
+            f"excluded={horizon.atr_excluded_n}): "
+            + "  ".join(
+                f">={item.threshold}:{item.reached_n}/{item.eligible_n}"
+                f" ({_format_percentage(item.percentage)})"
+                for item in horizon.atr_thresholds
+            )
+        )
+        relation = horizon.favorable_adverse
+        print(
+            f"  MFE>MAE={relation.mfe_greater}  equal={relation.equal}  "
+            f"MFE<MAE={relation.mfe_less}"
+        )
+    print("Frozen context groups")
+    print("Group  n  15m n/median MFE/MAE  30m n/median MFE/MAE  EOD n/median MFE/MAE")
+    for group in result.groups:
+        by_horizon = {item.horizon: item for item in group.horizons}
+        fifteen = by_horizon["15m"]
+        thirty = by_horizon["30m"]
+        eod = by_horizon["EOD"]
+        print(
+            f"{group.name}  {group.total_n}  "
+            f"{fifteen.eligible_n}/{fifteen.mfe.median}/{fifteen.mae.median}  "
+            f"{thirty.eligible_n}/{thirty.mfe.median}/{thirty.mae.median}  "
+            f"{eod.eligible_n}/{eod.mfe.median}/{eod.mae.median}"
+        )
+    separation = result.absolute_separation
+    print(
+        "Absolute separation: "
+        f"n={separation.n} mean={separation.mean} median={separation.median} "
+        f"p25={separation.p25} p75={separation.p75} "
+        f"min={separation.minimum} max={separation.maximum}"
+    )
+    opposite = result.opposite_cross_timing
+    print(
+        "Opposite-cross timing: "
+        f"with={opposite.with_opposite_n} without={opposite.without_opposite_n} "
+        f"mean={opposite.minutes.mean} median={opposite.minutes.median} "
+        f"p25={opposite.minutes.p25} p75={opposite.minutes.p75} "
+        f"min={opposite.minutes.minimum} max={opposite.minutes.maximum}"
+    )
+    print(f"Data limitation: {result.small_sample_warning}")
     print("Status: PASS")
 
 

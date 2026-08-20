@@ -386,6 +386,33 @@ price, and outcome start remains unchanged. If no reversal occurs before the
 session ends, opposite-cross context is unavailable; lookup never continues
 overnight.
 
+## Stage 6.1 descriptive cross-theory statistics
+
+Phase 1 statistics describe the frozen cross outcomes without optimizing or
+selecting rules. Fixed 5-, 15-, 30-, and 60-minute summaries include only
+complete horizons; EOD includes every available outcome. Reports always expose
+eligible and excluded counts. Percentiles use exact Decimal linear
+interpolation at rank `(n - 1) × q`.
+
+Factual MFE hit rates use the predeclared dollar thresholds `$0.25`, `$0.50`,
+`$0.75`, `$1.00`, `$1.50`, `$2.00`, and `$3.00`, plus normalized thresholds
+`0.5`, `1.0`, `1.5`, and `2.0` times event-time ATR14. Percentages retain their
+numerator and eligible denominator.
+
+Directional VWAP alignment means bullish reference price above event-time VWAP
+or bearish reference price below it; equality and unavailable VWAP are not
+aligned. Directional expansion means positive separation delta-1 for bullish
+events or negative delta-1 for bearish events; equality and unavailable delta
+are not expanding. These groups and their combination are descriptive only.
+
+```bash
+spy-research cross-stats --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. This 29-event development
+sample is too small to establish a robust edge. No optimization, scoring,
+inference, strategy selection, or trading simulation is performed.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -430,6 +457,7 @@ spy-research calculate-atr --start 2026-08-19 --end 2026-08-19
 spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
 spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
 spy-research calculate-cross-outcomes --start 2026-08-03 --end 2026-08-19
+spy-research cross-stats --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
