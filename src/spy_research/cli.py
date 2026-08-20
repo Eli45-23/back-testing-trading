@@ -51,6 +51,17 @@ from spy_research.indicators import (
     VwapCalculationResult,
     VwapIndicatorService,
 )
+from spy_research.levels import (
+    OpeningFiveMinuteLevelsResult,
+    OpeningFiveMinuteLevelsService,
+    OpeningRangeLevelError,
+    PremarketLevelError,
+    PremarketLevelsResult,
+    PremarketLevelsService,
+    PreviousDayLevelError,
+    PreviousDayLevelsResult,
+    PreviousDayLevelsService,
+)
 from spy_research.market import MarketSessionClassifier, SessionSummary, SessionType
 from spy_research.outcomes import (
     EmaCrossOutcomeContextResult,
@@ -448,6 +459,69 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed five-minute data root (default: data/processed)",
     )
 
+    previous_day_levels = subparsers.add_parser(
+        "previous-day-levels",
+        help="calculate look-ahead-safe PDH/PDL/PDC from local raw RTH bars",
+    )
+    previous_day_levels.add_argument("--start", type=parse_iso_date, required=True)
+    previous_day_levels.add_argument("--end", type=parse_iso_date, required=True)
+    previous_day_levels.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    previous_day_levels.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+
+    premarket_levels = subparsers.add_parser(
+        "premarket-levels",
+        help="calculate finalized same-day PMH/PML from local raw bars",
+    )
+    premarket_levels.add_argument("--start", type=parse_iso_date, required=True)
+    premarket_levels.add_argument("--end", type=parse_iso_date, required=True)
+    premarket_levels.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    premarket_levels.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+
+    opening_levels = subparsers.add_parser(
+        "opening-5m-levels",
+        help="calculate ORH5/ORL5 from validated Stage 2 RTH candles",
+    )
+    opening_levels.add_argument("--start", type=parse_iso_date, required=True)
+    opening_levels.add_argument("--end", type=parse_iso_date, required=True)
+    opening_levels.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    opening_levels.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute root used for reconciliation (default: data/raw)",
+    )
+    opening_levels.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -816,6 +890,74 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to calculate cross statistics: {exc}", file=sys.stderr)
             return 2
         _print_cross_statistics(result)
+        return 0
+
+    if args.command == "previous-day-levels":
+        try:
+            config = load_research_config(args.config)
+            result = PreviousDayLevelsService(
+                config,
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except PreviousDayLevelError as exc:
+            print(f"Unable to calculate previous-day levels: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate previous-day levels: {exc}", file=sys.stderr)
+            return 2
+        _print_previous_day_levels(result)
+        return 1 if result.missing_sources else 0
+
+    if args.command == "premarket-levels":
+        try:
+            config = load_research_config(args.config)
+            result = PremarketLevelsService(
+                config,
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except PremarketLevelError as exc:
+            print(f"Unable to calculate premarket levels: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate premarket levels: {exc}", file=sys.stderr)
+            return 2
+        _print_premarket_levels(result)
+        return 1 if any(item.status != "AVAILABLE" for item in result.levels) else 0
+
+    if args.command == "opening-5m-levels":
+        try:
+            config = load_research_config(args.config)
+            result = OpeningFiveMinuteLevelsService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except OpeningRangeLevelError as exc:
+            print(f"Unable to calculate opening 5-minute levels: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate opening 5-minute levels: {exc}", file=sys.stderr)
+            return 2
+        _print_opening_five_minute_levels(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -1193,6 +1335,56 @@ def _print_cross_statistics(result: Phase1CrossStatistics) -> None:
         f"min={opposite.minutes.minimum} max={opposite.minutes.maximum}"
     )
     print(f"Data limitation: {result.small_sample_warning}")
+    print("Status: PASS")
+
+
+def _print_previous_day_levels(result: PreviousDayLevelsResult) -> None:
+    print("SPY PREVIOUS-DAY LEVELS")
+    print("Session     Source      PDH             PDL             PDC")
+    for item in result.levels:
+        print(
+            f"{item.session_date.isoformat()}  {item.source_session_date.isoformat()}  "
+            f"{item.pdh}  {item.pdl}  {item.pdc}"
+        )
+    if result.missing_sources:
+        print("Missing source sessions:")
+        for item in result.missing_sources:
+            print(
+                f"{item.session_date.isoformat()} requires "
+                f"{item.source_session_date.isoformat()}: {item.reason}"
+            )
+        print("Status: INCOMPLETE")
+    else:
+        print("Status: PASS")
+
+
+def _print_premarket_levels(result: PremarketLevelsResult) -> None:
+    print("SPY PREMARKET LEVELS")
+    print("Session     Bars  PMH             PML             Status")
+    for item in result.levels:
+        pmh = str(item.pmh) if item.pmh is not None else "N/A"
+        pml = str(item.pml) if item.pml is not None else "N/A"
+        print(
+            f"{item.session_date.isoformat()}  {item.source_bar_count:>4}  "
+            f"{pmh:<15} {pml:<15} {item.status}"
+        )
+    unavailable = sum(item.status != "AVAILABLE" for item in result.levels)
+    print("Status: PASS" if unavailable == 0 else f"Status: INCOMPLETE ({unavailable})")
+
+
+def _print_opening_five_minute_levels(
+    result: OpeningFiveMinuteLevelsResult,
+) -> None:
+    print("SPY OPENING 5-MINUTE LEVELS")
+    print("Session     ORH5            ORL5            Source  Available")
+    timezone = ZoneInfo("America/New_York")
+    for item in result.levels:
+        source = item.source_timestamp.astimezone(timezone).strftime("%H:%M")
+        available = item.available_from_timestamp.astimezone(timezone).strftime("%H:%M")
+        print(
+            f"{item.session_date.isoformat()}  {str(item.orh5):<15} "
+            f"{str(item.orl5):<15} {source}   {available}"
+        )
     print("Status: PASS")
 
 

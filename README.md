@@ -413,6 +413,77 @@ The command is offline, read-only, and non-persistent. This 29-event development
 sample is too small to establish a robust edge. No optimization, scoring,
 inference, strategy selection, or trading simulation is performed.
 
+## Stage 7.1 previous-day key levels
+
+For each requested XNYS trading session, the previous-day level engine uses the
+immediately preceding XNYS session—not the previous calendar date. From that
+validated raw one-minute RTH session it calculates:
+
+- PDH: maximum RTH one-minute high.
+- PDL: minimum RTH one-minute low.
+- PDC: close of the final chronological completed RTH one-minute bar.
+
+Equal highs or lows retain the earliest source timestamp. Exchange-calendar
+boundaries determine the final minute, so early closes are handled without a
+hard-coded 16:00 close. Weekends and holidays are skipped automatically.
+
+The source session is loaded automatically even when it falls before the
+requested start date. Each value is therefore fixed before the target session
+opens; premarket, after-hours, target-session bars, and vendor daily bars cannot
+influence it. Missing source sessions are reported and present-but-invalid raw
+sessions fail the validation gate rather than producing fabricated levels.
+
+```bash
+spy-research previous-day-levels --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Stage 7.1 constructs
+levels only: it does not implement touches, breaks, holds, sweeps, rejection,
+premarket levels, opening-range levels, zones, signals, or trading logic.
+
+## Stage 7.2 premarket key levels
+
+For each XNYS trading session, the premarket engine uses same-day raw one-minute
+bars classified as `PREMARKET` by the existing exchange-calendar session layer:
+
+- PMH: maximum high from `04:00:00 America/New_York <= timestamp < RTH open`.
+- PML: minimum low from the same interval.
+
+The exchange calendar supplies the RTH open boundary. The 09:30 minute-start bar
+on a normal session is therefore excluded, as are prints before 04:00, RTH bars,
+after-hours bars, and prior-day data. Equal highs or lows retain the earliest
+source timestamp. Final PMH/PML values are fully knowable at the RTH open.
+
+```bash
+spy-research premarket-levels --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Sessions without local
+premarket bars or without a local raw partition receive an explicit unavailable
+status; values are never fabricated. Stage 7.2 does not implement touches,
+breaks, holds, sweeps, opening-range levels, signals, or trading logic.
+
+## Stage 7.3 opening five-minute key levels
+
+For each XNYS RTH session, the opening-range engine consumes the already
+persisted and raw-reconciled Stage 2 five-minute candles:
+
+- ORH5: high of the first completed RTH five-minute candle.
+- ORL5: low of that same candle.
+
+The first candle must begin at the calendar-provided XNYS session open. On a
+normal session it is timestamped 09:30 America/New_York and covers the five
+minute-start intervals from 09:30 through 09:34. The range is not available at
+09:30; `available_from_timestamp` is explicitly 09:35, after candle completion.
+
+```bash
+spy-research opening-5m-levels --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Only the first candle can
+influence ORH5/ORL5, so later session bars cannot change the levels. Stage 7.3
+does not implement breaks, holds, sweeps, retests, or other interaction logic.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -458,6 +529,9 @@ spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
 spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
 spy-research calculate-cross-outcomes --start 2026-08-03 --end 2026-08-19
 spy-research cross-stats --start 2026-08-03 --end 2026-08-19
+spy-research previous-day-levels --start 2026-08-03 --end 2026-08-19
+spy-research premarket-levels --start 2026-08-03 --end 2026-08-19
+spy-research opening-5m-levels --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
