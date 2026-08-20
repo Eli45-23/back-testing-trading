@@ -72,6 +72,128 @@ This command only reads local configuration and optional local Git metadata. It
 does not persist a manifest, load credentials, request market data, contact
 Alpaca, or make any network request.
 
+## Stage 1.1 historical data client
+
+The historical client retrieves raw SPY one-minute stock bars from Alpaca's SIP
+feed with raw price adjustment. These Phase 1 values come from the validated
+research configuration and cannot be overridden by the downloader. Responses
+are fully paginated, parsed into timezone-aware typed bars, checked for duplicate
+timestamps, and returned in chronological order.
+
+Prices and VWAP are represented with Python `Decimal` values to preserve the
+decimal representation supplied by Alpaca. Volume and trade count are integers.
+No RTH filtering, candle aggregation, indicators, or derived values are applied.
+
+Configure credentials in the ignored local `.env` file:
+
+```text
+ALPACA_API_KEY=your-key-id
+ALPACA_SECRET_KEY=your-secret-key
+```
+
+Then request an inclusive calendar-date range with:
+
+```bash
+spy-research fetch-bars --start 2026-08-03 --end 2026-08-04
+```
+
+Date boundaries are interpreted in `America/New_York` and sent to Alpaca as
+explicit UTC timestamps. The command prints only a concise count/timestamp/page
+summary. Bars are held in memory and are not currently written to files or
+SQLite. The command contacts Alpaca; the test suite uses mocked HTTP transports
+and requires neither credentials nor network access.
+
+## Stage 1.2 raw Parquet storage
+
+Raw downloaded bars are stored separately from future processed/derived data at:
+
+```text
+data/raw/alpaca/spy/1min/YYYY/MM/YYYY-MM-DD.parquet
+```
+
+Partitions use the bar's `America/New_York` calendar date, while timestamps are
+stored as timezone-aware UTC microseconds. OHLC and VWAP use exact Arrow
+`decimal128(28,12)` fixed-point columns. Source, symbol, feed, timeframe, and
+adjustment are explicit columns as well as non-secret schema metadata.
+
+Use `fetch-bars` for an in-memory, non-persistent check. Use `download-bars` only
+when raw Parquet persistence is intended:
+
+```bash
+spy-research download-bars --start 2026-08-19 --end 2026-08-19
+```
+
+Persistence is idempotent by symbol, timestamp, feed, and timeframe. Identical
+bars are not duplicated; differing content under the same key is reported as a
+conflict and never silently overwritten. Changed partitions use temporary files
+and atomic replacement. Raw market-data files are ignored by Git.
+
+## Stage 1.3 exchange sessions
+
+Raw bars are classified with the authoritative `exchange_calendars` XNYS
+calendar. The calendar supplies each trading date's actual market open and
+close, including holidays and early closes, while `America/New_York` conversion
+handles daylight-saving changes. A bar is classified by its interval-start
+timestamp using these half-open boundaries:
+
+- `PREMARKET`: 04:00 New York time through, but not including, the actual open.
+- `RTH`: actual exchange open through, but not including, the actual close.
+- `AFTER_HOURS`: actual close through, but not including, 20:00 New York time.
+- `OUTSIDE_SESSION`: a trading-day bar before 04:00 or at/after 20:00.
+- `NON_SESSION`: any bar whose New York calendar date is not an XNYS session.
+
+Classification creates a typed wrapper around each immutable raw record. It
+does not rewrite, filter, or add columns to the raw Parquet partitions. In
+particular, an early-close day begins after-hours classification at its actual
+close rather than at the usual 16:00 close.
+
+Summarize already-stored local partitions with:
+
+```bash
+spy-research session-summary --start 2026-08-19 --end 2026-08-19
+```
+
+The command reports the calendar boundaries, early-close status, classification
+counts, and key RTH/after-hours timestamps for every requested date. It reads
+only local configuration and Parquet files; it does not load Alpaca credentials
+or make a network request.
+
+## Stage 1.4 raw-data validation
+
+The read-only validation layer checks persisted raw bars before any future
+aggregation. It verifies strict input ordering and unique keys, finite and
+internally consistent OHLC/VWAP values, non-negative volume and trade count,
+one-minute timestamp alignment, frozen Phase 1 provenance, partition dates,
+session classification, expected session coverage, and exact RTH minute starts
+from the XNYS schedule. Zero volume and zero trade count remain valid because no
+unsupported assumption is made that every supplied bar must have positive
+values.
+
+Findings have three severities:
+
+- `ERROR` makes the report fail, including missing RTH minutes, missing trading
+  days, malformed values, duplicate keys, non-session bars, or corrupt data.
+- `WARNING` preserves visibility without failing validation. A trading-day bar
+  before 04:00 or at/after 20:00 is currently handled this way.
+- `INFO` records expected calendar characteristics such as an early close.
+
+Sparse premarket or after-hours data is not itself an error or warning because
+Alpaca need not produce bars for minutes without trades. RTH coverage is strict:
+every minute start from the actual exchange open through the minute before the
+actual close must exist.
+
+Run the human-readable or JSON validation report with:
+
+```bash
+spy-research validate-data --start 2026-08-19 --end 2026-08-19
+spy-research validate-data --start 2026-08-19 --end 2026-08-19 --json
+```
+
+Both forms read local Parquet only and never repair or rewrite it. Exit code `0`
+means validation passed, `1` means the data failed validation, and `2` means the
+command could not run. A later research pipeline can use the typed `passed`
+field as a gate, but no downstream aggregation or backtesting is implemented.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -105,6 +227,8 @@ Validate only the local, non-secret research configuration with:
 spy-research --help
 spy-research config-check
 spy-research run-manifest --start 2026-08-03 --end 2026-08-19
+spy-research session-summary --start 2026-08-19 --end 2026-08-19
+spy-research validate-data --start 2026-08-19 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
