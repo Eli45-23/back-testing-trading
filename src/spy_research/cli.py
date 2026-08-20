@@ -51,6 +51,13 @@ from spy_research.indicators import (
     VwapIndicatorService,
 )
 from spy_research.market import MarketSessionClassifier, SessionSummary, SessionType
+from spy_research.outcomes import (
+    EmaCrossOutcomeContextResult,
+    EmaCrossOutcomeContextService,
+    OutcomeInputValidationError,
+    OppositeCrossSequenceError,
+    OutcomeSequenceError,
+)
 from spy_research.research_run import ResearchRun
 
 
@@ -385,6 +392,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed data root (default: data/processed)",
     )
 
+    calculate_outcomes = subparsers.add_parser(
+        "calculate-cross-outcomes",
+        help="calculate same-session future 1-minute MFE/MAE for EMA crosses",
+    )
+    calculate_outcomes.add_argument("--start", type=parse_iso_date, required=True)
+    calculate_outcomes.add_argument("--end", type=parse_iso_date, required=True)
+    calculate_outcomes.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    calculate_outcomes.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    calculate_outcomes.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -690,6 +722,38 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_ema_cross_result(result)
         return 0
 
+    if args.command == "calculate-cross-outcomes":
+        try:
+            config = load_research_config(args.config)
+            result = EmaCrossOutcomeContextService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            OutcomeInputValidationError,
+            OutcomeSequenceError,
+            OppositeCrossSequenceError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate cross outcomes: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate cross outcomes: {exc}", file=sys.stderr)
+            return 2
+        _print_cross_outcomes(result)
+        return 0
+
     if args.command in {"fetch-bars", "download-bars"}:
         try:
             settings = load_settings(config_path=args.config)
@@ -944,6 +1008,50 @@ def _print_ema_cross_result(result: EmaCrossCalculationResult) -> None:
         print(
             f"{time}  {event.direction.value}  {event.close}  {event.ema9}  "
             f"{event.ema20}  {event.signed_separation}  {event.vwap}  {event.atr14}"
+        )
+    print("Status: PASS")
+
+
+def _print_cross_outcomes(result: EmaCrossOutcomeContextResult) -> None:
+    base_result = result.base_result
+    print("SPY EMA Cross MFE/MAE Outcomes")
+    print(
+        f"Range: {base_result.start_date.isoformat()} → "
+        f"{base_result.end_date.isoformat()}"
+    )
+    print(f"Events: {len(result.outcomes)}")
+    print(
+        "Time  Direction  Ref  MFE5/MAE5  MFE15/MAE15  MFE30/MAE30  "
+        "MFE60/MAE60  MFEEOD/MAEEOD  Complete 5/15/30/60/EOD  Next opposite/min"
+    )
+    for enriched in result.outcomes:
+        outcome = enriched.outcome
+        event = outcome.event
+        time = event.timestamp.astimezone(ZoneInfo("America/New_York")).strftime(
+            "%Y-%m-%d %H:%M %Z"
+        )
+        horizons = (
+            outcome.five,
+            outcome.fifteen,
+            outcome.thirty,
+            outcome.sixty,
+            outcome.eod,
+        )
+        pairs = "  ".join(
+            f"{item.excursion.mfe}/{item.excursion.mae}" for item in horizons
+        )
+        complete = "/".join("Y" if item.complete else "N" for item in horizons)
+        opposite = enriched.opposite_cross
+        next_cross = (
+            f"{opposite.opposite_cross_timestamp.astimezone(ZoneInfo('America/New_York')).strftime('%H:%M')}"
+            f" {opposite.opposite_cross_direction.value}/{opposite.minutes_to_opposite_cross}"
+            if opposite.opposite_cross_timestamp is not None
+            and opposite.opposite_cross_direction is not None
+            else "None"
+        )
+        print(
+            f"{time}  {event.direction.value}  {outcome.reference_price}  "
+            f"{pairs}  {complete}  {next_cross}"
         )
     print("Status: PASS")
 

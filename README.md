@@ -353,6 +353,39 @@ spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
 The command is offline and read-only. Events are not persisted or filtered, and
 no outcomes, scoring, returns, MFE/MAE, or backtesting are calculated.
 
+## Stage 5.1 post-cross MFE/MAE outcomes
+
+Each Stage 4 event keeps the cross-bar close as its reference price. Because a
+five-minute event timestamp is the candle start, outcome measurement begins
+exactly five minutes later at the first eligible one-minute bar. No high or low
+from the cross candle itself participates.
+
+Outcomes use future raw RTH one-minute highs and lows from the event's own XNYS
+session. Bullish MFE/MAE are `max(high) - reference` and
+`reference - min(low)`; bearish MFE/MAE reverse those directions. Magnitudes
+are floored at zero, and tied extremes use the earliest minute timestamp.
+
+The fixed 5-, 15-, 30-, and 60-minute windows use exact elapsed minute starts.
+EOD runs through the final RTH minute, including authoritative early closes.
+Truncated horizons retain their available excursion but are explicitly marked
+incomplete; a window with no future bars has unavailable excursion values.
+
+```bash
+spy-research calculate-cross-outcomes --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline and read-only. Outcomes are not persisted, and no
+stops, targets, opposite-cross termination, scoring, statistics, or strategy
+assumptions are applied.
+
+Stage 5.2 additionally records the first later opposite-direction Stage 4
+event from the same RTH session, its direction, and elapsed clock minutes and
+five-minute bars between candle-start timestamps. This metadata is descriptive
+only: every fixed Stage 5.1 horizon, extreme, completeness flag, reference
+price, and outcome start remains unchanged. If no reversal occurs before the
+session ends, opposite-cross context is unavailable; lookup never continues
+overnight.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -396,6 +429,7 @@ spy-research calculate-vwap --start 2026-08-19 --end 2026-08-19
 spy-research calculate-atr --start 2026-08-19 --end 2026-08-19
 spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
 spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
+spy-research calculate-cross-outcomes --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
