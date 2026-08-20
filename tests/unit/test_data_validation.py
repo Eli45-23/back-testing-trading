@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import socket
+import subprocess
+import sys
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
@@ -50,6 +52,16 @@ def rth_bars(session_date: date, *, close_hour_utc: int) -> list[RawBarRecord]:
 
 def issue_codes(report) -> set[str]:
     return {issue.code for issue in report.issues}
+
+
+def test_market_package_imports_in_fresh_process() -> None:
+    result = subprocess.run(
+        [sys.executable, "-c", "import spy_research.market"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
 
 
 @pytest.fixture(scope="module")
