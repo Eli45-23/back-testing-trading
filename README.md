@@ -330,6 +330,29 @@ The command is offline and read-only. Separation rows are not persisted, and
 the raw metrics do not detect or interpret crosses, classify trends, or produce
 signals.
 
+## Stage 4.1 completed-candle EMA cross events
+
+EMA9/EMA20 crosses are detected only from adjacent completed five-minute EMA
+rows within the same RTH session. A bullish event requires
+`EMA9[t] > EMA20[t]` and `EMA9[t-1] <= EMA20[t-1]`; a bearish event requires
+`EMA9[t] < EMA20[t]` and `EMA9[t-1] >= EMA20[t-1]`. Equality followed by strict
+separation therefore counts, while equality alone and persistent ordering do
+not create events.
+
+The event retains the timestamp of the candle whose completed close produced
+the cross; it is not shifted to the next candle. Sessions reset independently,
+so no overnight comparison is allowed. Each immutable event includes current
+and previous EMA values, raw separation metrics, same-timestamp RTH VWAP and
+ATR14, exact price/VWAP differences, and the cross-bar close as its reference
+price.
+
+```bash
+spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline and read-only. Events are not persisted or filtered, and
+no outcomes, scoring, returns, MFE/MAE, or backtesting are calculated.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -372,6 +395,7 @@ spy-research calculate-ema --start 2026-08-19 --end 2026-08-19
 spy-research calculate-vwap --start 2026-08-19 --end 2026-08-19
 spy-research calculate-atr --start 2026-08-19 --end 2026-08-19
 spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
+spy-research detect-ema-crosses --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

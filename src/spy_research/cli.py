@@ -32,6 +32,12 @@ from spy_research.config import DEFAULT_CONFIG_PATH, load_research_config, load_
 from spy_research.data.errors import RawDataError
 from spy_research.data.raw_store import DEFAULT_RAW_DATA_ROOT, RawBarStore
 from spy_research.data.validation import DataValidationReport, RawDataValidator
+from spy_research.events import (
+    EmaCrossCalculationResult,
+    EmaCrossDirection,
+    EmaCrossEventService,
+    EventContextAlignmentError,
+)
 from spy_research.indicators import (
     AtrCalculationResult,
     AtrIndicatorService,
@@ -354,6 +360,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed data root (default: data/processed)",
     )
 
+    detect_crosses = subparsers.add_parser(
+        "detect-ema-crosses",
+        help="detect completed-candle EMA9/EMA20 crosses from local bars",
+    )
+    detect_crosses.add_argument("--start", type=parse_iso_date, required=True)
+    detect_crosses.add_argument("--end", type=parse_iso_date, required=True)
+    detect_crosses.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    detect_crosses.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    detect_crosses.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -630,6 +661,35 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_ema_separation_result(result)
         return 0
 
+    if args.command == "detect-ema-crosses":
+        try:
+            config = load_research_config(args.config)
+            result = EmaCrossEventService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to detect EMA crosses: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to detect EMA crosses: {exc}", file=sys.stderr)
+            return 2
+        _print_ema_cross_result(result)
+        return 0
+
     if args.command in {"fetch-bars", "download-bars"}:
         try:
             settings = load_settings(config_path=args.config)
@@ -860,6 +920,31 @@ def _print_ema_separation_result(result: EmaSeparationCalculationResult) -> None
         "Total valid separation: "
         f"{sum(row.signed_separation is not None for row in result.rows)}"
     )
+    print("Status: PASS")
+
+
+def _print_ema_cross_result(result: EmaCrossCalculationResult) -> None:
+    bullish = sum(
+        event.direction == EmaCrossDirection.BULLISH for event in result.events
+    )
+    bearish = sum(
+        event.direction == EmaCrossDirection.BEARISH for event in result.events
+    )
+    print("SPY EMA Cross Events")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    print(f"Sessions: {len(result.sessions)}")
+    print(f"Bullish crosses: {bullish}")
+    print(f"Bearish crosses: {bearish}")
+    print(f"Total crosses: {len(result.events)}")
+    print("Time      Direction  Close  EMA9  EMA20  Signed separation  VWAP  ATR14")
+    for event in result.events:
+        time = event.timestamp.astimezone(ZoneInfo("America/New_York")).strftime(
+            "%Y-%m-%d %H:%M %Z"
+        )
+        print(
+            f"{time}  {event.direction.value}  {event.close}  {event.ema9}  "
+            f"{event.ema20}  {event.signed_separation}  {event.vwap}  {event.atr14}"
+        )
     print("Status: PASS")
 
 

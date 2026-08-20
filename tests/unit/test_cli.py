@@ -30,6 +30,7 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "calculate-vwap" in captured.out
     assert "calculate-atr" in captured.out
     assert "calculate-ema-separation" in captured.out
+    assert "detect-ema-crosses" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:
