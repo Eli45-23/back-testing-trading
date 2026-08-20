@@ -8,12 +8,26 @@ import sys
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
 from pydantic import ValidationError
 
 from spy_research.alpaca import AlpacaDataClient, HistoricalStockDataService
 from spy_research.alpaca.errors import AlpacaDataError
+from spy_research.bars import (
+    AggregationError,
+    AggregationResult,
+    DEFAULT_PROCESSED_DATA_ROOT,
+    FiveMinuteAggregationService,
+    FiveMinuteBuildResult,
+    FiveMinuteBuildService,
+    ProcessedDataError,
+    ProcessedFiveMinuteStore,
+    ProcessedFiveMinuteValidator,
+    ProcessedValidationGateError,
+    ProcessedValidationReport,
+)
 from spy_research.config import DEFAULT_CONFIG_PATH, load_research_config, load_settings
 from spy_research.data.errors import RawDataError
 from spy_research.data.raw_store import DEFAULT_RAW_DATA_ROOT, RawBarStore
@@ -149,6 +163,85 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit the complete machine-readable validation report",
     )
 
+    aggregate_bars = subparsers.add_parser(
+        "aggregate-bars",
+        help="validate and aggregate local RTH one-minute bars in memory",
+    )
+    aggregate_bars.add_argument("--start", type=parse_iso_date, required=True)
+    aggregate_bars.add_argument("--end", type=parse_iso_date, required=True)
+    aggregate_bars.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    aggregate_bars.add_argument(
+        "--data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root (default: data/raw)",
+    )
+
+    build_5m = subparsers.add_parser(
+        "build-5m",
+        help="build, persist, validate, and reconcile local RTH five-minute bars",
+    )
+    build_5m.add_argument("--start", type=parse_iso_date, required=True)
+    build_5m.add_argument("--end", type=parse_iso_date, required=True)
+    build_5m.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    build_5m.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root (default: data/raw)",
+    )
+    build_5m.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
+    validate_5m = subparsers.add_parser(
+        "validate-5m",
+        help="validate processed RTH five-minute bars without writing",
+    )
+    validate_5m.add_argument("--start", type=parse_iso_date, required=True)
+    validate_5m.add_argument("--end", type=parse_iso_date, required=True)
+    validate_5m.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    validate_5m.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    validate_5m.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+    validate_5m.add_argument(
+        "--no-reconcile",
+        action="store_true",
+        help="validate processed bars without raw re-aggregation comparison",
+    )
+    validate_5m.add_argument(
+        "--json",
+        action="store_true",
+        help="emit the machine-readable processed validation report",
+    )
+
     return parser
 
 
@@ -236,6 +329,81 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(report.model_dump_json(indent=2))
         else:
             _print_validation_report(report)
+        return 0 if report.passed else 1
+
+    if args.command == "aggregate-bars":
+        try:
+            config = load_research_config(args.config)
+            result = FiveMinuteAggregationService(
+                config,
+                RawBarStore(config, root=args.data_root),
+            ).aggregate(start=args.start, end=args.end)
+        except AggregationError as exc:
+            print(f"Unable to aggregate bars: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to aggregate bars: {exc}", file=sys.stderr)
+            return 2
+
+        _print_aggregation_result(result)
+        return 0
+
+    if args.command == "build-5m":
+        try:
+            config = load_research_config(args.config)
+            result = FiveMinuteBuildService(
+                config,
+                RawBarStore(config, root=args.raw_data_root),
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+            ).build(start=args.start, end=args.end)
+        except (AggregationError, ProcessedDataError, ProcessedValidationGateError) as exc:
+            print(f"Unable to build five-minute data: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to build five-minute data: {exc}", file=sys.stderr)
+            return 2
+        _print_build_result(result)
+        return 0
+
+    if args.command == "validate-5m":
+        try:
+            config = load_research_config(args.config)
+            report = ProcessedFiveMinuteValidator().validate_store(
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                start=args.start,
+                end=args.end,
+                reconcile=not args.no_reconcile,
+                config=config,
+                raw_store=RawBarStore(config, root=args.raw_data_root),
+            )
+        except (AggregationError, ProcessedDataError) as exc:
+            print(f"Unable to validate five-minute data: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to validate five-minute data: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(report.model_dump_json(indent=2))
+        else:
+            _print_processed_validation(report)
         return 0 if report.passed else 1
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -334,6 +502,56 @@ def _print_validation_report(report: DataValidationReport) -> None:
         print(f"[{issue.severity.value}] {issue.code}: {issue.message}")
         if issue.details:
             print(f"  Details: {json.dumps(issue.details, sort_keys=True)}")
+
+
+def _print_aggregation_result(result: AggregationResult) -> None:
+    print("SPY 5-Minute Aggregation")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    for session in result.sessions:
+        print(f"Date: {session.session_date.isoformat()}")
+        print(f"Raw RTH bars: {session.raw_rth_bars}")
+        print(f"5-minute bars: {session.five_minute_bars}")
+        print(f"First candle: {_format_new_york_time(session.first_timestamp)}")
+        print(f"Last candle: {_format_new_york_time(session.last_timestamp)}")
+    print(f"Total raw RTH bars: {result.raw_rth_bars}")
+    print(f"Total 5-minute bars: {len(result.bars)}")
+    print("Status: PASS")
+
+
+def _format_new_york_time(value: datetime | None) -> str:
+    if value is None:
+        return "None"
+    return value.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M %Z")
+
+
+def _print_build_result(result: FiveMinuteBuildResult) -> None:
+    aggregation = result.aggregation
+    persistence = result.persistence
+    report = result.validation
+    print("SPY RTH 5-Minute Build")
+    print(f"Sessions: {len(aggregation.sessions)}")
+    print(f"Raw RTH bars: {aggregation.raw_rth_bars}")
+    print(f"5-minute bars built: {len(aggregation.bars)}")
+    print(f"New processed bars: {persistence.new_bars}")
+    print(f"Existing identical: {persistence.existing_identical}")
+    print(f"Conflicts: {persistence.conflicts}")
+    print(f"Partitions written: {persistence.partitions_written}")
+    print(f"Reconciliation errors: {report.reconciliation_errors}")
+    print(f"Status: {'PASS' if report.passed else 'FAIL'}")
+
+
+def _print_processed_validation(report: ProcessedValidationReport) -> None:
+    print("SPY Processed 5-Minute Validation")
+    print(f"Sessions expected: {report.sessions_expected}")
+    print(f"Sessions present: {report.sessions_present}")
+    print(f"Total bars: {report.total_bars}")
+    print(f"Expected bars: {report.expected_bars}")
+    print(f"Missing bars: {report.missing_bars}")
+    print(f"Duplicate bars: {report.duplicate_bars}")
+    print(f"Reconciliation errors: {report.reconciliation_errors}")
+    print(f"Errors: {report.error_count}")
+    print(f"Warnings: {report.warning_count}")
+    print(f"Status: {'PASS' if report.passed else 'FAIL'}")
 
 
 if __name__ == "__main__":

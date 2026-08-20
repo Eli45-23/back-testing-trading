@@ -23,6 +23,9 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "run-manifest" in captured.out
     assert "session-summary" in captured.out
     assert "validate-data" in captured.out
+    assert "aggregate-bars" in captured.out
+    assert "build-5m" in captured.out
+    assert "validate-5m" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:

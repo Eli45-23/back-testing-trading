@@ -194,6 +194,62 @@ means validation passed, `1` means the data failed validation, and `2` means the
 command could not run. A later research pipeline can use the typed `passed`
 field as a gate, but no downstream aggregation or backtesting is implemented.
 
+## Stage 2.1 deterministic five-minute candles
+
+Validated RTH one-minute bars can be transformed in memory into exact
+five-minute buckets aligned to the actual XNYS open. Every candle requires the
+five consecutive minute starts in its bucket: open comes from the first source
+bar, high and low are the extrema, close comes from the fifth bar, and volume
+and trade count are summed. Premarket, after-hours, outside-session, and
+non-session bars are excluded. Actual exchange closes govern the final bucket,
+so a normal session produces 78 candles and a 13:00 early close produces 42.
+
+Aggregation is blocked unless the existing raw-data validator passes. Partial,
+duplicate, misaligned, or otherwise incorrect buckets fail explicitly. The
+immutable derived model preserves decimal OHLC values and provenance but omits
+a five-minute VWAP field: Alpaca's minute-bar VWAP is not the future Phase 1
+daily-reset research VWAP indicator, and omitting it prevents semantic overlap.
+
+Run the local, read-only transformation with:
+
+```bash
+spy-research aggregate-bars --start 2026-08-19 --end 2026-08-19
+```
+
+The command makes no network request and does not persist processed data.
+
+## Stage 2.2 processed five-minute storage
+
+Verified five-minute RTH candles are stored separately from raw source data:
+
+```text
+data/processed/spy/5min/rth/YYYY/MM/YYYY-MM-DD.parquet
+```
+
+The fixed-point schema preserves OHLC, volume, trade count, UTC bucket start,
+New York session date, and the full non-secret lineage: Alpaca SIP raw `1Min`
+source bars, processed `5Min` timeframe, `RTH_ONLY` session mode, five source
+bars per candle, and aggregation method `rth_1m_to_5m_v1`. No indicator columns
+or credentials are stored.
+
+Processed persistence is atomic and idempotent. Identical candles are not
+rewritten; differing content under the same symbol/timestamp/timeframe/session
+identity is a conflict and is never silently overwritten. Dedicated validation
+checks ordering, identity, schema, prices, provenance, XNYS-aligned timestamps,
+session completeness, and partition dates. Reconciliation reruns the Stage 2.1
+aggregation from local validated raw bars and requires exact candle equality.
+
+Build or read-only validate the processed range with:
+
+```bash
+spy-research build-5m --start 2026-08-03 --end 2026-08-19
+spy-research validate-5m --start 2026-08-03 --end 2026-08-19
+spy-research validate-5m --start 2026-08-03 --end 2026-08-19 --json
+```
+
+These commands are offline. Processed Parquet files remain ignored by Git, and
+the validation report provides a `passed` gate for future indicator stages.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -229,6 +285,9 @@ spy-research config-check
 spy-research run-manifest --start 2026-08-03 --end 2026-08-19
 spy-research session-summary --start 2026-08-19 --end 2026-08-19
 spy-research validate-data --start 2026-08-19 --end 2026-08-19
+spy-research aggregate-bars --start 2026-08-19 --end 2026-08-19
+spy-research build-5m --start 2026-08-03 --end 2026-08-19
+spy-research validate-5m --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
