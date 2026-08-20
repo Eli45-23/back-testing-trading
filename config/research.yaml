@@ -1,0 +1,44 @@
+research:
+  version: "phase1-v1"
+
+symbol: "SPY"
+
+data:
+  source: "alpaca"
+  feed: "sip"
+  timeframe: "1Min"
+  adjustment: "raw"
+
+session:
+  timezone: "America/New_York"
+  indicator_mode: "RTH_ONLY"
+  rth_start: "09:30"
+  rth_end: "16:00"
+
+bars:
+  research_timeframe: "5Min"
+
+ema:
+  fast: 9
+  slow: 20
+
+vwap:
+  reset: "daily"
+  session: "RTH"
+  price_source: "hlc3"
+
+atr:
+  length: 14
+  method: "wilder"
+
+outcomes:
+  # Unresolved Phase 1 assumptions; retain for evaluation until confirmed.
+  horizons_minutes:
+    - 5
+    - 15
+    - 30
+    - 60
+  include_eod: true
+
+database:
+  engine: "sqlite"
