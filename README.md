@@ -250,6 +250,86 @@ spy-research validate-5m --start 2026-08-03 --end 2026-08-19 --json
 These commands are offline. Processed Parquet files remain ignored by Git, and
 the validation report provides a `passed` gate for future indicator stages.
 
+## Stage 3.1 EMA9 and EMA20
+
+EMA9 and EMA20 are calculated in memory from completed RTH-only five-minute
+closes after processed validation and raw reconciliation pass. Each trading
+session resets independently; no EMA state carries overnight. Before the ninth
+or twentieth bar, respectively, the value is explicitly unavailable.
+
+For period `N`, the first value is the exact SMA of the first `N` closes. Later
+values use `alpha = Decimal(2) / Decimal(N + 1)` and
+`EMA = alpha × close + (1 - alpha) × previous EMA` under a deterministic
+50-digit Decimal context. Values are not rounded during calculation.
+
+```bash
+spy-research calculate-ema --start 2026-08-19 --end 2026-08-19
+```
+
+The command is offline and read-only. Indicator rows are not persisted, and no
+cross, separation, ATR, signal, or strategy calculations are performed.
+
+## Stage 3.2 daily RTH VWAP
+
+The Phase 1 research VWAP is calculated in memory from each processed
+five-minute candle's `HLC3 = (high + low + close) / 3`, weighted by that
+candle's volume. Price-volume and volume accumulate only within the current RTH
+session and reset at the next exchange open. Premarket, after-hours, prior-day,
+and Alpaca vendor VWAP values never participate.
+
+If cumulative volume is zero, VWAP is unavailable. Once positive volume exists,
+later zero-volume candles retain the cumulative value. Computation uses a local
+50-digit Decimal context without calculation-time rounding.
+
+```bash
+spy-research calculate-vwap --start 2026-08-19 --end 2026-08-19
+```
+
+The command validates and reconciles local processed bars, makes no network
+request, writes no indicator data, and performs no cross/event calculations.
+
+## Stage 3.3 ATR14 with Wilder smoothing
+
+ATR14 is calculated in memory from validated RTH-only five-minute candles and
+resets independently at the start of every session. True range is
+`max(high - low, abs(high - previous_close), abs(low - previous_close))`. The
+first bar deliberately has no overnight previous close, so its true range is
+only `high - low`.
+
+ATR14 is unavailable for the first 13 bars. Bar 14 is seeded with the exact
+arithmetic mean of the first 14 true ranges. Every later value uses Wilder's
+recurrence: `ATR = ((previous ATR × 13) + current TR) / 14`. Calculation uses a
+local 50-digit Decimal context with no calculation-time rounding.
+
+```bash
+spy-research calculate-atr --start 2026-08-19 --end 2026-08-19
+```
+
+The command is offline and read-only. ATR rows are not persisted, prior-day
+close and ATR state are not carried forward, and no cross, signal, or strategy
+logic is performed.
+
+## Stage 3.4 EMA separation metrics
+
+Raw EMA distance metrics are derived directly from the verified EMA9 and EMA20
+rows. When both values exist, `signed separation = EMA9 - EMA20` and absolute
+separation is its non-negative magnitude. The signed value is positive when
+EMA9 is above EMA20, negative when it is below, and zero when they are equal.
+
+One-, two-, and three-bar deltas are `signed separation[t]` minus the signed
+separation one, two, or three completed candles earlier. Separation begins with
+EMA20 at 11:05 ET; the respective deltas begin at 11:10, 11:15, and 11:20 ET.
+All history resets each RTH session and uses the EMA engine's 50-digit Decimal
+precision without calculation-time rounding.
+
+```bash
+spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
+```
+
+The command is offline and read-only. Separation rows are not persisted, and
+the raw metrics do not detect or interpret crosses, classify trends, or produce
+signals.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -288,6 +368,10 @@ spy-research validate-data --start 2026-08-19 --end 2026-08-19
 spy-research aggregate-bars --start 2026-08-19 --end 2026-08-19
 spy-research build-5m --start 2026-08-03 --end 2026-08-19
 spy-research validate-5m --start 2026-08-03 --end 2026-08-19
+spy-research calculate-ema --start 2026-08-19 --end 2026-08-19
+spy-research calculate-vwap --start 2026-08-19 --end 2026-08-19
+spy-research calculate-atr --start 2026-08-19 --end 2026-08-19
+spy-research calculate-ema-separation --start 2026-08-19 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

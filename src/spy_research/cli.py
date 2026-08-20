@@ -32,6 +32,18 @@ from spy_research.config import DEFAULT_CONFIG_PATH, load_research_config, load_
 from spy_research.data.errors import RawDataError
 from spy_research.data.raw_store import DEFAULT_RAW_DATA_ROOT, RawBarStore
 from spy_research.data.validation import DataValidationReport, RawDataValidator
+from spy_research.indicators import (
+    AtrCalculationResult,
+    AtrIndicatorService,
+    EmaCalculationResult,
+    EmaIndicatorService,
+    EmaSeparationCalculationResult,
+    EmaSeparationIndicatorService,
+    IndicatorInputValidationError,
+    IndicatorSequenceError,
+    VwapCalculationResult,
+    VwapIndicatorService,
+)
 from spy_research.market import MarketSessionClassifier, SessionSummary, SessionType
 from spy_research.research_run import ResearchRun
 
@@ -242,6 +254,106 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit the machine-readable processed validation report",
     )
 
+    calculate_ema = subparsers.add_parser(
+        "calculate-ema",
+        help="calculate session-reset EMA9/EMA20 from local processed bars",
+    )
+    calculate_ema.add_argument("--start", type=parse_iso_date, required=True)
+    calculate_ema.add_argument("--end", type=parse_iso_date, required=True)
+    calculate_ema.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    calculate_ema.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    calculate_ema.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
+    calculate_vwap = subparsers.add_parser(
+        "calculate-vwap",
+        help="calculate daily-reset RTH VWAP from local processed bars",
+    )
+    calculate_vwap.add_argument("--start", type=parse_iso_date, required=True)
+    calculate_vwap.add_argument("--end", type=parse_iso_date, required=True)
+    calculate_vwap.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    calculate_vwap.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    calculate_vwap.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
+    calculate_atr = subparsers.add_parser(
+        "calculate-atr",
+        help="calculate daily-reset Wilder ATR14 from local processed bars",
+    )
+    calculate_atr.add_argument("--start", type=parse_iso_date, required=True)
+    calculate_atr.add_argument("--end", type=parse_iso_date, required=True)
+    calculate_atr.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    calculate_atr.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    calculate_atr.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
+    calculate_separation = subparsers.add_parser(
+        "calculate-ema-separation",
+        help="derive raw EMA9/EMA20 separation metrics from local bars",
+    )
+    calculate_separation.add_argument("--start", type=parse_iso_date, required=True)
+    calculate_separation.add_argument("--end", type=parse_iso_date, required=True)
+    calculate_separation.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    calculate_separation.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw data root used for reconciliation (default: data/raw)",
+    )
+    calculate_separation.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -406,6 +518,118 @@ def main(argv: Sequence[str] | None = None) -> int:
             _print_processed_validation(report)
         return 0 if report.passed else 1
 
+    if args.command == "calculate-ema":
+        try:
+            config = load_research_config(args.config)
+            result = EmaIndicatorService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate EMA: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate EMA: {exc}", file=sys.stderr)
+            return 2
+        _print_ema_result(result)
+        return 0
+
+    if args.command == "calculate-vwap":
+        try:
+            config = load_research_config(args.config)
+            result = VwapIndicatorService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate VWAP: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate VWAP: {exc}", file=sys.stderr)
+            return 2
+        _print_vwap_result(result)
+        return 0
+
+    if args.command == "calculate-atr":
+        try:
+            config = load_research_config(args.config)
+            result = AtrIndicatorService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate ATR: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate ATR: {exc}", file=sys.stderr)
+            return 2
+        _print_atr_result(result)
+        return 0
+
+    if args.command == "calculate-ema-separation":
+        try:
+            config = load_research_config(args.config)
+            result = EmaSeparationIndicatorService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            AggregationError,
+            ProcessedDataError,
+        ) as exc:
+            print(f"Unable to calculate EMA separation: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate EMA separation: {exc}", file=sys.stderr)
+            return 2
+        _print_ema_separation_result(result)
+        return 0
+
     if args.command in {"fetch-bars", "download-bars"}:
         try:
             settings = load_settings(config_path=args.config)
@@ -552,6 +776,91 @@ def _print_processed_validation(report: ProcessedValidationReport) -> None:
     print(f"Errors: {report.error_count}")
     print(f"Warnings: {report.warning_count}")
     print(f"Status: {'PASS' if report.passed else 'FAIL'}")
+
+
+def _print_ema_result(result: EmaCalculationResult) -> None:
+    print("SPY EMA Calculation")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    for session in result.sessions:
+        print(f"Session: {session.session_date.isoformat()}")
+        print(f"5-minute bars: {session.bars}")
+        print(f"EMA9 valid rows: {session.ema9_valid_rows}")
+        print(f"EMA20 valid rows: {session.ema20_valid_rows}")
+        print(
+            "EMA9 first valid: "
+            f"{_format_new_york_time(session.first_ema9_timestamp)}"
+        )
+        print(
+            "EMA20 first valid: "
+            f"{_format_new_york_time(session.first_ema20_timestamp)}"
+        )
+    print(f"Total rows: {len(result.rows)}")
+    print(f"Total EMA9 valid: {sum(row.ema9 is not None for row in result.rows)}")
+    print(f"Total EMA20 valid: {sum(row.ema20 is not None for row in result.rows)}")
+    print("Status: PASS")
+
+
+def _print_vwap_result(result: VwapCalculationResult) -> None:
+    print("SPY RTH VWAP")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    for session in result.sessions:
+        print(f"Session: {session.session_date.isoformat()}")
+        print(f"Bars: {session.bars}")
+        print(f"VWAP valid rows: {session.valid_rows}")
+        print(f"First VWAP: {session.first_vwap}")
+        print(f"Final VWAP: {session.final_vwap}")
+    print(f"Total rows: {len(result.rows)}")
+    print(f"Total VWAP valid: {sum(row.vwap is not None for row in result.rows)}")
+    print("Status: PASS")
+
+
+def _print_atr_result(result: AtrCalculationResult) -> None:
+    print("SPY ATR14")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    for session in result.sessions:
+        print(f"Session: {session.session_date.isoformat()}")
+        print(f"Bars: {session.bars}")
+        print(f"ATR14 valid rows: {session.valid_rows}")
+        print(
+            "First ATR14: "
+            f"{_format_new_york_time(session.first_valid_timestamp)}"
+        )
+        print(f"First ATR14 value: {session.first_atr14}")
+        print(f"Final ATR14: {session.final_atr14}")
+    print(f"Total rows: {len(result.rows)}")
+    print(f"Total ATR14 valid: {sum(row.atr14 is not None for row in result.rows)}")
+    print("Status: PASS")
+
+
+def _print_ema_separation_result(result: EmaSeparationCalculationResult) -> None:
+    print("SPY EMA Separation")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    for session in result.sessions:
+        print(f"Session: {session.session_date.isoformat()}")
+        print(f"Bars: {session.bars}")
+        print(f"Valid separation rows: {session.separation_valid_rows}")
+        print(
+            "First separation: "
+            f"{_format_new_york_time(session.first_separation_timestamp)}"
+        )
+        print(
+            "First delta-1: "
+            f"{_format_new_york_time(session.first_delta_1_timestamp)}"
+        )
+        print(
+            "First delta-2: "
+            f"{_format_new_york_time(session.first_delta_2_timestamp)}"
+        )
+        print(
+            "First delta-3: "
+            f"{_format_new_york_time(session.first_delta_3_timestamp)}"
+        )
+    print(f"Total rows: {len(result.rows)}")
+    print(
+        "Total valid separation: "
+        f"{sum(row.signed_separation is not None for row in result.rows)}"
+    )
+    print("Status: PASS")
 
 
 if __name__ == "__main__":
