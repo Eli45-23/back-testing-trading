@@ -603,6 +603,103 @@ The command is offline, read-only, and non-persistent. This tolerance layer is
 a descriptive comparison only and does not alter interaction detection,
 signals, entries, orders, stops, targets, or performance outcomes.
 
+## Stage 9.1 base price-action setup candidates
+
+Stage 9.1 is the first strategy-candidate layer, but it still assigns no entry
+price or performance result. A Stage 8.1 completed close-through is only a
+break seed: break alone is not a setup. Primary qualification uses only the
+Stage 8.2 exact-price baseline; Stage 8.4 ATR tolerance cannot create a base
+candidate.
+
+One break can produce at most one confirmed candidate. The earliest exact
+confirmation wins:
+
+1. Stage 8.2 immediate `HOLD` confirms through `IMMEDIATE_HOLD` on bar +1.
+2. Otherwise, an already selected Stage 8.2 `RETEST_HOLD` confirms through
+   `RETEST_HOLD` at its frozen +1, +2, or +3 retest candle.
+3. Equality, failure, no-retest, and unavailable states do not confirm.
+
+Breaks above map to `LONG`; breaks below map to `SHORT`, independently of the
+level name. Confirmation is knowable only at the completed confirming candle's
+end: `signal_known_at = confirmation_bar_timestamp + 5 minutes`. The earliest
+possible future execution timestamp equals that signal-known time. A signal
+known exactly at the RTH close is retained but marked not same-session
+executable and is never carried overnight.
+
+```bash
+spy-research base-setups --start 2026-08-19 --end 2026-08-19
+```
+
+The command accounts for every Stage 8.2 break seed and is offline, read-only,
+and non-persistent. Stage 9.1 does not assign fills, entry prices, stops,
+targets, P&L, or position size and does not use EMA, VWAP, EMA crosses, ATR
+tolerance, room-to-next-level, chop, or regime filters.
+
+## Stage 9.2 executable underlying reference and excursions
+
+Stage 9.2 leaves the frozen Stage 9.1 setup population unchanged. For each
+confirmed setup that remains executable before the same RTH session ends, it
+selects the first validated SPY SIP one-minute RTH bar whose timestamp is at or
+after `signal_known_at`. The reference timestamp is that minute's timestamp and
+the `entry_reference_price` is its exact stored open. Any delay from the frozen
+signal-known timestamp is recorded in whole minutes. A setup known at the
+session close remains explicitly unavailable; entry selection never bridges
+overnight.
+
+This price is a deterministic underlying backtest reference, not a guaranteed
+or slippage-adjusted live fill. It is not an option price and is never selected
+using later favorable price action.
+
+Because the reference is the entry minute's open, that same minute participates
+in excursion measurement. The 5-, 15-, 30-, and 60-minute windows contain the
+entry minute plus the next 4, 14, 29, or 59 same-session RTH minutes. EOD runs
+from the entry minute through the final RTH minute. A short fixed window near
+the close is calculated from the available minutes and marked incomplete; it
+is not extended into another session.
+
+LONG MFE/MAE use `max(high) - entry` and `entry - min(low)`; SHORT reverses the
+directional interpretation. Both are clamped at zero, preserve the earliest
+tied extreme timestamp, and remain descriptive potential excursions—not
+realized P/L, fills, exits, stops, targets, or win/loss results.
+
+```bash
+spy-research base-setup-outcomes --start 2026-08-19 --end 2026-08-19
+```
+
+The command reads validated local raw and processed data only. It makes no
+network requests and writes no market data or outcome artifacts.
+
+## Stage 9.3 base price-action statistical baseline
+
+Stage 9.3 freezes the unfiltered exact-price price-action population as the
+control group for later Stage 10 EMA/VWAP comparisons. The development funnel
+is 214 completed break seeds, 142 confirmed setups, and 140 executable
+same-session entry references. The two session-close confirmations remain
+non-executable rather than being carried overnight.
+
+Primary 5-, 15-, 30-, and 60-minute statistics include only complete windows;
+incomplete counts remain explicit. EOD uses complete remaining-session windows.
+For every horizon the report preserves Decimal mean, median, minimum, and
+maximum MFE and MAE, plus descriptive `MFE - MAE`, paired magnitude counts, and
+the median MFE/MAE ratio where MAE is nonzero. Zero-MAE observations are counted
+separately and never represented as infinity.
+
+The same schema is reported overall and by direction, objective level,
+confirmation type, and frozen ET entry-time bucket. Empty groups such as the
+current `RETEST_HOLD` population are retained. Groups are not ranked and no
+thresholds, parameter cutoffs, or filters are inferred from the sample.
+
+```bash
+spy-research base-strategy-stats --start 2026-08-03 --end 2026-08-19
+```
+
+The August 3–19 development sample contains only 13 sessions. These results are
+descriptive baseline research, not evidence of stable expectancy or statistical
+significance. MFE, MAE, `MFE - MAE`, and MFE/MAE ratios are potential excursion
+descriptions—not realized returns, winning trades, or execution results. Stage
+9 contains no stop, target, exit, position-sizing, EMA, VWAP, ATR-tolerance,
+room, chop, or regime logic.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -655,6 +752,9 @@ spy-research level-interactions --start 2026-08-19 --end 2026-08-19
 spy-research break-follow-through --start 2026-08-19 --end 2026-08-19
 spy-research sweep-patterns --start 2026-08-19 --end 2026-08-19
 spy-research atr-tolerance --start 2026-08-19 --end 2026-08-19
+spy-research base-setups --start 2026-08-19 --end 2026-08-19
+spy-research base-setup-outcomes --start 2026-08-19 --end 2026-08-19
+spy-research base-strategy-stats --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

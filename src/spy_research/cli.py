@@ -97,6 +97,22 @@ from spy_research.research_stats import (
     Phase1CrossStatisticsService,
     StatisticsSequenceError,
 )
+from spy_research.strategy import (
+    BasePriceActionResult,
+    BasePriceActionService,
+    BaseSetupInputError,
+    BaseSetupStatus,
+    BaseStatisticsInputError,
+    BaseStrategyGroupDimension,
+    BaseStrategyStatistics,
+    BaseStrategyStatisticsService,
+    ConfirmationType,
+    EntryStatus,
+    SetupOutcomeInputError,
+    SetupOutcomeResult,
+    SetupOutcomeService,
+    SetupDirection,
+)
 
 
 def parse_iso_date(value: str) -> date:
@@ -643,6 +659,81 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed five-minute data root (default: data/processed)",
     )
 
+    base_setups = subparsers.add_parser(
+        "base-setups",
+        help="qualify exact-price Stage 9.1 base price-action setup candidates",
+    )
+    base_setups.add_argument("--start", type=parse_iso_date, required=True)
+    base_setups.add_argument("--end", type=parse_iso_date, required=True)
+    base_setups.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    base_setups.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    base_setups.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    base_setup_outcomes = subparsers.add_parser(
+        "base-setup-outcomes",
+        help="calculate offline Stage 9.2 entry references and MFE/MAE",
+    )
+    base_setup_outcomes.add_argument("--start", type=parse_iso_date, required=True)
+    base_setup_outcomes.add_argument("--end", type=parse_iso_date, required=True)
+    base_setup_outcomes.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    base_setup_outcomes.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    base_setup_outcomes.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    base_strategy_stats = subparsers.add_parser(
+        "base-strategy-stats",
+        help="report the offline Stage 9.3 descriptive strategy baseline",
+    )
+    base_strategy_stats.add_argument("--start", type=parse_iso_date, required=True)
+    base_strategy_stats.add_argument("--end", type=parse_iso_date, required=True)
+    base_strategy_stats.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    base_strategy_stats.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    base_strategy_stats.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -1179,6 +1270,80 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to compare ATR tolerance: {exc}", file=sys.stderr)
             return 2
         _print_atr_tolerance(result)
+        return 0
+
+    if args.command == "base-setups":
+        try:
+            config = load_research_config(args.config)
+            result = BasePriceActionService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except BaseSetupInputError as exc:
+            print(f"Unable to qualify base setups: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to qualify base setups: {exc}", file=sys.stderr)
+            return 2
+        _print_base_setups(result)
+        return 0
+
+    if args.command == "base-setup-outcomes":
+        try:
+            config = load_research_config(args.config)
+            result = SetupOutcomeService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except SetupOutcomeInputError as exc:
+            print(f"Unable to calculate base setup outcomes: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate base setup outcomes: {exc}", file=sys.stderr)
+            return 2
+        _print_base_setup_outcomes(result)
+        return 0
+
+    if args.command == "base-strategy-stats":
+        try:
+            config = load_research_config(args.config)
+            result = BaseStrategyStatisticsService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (BaseStatisticsInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to calculate base strategy statistics: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to calculate base strategy statistics: {exc}", file=sys.stderr)
+            return 2
+        _print_base_strategy_statistics(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -1795,6 +1960,178 @@ def _print_atr_tolerance(result: AtrToleranceResult) -> None:
             f"{retest_time}/{offset} "
             f"{item.immediate_reclassified}/{item.retest_reclassified}"
         )
+    print("Status: PASS")
+
+
+def _print_base_setups(result: BasePriceActionResult) -> None:
+    print("SPY BASE EXACT-PRICE SETUP CANDIDATES")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"seeds: {result.seed_count}  confirmed: {result.confirmed_count}  "
+        f"non-confirmed: {result.non_confirmed_count}"
+    )
+    confirmed = tuple(
+        item
+        for item in result.candidates
+        if item.status is BaseSetupStatus.CONFIRMED
+    )
+    directions = Counter(item.direction for item in confirmed)
+    confirmations = Counter(item.confirmation_type for item in confirmed)
+    print(
+        "Directions: "
+        + "  ".join(
+            f"{direction.value}={directions[direction]}"
+            for direction in SetupDirection
+        )
+    )
+    print(
+        "Confirmations: "
+        + "  ".join(
+            f"{confirmation.value}={confirmations[confirmation]}"
+            for confirmation in ConfirmationType
+        )
+    )
+    print("Candidate rows")
+    print(
+        "Date Break Level Direction Immediate Retest Status "
+        "Confirmation ConfirmBar KnownAt Executable"
+    )
+    timezone = ZoneInfo("America/New_York")
+    for item in result.candidates:
+        break_time = item.break_timestamp.astimezone(timezone).strftime("%H:%M")
+        confirmation_time = (
+            item.confirmation_bar_timestamp.astimezone(timezone).strftime("%H:%M")
+            if item.confirmation_bar_timestamp is not None
+            else "N/A"
+        )
+        known_at = (
+            item.signal_known_at.astimezone(timezone).strftime("%H:%M")
+            if item.signal_known_at is not None
+            else "N/A"
+        )
+        confirmation = (
+            item.confirmation_type.value
+            if item.confirmation_type is not None
+            else "N/A"
+        )
+        print(
+            f"{item.session_date.isoformat()} {break_time} "
+            f"{item.level_type.value}@{item.level_price} {item.direction.value} "
+            f"{item.exact_immediate_state.value} {item.exact_retest_state.value} "
+            f"{item.status.value} {confirmation} {confirmation_time} {known_at} "
+            f"{item.same_session_executable}"
+        )
+    print("Status: PASS")
+
+
+def _print_base_setup_outcomes(result: SetupOutcomeResult) -> None:
+    print("SPY BASE SETUP ENTRY REFERENCES AND EXCURSIONS")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"confirmed: {result.confirmed_setup_count}  "
+        f"entries: {result.available_entry_count}  "
+        f"session-end unavailable: {result.session_end_unavailable_count}  "
+        f"missing: {result.missing_entry_count}"
+    )
+    print("Completeness")
+    for attribute, label in (
+        ("five", "5m"),
+        ("fifteen", "15m"),
+        ("thirty", "30m"),
+        ("sixty", "60m"),
+        ("eod", "EOD"),
+    ):
+        values = tuple(
+            getattr(item, attribute)
+            for item in result.outcomes
+            if getattr(item, attribute) is not None
+        )
+        complete = sum(value.complete for value in values)
+        print(f"{label}: complete={complete} incomplete={len(values) - complete}")
+    print("Rows")
+    print("Date Level Direction KnownAt EntryAt EntryOpen Delay Status 5m 15m 30m 60m EOD")
+    timezone = ZoneInfo("America/New_York")
+    for item in result.outcomes:
+        setup = item.setup
+        entry = item.entry_reference
+        known_at = entry.signal_known_at.astimezone(timezone).strftime("%H:%M")
+        if entry.entry_status is not EntryStatus.AVAILABLE:
+            print(
+                f"{setup.session_date.isoformat()} {setup.level_type.value} "
+                f"{setup.direction.value} {known_at} N/A N/A N/A "
+                f"{entry.entry_status.value} N/A N/A N/A N/A N/A"
+            )
+            continue
+        assert entry.entry_reference_timestamp is not None
+        entry_at = entry.entry_reference_timestamp.astimezone(timezone).strftime("%H:%M")
+        horizon_text = []
+        for outcome in (item.five, item.fifteen, item.thirty, item.sixty, item.eod):
+            assert outcome is not None
+            marker = "C" if outcome.complete else "I"
+            horizon_text.append(f"{outcome.mfe}/{outcome.mae}/{marker}")
+        print(
+            f"{setup.session_date.isoformat()} {setup.level_type.value} "
+            f"{setup.direction.value} {known_at} {entry_at} "
+            f"{entry.entry_reference_price} {entry.entry_delay_minutes} "
+            f"{entry.entry_status.value} {' '.join(horizon_text)}"
+        )
+    print("Reference: deterministic underlying 1-minute open; not a guaranteed live fill")
+    print("MFE/MAE: descriptive excursions, not realized P/L")
+    print("Status: PASS")
+
+
+def _format_base_stat(value: Decimal | None) -> str:
+    return f"{value:.4f}" if value is not None else "N/A"
+
+
+def _print_base_strategy_statistics(result: BaseStrategyStatistics) -> None:
+    print("SPY BASE PRICE-ACTION DESCRIPTIVE BASELINE")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"non-confirmed: {result.non_confirmed_count}  "
+        f"executable: {result.executable_count}  "
+        f"session-end unavailable: {result.session_end_unavailable_count}  "
+        f"missing: {result.missing_entry_count}"
+    )
+    print(
+        f"Confirmed types: IMMEDIATE_HOLD={result.immediate_hold_confirmed_count}  "
+        f"RETEST_HOLD={result.retest_hold_confirmed_count}"
+    )
+    print(
+        "Dimension Group Horizon Complete Incomplete "
+        "MFE(mean/median/min/max) MAE(mean/median/min/max) "
+        "Balance(mean/median) Compare(MFE>MAE/=/MFE<MAE) Ratio(n/zero/median)"
+    )
+    for group in result.groups:
+        if group.dimension is not BaseStrategyGroupDimension.OVERALL:
+            print(f"[{group.dimension.value}] {group.name} executable={group.executable_n}")
+        for horizon in group.horizons:
+            mfe = horizon.mfe
+            mae = horizon.mae
+            balance = horizon.net_excursion_balance
+            comparison = horizon.favorable_adverse
+            print(
+                f"{group.dimension.value} {group.name} {horizon.horizon} "
+                f"{horizon.complete_n} {horizon.incomplete_n} "
+                f"{_format_base_stat(mfe.mean)}/{_format_base_stat(mfe.median)}/"
+                f"{_format_base_stat(mfe.minimum)}/{_format_base_stat(mfe.maximum)} "
+                f"{_format_base_stat(mae.mean)}/{_format_base_stat(mae.median)}/"
+                f"{_format_base_stat(mae.minimum)}/{_format_base_stat(mae.maximum)} "
+                f"{_format_base_stat(balance.mean)}/"
+                f"{_format_base_stat(balance.median)} "
+                f"{comparison.mfe_greater}/{comparison.equal}/"
+                f"{comparison.mfe_less} "
+                f"{horizon.valid_ratio_n}/{horizon.zero_mae_n}/"
+                f"{_format_base_stat(horizon.median_mfe_mae_ratio)}"
+            )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("MFE/MAE and MFE-MAE are descriptive excursions, not realized returns.")
+    print("No stops, targets, exits, EMA/VWAP filters, or position sizing are applied.")
     print("Status: PASS")
 
 

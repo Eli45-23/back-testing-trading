@@ -40,6 +40,9 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "break-follow-through" in captured.out
     assert "sweep-patterns" in captured.out
     assert "atr-tolerance" in captured.out
+    assert "base-setups" in captured.out
+    assert "base-setup-outcomes" in captured.out
+    assert "base-strategy-stats" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:
