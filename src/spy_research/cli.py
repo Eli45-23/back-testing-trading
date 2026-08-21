@@ -5,10 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from collections.abc import Sequence
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
+from statistics import median
 from zoneinfo import ZoneInfo
 
 import yaml
@@ -50,6 +52,25 @@ from spy_research.indicators import (
     IndicatorSequenceError,
     VwapCalculationResult,
     VwapIndicatorService,
+)
+from spy_research.interactions import (
+    AtrToleranceInputError,
+    AtrToleranceResult,
+    AtrToleranceService,
+    BreakFollowThroughResult,
+    BreakFollowThroughService,
+    FollowThroughInputError,
+    ImmediateState,
+    InteractionInputError,
+    InteractionType,
+    LevelInteractionResult,
+    LevelInteractionService,
+    LevelType,
+    LiquiditySweepResult,
+    LiquiditySweepService,
+    RetestState,
+    SweepInputError,
+    SweepType,
 )
 from spy_research.levels import (
     OpeningFiveMinuteLevelsResult,
@@ -522,6 +543,106 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed five-minute data root (default: data/processed)",
     )
 
+    level_interactions = subparsers.add_parser(
+        "level-interactions",
+        help="classify completed 5m candle interactions with Stage 7 levels",
+    )
+    level_interactions.add_argument("--start", type=parse_iso_date, required=True)
+    level_interactions.add_argument("--end", type=parse_iso_date, required=True)
+    level_interactions.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    level_interactions.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    level_interactions.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    break_follow_through = subparsers.add_parser(
+        "break-follow-through",
+        help="classify immediate and exact-price retest context after close-throughs",
+    )
+    break_follow_through.add_argument("--start", type=parse_iso_date, required=True)
+    break_follow_through.add_argument("--end", type=parse_iso_date, required=True)
+    break_follow_through.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    break_follow_through.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    break_follow_through.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    sweep_patterns = subparsers.add_parser(
+        "sweep-patterns",
+        help="label strict reclaim patterns from Stage 8.1 wick-throughs",
+    )
+    sweep_patterns.add_argument("--start", type=parse_iso_date, required=True)
+    sweep_patterns.add_argument("--end", type=parse_iso_date, required=True)
+    sweep_patterns.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    sweep_patterns.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    sweep_patterns.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    atr_tolerance = subparsers.add_parser(
+        "atr-tolerance",
+        help="compare exact follow-through with fixed 0.10 event-ATR tolerance",
+    )
+    atr_tolerance.add_argument("--start", type=parse_iso_date, required=True)
+    atr_tolerance.add_argument("--end", type=parse_iso_date, required=True)
+    atr_tolerance.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    atr_tolerance.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    atr_tolerance.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
     return parser
 
 
@@ -960,6 +1081,106 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_opening_five_minute_levels(result)
         return 0
 
+    if args.command == "level-interactions":
+        try:
+            config = load_research_config(args.config)
+            result = LevelInteractionService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except InteractionInputError as exc:
+            print(f"Unable to classify level interactions: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to classify level interactions: {exc}", file=sys.stderr)
+            return 2
+        _print_level_interactions(result)
+        return 0
+
+    if args.command == "break-follow-through":
+        try:
+            config = load_research_config(args.config)
+            result = BreakFollowThroughService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (InteractionInputError, FollowThroughInputError) as exc:
+            print(f"Unable to classify break follow-through: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to classify break follow-through: {exc}", file=sys.stderr)
+            return 2
+        _print_break_follow_through(result)
+        return 0
+
+    if args.command == "sweep-patterns":
+        try:
+            config = load_research_config(args.config)
+            result = LiquiditySweepService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except SweepInputError as exc:
+            print(f"Unable to classify sweep patterns: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to classify sweep patterns: {exc}", file=sys.stderr)
+            return 2
+        _print_sweep_patterns(result)
+        return 0
+
+    if args.command == "atr-tolerance":
+        try:
+            config = load_research_config(args.config)
+            result = AtrToleranceService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            AtrToleranceInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+        ) as exc:
+            print(f"Unable to compare ATR tolerance: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare ATR tolerance: {exc}", file=sys.stderr)
+            return 2
+        _print_atr_tolerance(result)
+        return 0
+
     if args.command in {"fetch-bars", "download-bars"}:
         try:
             settings = load_settings(config_path=args.config)
@@ -1384,6 +1605,195 @@ def _print_opening_five_minute_levels(
         print(
             f"{item.session_date.isoformat()}  {str(item.orh5):<15} "
             f"{str(item.orl5):<15} {source}   {available}"
+        )
+    print("Status: PASS")
+
+
+def _print_level_interactions(result: LevelInteractionResult) -> None:
+    print("SPY LEVEL INTERACTIONS")
+    print(
+        f"Eligible pairs: {result.eligible_pair_count}  "
+        f"emitted: {len(result.interactions)}  "
+        f"no interaction: {result.no_interaction_count}"
+    )
+    by_key = {
+        (item.level_type, item.interaction_type): item.count for item in result.counts
+    }
+    print("Interaction summary")
+    event_types = tuple(
+        value for value in InteractionType if value is not InteractionType.NO_INTERACTION
+    )
+    for level_type in LevelType:
+        rendered = "  ".join(
+            f"{interaction_type.value}={by_key[(level_type, interaction_type)]}"
+            for interaction_type in event_types
+        )
+        print(f"{level_type.value}: {rendered}")
+
+    print("Emitted events")
+    print("Date Time  Level Price Type  O/H/L/C  Prev  Above Below")
+    timezone = ZoneInfo("America/New_York")
+    for item in result.interactions:
+        local = item.candle_timestamp.astimezone(timezone)
+        previous = str(item.previous_close) if item.previous_close is not None else "N/A"
+        print(
+            f"{item.session_date.isoformat()} {local:%H:%M}  "
+            f"{item.level_type.value} {item.level_price} "
+            f"{item.interaction_type.value}  "
+            f"{item.open}/{item.high}/{item.low}/{item.close}  "
+            f"{previous}  {item.traded_above} {item.traded_below}"
+        )
+    print("Status: PASS")
+
+
+def _print_break_follow_through(result: BreakFollowThroughResult) -> None:
+    print("SPY BREAK FOLLOW-THROUGH")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"close-through seeds: {result.seed_count}"
+    )
+    immediate_counts = Counter(item.immediate.state for item in result.follow_through)
+    retest_counts = Counter(item.retest.state for item in result.follow_through)
+    print(
+        "Immediate: "
+        + "  ".join(
+            f"{state.value}={immediate_counts[state]}" for state in ImmediateState
+        )
+    )
+    print(
+        "Retest: "
+        + "  ".join(f"{state.value}={retest_counts[state]}" for state in RetestState)
+    )
+    print("Break rows")
+    print(
+        "Date Break Level Price Direction Next/Close Immediate "
+        "Retest Offset Retest/OHLC Available"
+    )
+    timezone = ZoneInfo("America/New_York")
+    for item in result.follow_through:
+        next_time = (
+            item.immediate.bar_timestamp.astimezone(timezone).strftime("%H:%M")
+            if item.immediate.bar_timestamp is not None
+            else "N/A"
+        )
+        next_close = (
+            str(item.immediate.close) if item.immediate.close is not None else "N/A"
+        )
+        retest_time = (
+            item.retest.timestamp.astimezone(timezone).strftime("%H:%M")
+            if item.retest.timestamp is not None
+            else "N/A"
+        )
+        retest_ohlc = (
+            f"{item.retest.open}/{item.retest.high}/"
+            f"{item.retest.low}/{item.retest.close}"
+            if item.retest.timestamp is not None
+            else "N/A"
+        )
+        offset = f"+{item.retest.bar_offset}" if item.retest.bar_offset else "N/A"
+        break_time = item.break_timestamp.astimezone(timezone).strftime("%H:%M")
+        print(
+            f"{item.session_date.isoformat()} {break_time} "
+            f"{item.level_type.value} {item.level_price} {item.break_direction.value} "
+            f"{next_time}/{next_close} {item.immediate.state.value} "
+            f"{item.retest.state.value} {offset} {retest_time}/{retest_ohlc} "
+            f"{item.retest.available_bars}/3 "
+            f"complete={item.retest.window_complete}"
+        )
+    print("Status: PASS")
+
+
+def _print_sweep_patterns(result: LiquiditySweepResult) -> None:
+    print("SPY LIQUIDITY-SWEEP PATTERNS")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"wick seeds: {result.seed_count}"
+    )
+    counts = Counter(item.sweep_type for item in result.patterns)
+    print(
+        "Patterns: "
+        + "  ".join(f"{state.value}={counts[state]}" for state in SweepType)
+    )
+    for state in (SweepType.SWEEP_ABOVE, SweepType.SWEEP_BELOW):
+        excursions = sorted(
+            item.excursion_amount
+            for item in result.patterns
+            if item.sweep_type is state
+        )
+        if excursions:
+            print(
+                f"{state.value} excursion: count={len(excursions)} "
+                f"min={excursions[0]} median={median(excursions)} "
+                f"max={excursions[-1]}"
+            )
+    print("Pattern rows")
+    print(
+        "Date Time Level Price Source Pattern O/H/L/C "
+        "Excursion Reclaim Above Below"
+    )
+    timezone = ZoneInfo("America/New_York")
+    for item in result.patterns:
+        local = item.candle_timestamp.astimezone(timezone)
+        print(
+            f"{item.session_date.isoformat()} {local:%H:%M} "
+            f"{item.level_type.value} {item.level_price} "
+            f"{item.source_interaction_type.value} {item.sweep_type.value} "
+            f"{item.open}/{item.high}/{item.low}/{item.close} "
+            f"{item.excursion_amount} {item.reclaim_distance} "
+            f"{item.traded_above} {item.traded_below}"
+        )
+    print("Status: PASS")
+
+
+def _print_atr_tolerance(result: AtrToleranceResult) -> None:
+    print("SPY 0.10 EVENT-ATR FOLLOW-THROUGH COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"seeds: {result.seed_count}  ATR available: {result.atr_available_count}  "
+        f"ATR unavailable: {result.atr_unavailable_count}"
+    )
+    immediate = Counter(
+        (item.exact_immediate_state.value, item.tolerant_immediate_state.value)
+        for item in result.comparisons
+    )
+    retest = Counter(
+        (item.exact_retest_state.value, item.tolerant_retest_state.value)
+        for item in result.comparisons
+    )
+    print("Immediate transitions")
+    for (exact, tolerant), count in sorted(immediate.items()):
+        print(f"{exact} -> {tolerant}: {count}")
+    print("Retest transitions")
+    for (exact, tolerant), count in sorted(retest.items()):
+        print(f"{exact} -> {tolerant}: {count}")
+    print("Comparison rows")
+    print(
+        "Date Break Level Direction ATR/Tolerance ExactImmediate/Tolerant "
+        "ExactRetest/Tolerant Retest Reclassified(I/R)"
+    )
+    timezone = ZoneInfo("America/New_York")
+    for item in result.comparisons:
+        break_time = item.break_timestamp.astimezone(timezone).strftime("%H:%M")
+        atr = str(item.event_atr) if item.event_atr is not None else "N/A"
+        tolerance = (
+            str(item.tolerance_amount) if item.tolerance_amount is not None else "N/A"
+        )
+        retest_time = (
+            item.retest_timestamp.astimezone(timezone).strftime("%H:%M")
+            if item.retest_timestamp is not None
+            else "N/A"
+        )
+        offset = f"+{item.retest_bar_offset}" if item.retest_bar_offset else "N/A"
+        print(
+            f"{item.session_date.isoformat()} {break_time} "
+            f"{item.level_type.value}@{item.level_price} {item.break_direction.value} "
+            f"{atr}/{tolerance} "
+            f"{item.exact_immediate_state.value}/"
+            f"{item.tolerant_immediate_state.value} "
+            f"{item.exact_retest_state.value}/"
+            f"{item.tolerant_retest_state.value} "
+            f"{retest_time}/{offset} "
+            f"{item.immediate_reclassified}/{item.retest_reclassified}"
         )
     print("Status: PASS")
 

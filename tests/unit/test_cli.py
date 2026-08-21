@@ -36,6 +36,10 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "previous-day-levels" in captured.out
     assert "premarket-levels" in captured.out
     assert "opening-5m-levels" in captured.out
+    assert "level-interactions" in captured.out
+    assert "break-follow-through" in captured.out
+    assert "sweep-patterns" in captured.out
+    assert "atr-tolerance" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:

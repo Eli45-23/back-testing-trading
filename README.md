@@ -484,6 +484,125 @@ The command is offline, read-only, and non-persistent. Only the first candle can
 influence ORH5/ORL5, so later session bars cannot change the levels. Stage 7.3
 does not implement breaks, holds, sweeps, retests, or other interaction logic.
 
+## Stage 8.1 level interaction classification
+
+Each completed RTH five-minute candle is compared with every available Stage 7
+level using exact Decimal prices. The pure classifier returns one primary type:
+
+- `NO_INTERACTION`: the candle range never reaches the level.
+- `TOUCH`: the range reaches the level only by equality and does not trade
+  strictly through it.
+- `WICK_THROUGH_ABOVE` / `WICK_THROUGH_BELOW`: price trades strictly through a
+  side but does not establish a new close from the opposite/equal opening side.
+- `CLOSE_THROUGH_ABOVE` / `CLOSE_THROUGH_BELOW`: the candle encounters the
+  level, opens on the opposite/equal side, and closes strictly through it.
+
+Equality is never a break. Same-side candles entirely beyond a level are
+`NO_INTERACTION`; same-side encounters that recover remain wick-throughs or
+touches rather than repeated close-through events. Dual-side candles retain
+both `traded_above` and `traded_below` facts even though the model has one
+primary classification. Previous-close side is descriptive context only.
+
+PDH/PDL/PDC and available PMH/PML are eligible beginning with the first RTH
+candle. ORH5/ORL5 become eligible at 09:35 America/New_York on a normal session,
+so their 09:30 source candle cannot interact with itself.
+
+```bash
+spy-research level-interactions --start 2026-08-19 --end 2026-08-19
+```
+
+The service emits only non-`NO_INTERACTION` records by default while retaining
+complete eligible-pair counts for audit. It is offline, read-only, and
+non-persistent. Stage 8.1 does not infer confirmation or strategy action from a
+close-through.
+
+## Stage 8.2 post-break hold and retest context
+
+Only Stage 8.1 `CLOSE_THROUGH_ABOVE` and `CLOSE_THROUGH_BELOW` records seed this
+stage. The original interaction remains unchanged. For the first completed
+five-minute candle after a break, a close on the break side is `HOLD`, a close
+back through the exact level is `FAILURE`, and an equal close is `EQUAL`. When
+no same-session next candle exists, the immediate state is `UNAVAILABLE`.
+
+Retest context is separate from the immediate state. The engine searches only
+completed same-session bars +1 through +3 and uses the first candle that
+encounters the exact level. After a break above, encounter means `low <= level`;
+after a break below, it means `high >= level`. A close back on the break side is
+`RETEST_HOLD`, a close through to the opposite side is `RETEST_FAILURE`, and an
+equal close is `RETEST_EQUAL`. An earlier result is never replaced by a later
+bar. If none of the available bars encounters the level, the state is
+`NO_RETEST`, which is descriptive and is not a failure.
+
+Near the RTH close, the result records how many of the requested three bars
+were available and marks the window incomplete. A final-bar break has both
+states unavailable. The engine never bridges overnight and never inspects bar
++4. It uses exact prices only: ATR tolerance is intentionally not implemented.
+
+```bash
+spy-research break-follow-through --start 2026-08-19 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. These classifications
+are research context only; they do not imply an entry, signal, order, sweep
+label, stop, target, or any other trading action.
+
+## Stage 8.3 liquidity-sweep pattern labels
+
+Stage 8.3 derives mechanical labels only from immutable Stage 8.1
+`WICK_THROUGH_ABOVE` and `WICK_THROUGH_BELOW` records. It does not rescan the
+candle universe or accept touches and close-throughs as seeds.
+
+- `SWEEP_ABOVE` requires `high > level` and `close < level`.
+- `SWEEP_BELOW` requires `low < level` and `close > level`.
+- A wick-through that closes exactly at the level is explicitly
+  `WICK_EQUAL_ABOVE` or `WICK_EQUAL_BELOW`, never a completed sweep.
+
+Excursion distance is `high - level` for an above wick and `level - low` for a
+below wick. Reclaim distance is `level - close` for `SWEEP_ABOVE` and
+`close - level` for `SWEEP_BELOW`; equality cases retain a zero reclaim
+distance. All calculations use exact Decimal prices without tolerance or a
+minimum-size threshold. Opening side and both Stage 8.1 `traded_above` and
+`traded_below` facts remain attached as descriptive context.
+
+```bash
+spy-research sweep-patterns --start 2026-08-19 --end 2026-08-19
+```
+
+No future candles are required or accepted. A Stage 8.2 failed completed break
+remains distinct from a same-candle wick/reclaim pattern. The label is purely
+mechanical and does not demonstrate institutional liquidity activity or imply
+a signal, entry, order, stop, or target.
+
+## Stage 8.4 parallel 0.10 event-ATR tolerance
+
+The Stage 8.2 exact-price result remains the permanent baseline. Stage 8.4 adds
+an explicitly separate comparison using exactly `0.10 × ATR14` from the
+original close-through candle. ATR14 is the accepted Stage 3 session-reset
+Wilder value; later-bar, daily, vendor, and fallback ATR values are never used.
+The fraction is frozen and is not optimized.
+
+For a break above, the tolerant boundary is `level - tolerance`; for a break
+below, it is `level + tolerance`. A close strictly on the break side remains
+`HOLD_EXACT`. A close at the level or at/inside the tolerance boundary becomes
+`HOLD_WITHIN_TOLERANCE`; a close strictly beyond the boundary remains
+`FAILURE`. Boundary equality therefore counts within tolerance.
+
+The immediate comparison uses the same Stage 8.2 next candle. Retest discovery
+is never widened: Stage 8.4 reinterprets only the close of the already selected
+Stage 8.2 first exact-price encounter within bars +1 through +3. `NO_RETEST`
+remains `NO_RETEST` when ATR exists. A seed before the daily ATR14 warm-up is
+explicitly `UNAVAILABLE_ATR`; no exact-price fallback is presented as a
+tolerant result. Missing future RTH bars remain separately `UNAVAILABLE` and
+never bridge sessions.
+
+```bash
+spy-research atr-tolerance --start 2026-08-19 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. This tolerance layer is
+a descriptive comparison only and does not alter interaction detection,
+signals, entries, orders, stops, targets, or performance outcomes.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -532,6 +651,10 @@ spy-research cross-stats --start 2026-08-03 --end 2026-08-19
 spy-research previous-day-levels --start 2026-08-03 --end 2026-08-19
 spy-research premarket-levels --start 2026-08-03 --end 2026-08-19
 spy-research opening-5m-levels --start 2026-08-03 --end 2026-08-19
+spy-research level-interactions --start 2026-08-19 --end 2026-08-19
+spy-research break-follow-through --start 2026-08-19 --end 2026-08-19
+spy-research sweep-patterns --start 2026-08-19 --end 2026-08-19
+spy-research atr-tolerance --start 2026-08-19 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
