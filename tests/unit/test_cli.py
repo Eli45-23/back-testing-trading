@@ -43,6 +43,14 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "base-setups" in captured.out
     assert "base-setup-outcomes" in captured.out
     assert "base-strategy-stats" in captured.out
+    assert "compare-ema-alignment" in captured.out
+    assert "compare-ema-cross-context" in captured.out
+    assert "compare-vwap-alignment" in captured.out
+    assert "compare-ema9-vwap-alignment" in captured.out
+    assert "compare-ema9-vwap-cross-context" in captured.out
+    assert "compare-ema20-vwap-alignment" in captured.out
+    assert "compare-ema20-vwap-cross-context" in captured.out
+    assert "compare-combined-context-matrix" in captured.out
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:

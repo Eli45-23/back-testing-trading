@@ -113,6 +113,32 @@ from spy_research.strategy import (
     SetupOutcomeService,
     SetupDirection,
 )
+from spy_research.strategy.comparisons import (
+    CombinedContextInputError,
+    CombinedContextMatrixResult,
+    CombinedContextMatrixService,
+    EmaAlignmentComparisonResult,
+    EmaAlignmentComparisonService,
+    Ema9VwapAlignmentComparisonResult,
+    Ema9VwapAlignmentComparisonService,
+    Ema9VwapComparisonInputError,
+    Ema9VwapCrossContextComparisonResult,
+    Ema9VwapCrossContextComparisonService,
+    Ema9VwapCrossInputError,
+    Ema20VwapAlignmentComparisonResult,
+    Ema20VwapAlignmentComparisonService,
+    Ema20VwapComparisonInputError,
+    Ema20VwapCrossContextComparisonResult,
+    Ema20VwapCrossContextComparisonService,
+    Ema20VwapCrossInputError,
+    EmaComparisonInputError,
+    EmaCrossContextComparisonResult,
+    EmaCrossContextComparisonService,
+    EmaCrossContextInputError,
+    VwapAlignmentComparisonResult,
+    VwapAlignmentComparisonService,
+    VwapComparisonInputError,
+)
 
 
 def parse_iso_date(value: str) -> date:
@@ -734,6 +760,159 @@ def build_parser() -> argparse.ArgumentParser:
         help="processed five-minute data root (default: data/processed)",
     )
 
+    compare_ema_alignment = subparsers.add_parser(
+        "compare-ema-alignment",
+        help="compare frozen Stage 9 outcomes by confirmation-bar EMA ordering",
+    )
+    compare_ema_alignment.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema_alignment.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema_alignment.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    compare_ema_alignment.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    compare_ema_alignment.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    compare_ema_cross_context = subparsers.add_parser(
+        "compare-ema-cross-context",
+        help="compare frozen Stage 9 outcomes by exact prior EMA-cross context",
+    )
+    compare_ema_cross_context.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema_cross_context.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema_cross_context.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    compare_ema_cross_context.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    compare_ema_cross_context.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    compare_vwap_alignment = subparsers.add_parser(
+        "compare-vwap-alignment",
+        help="compare frozen Stage 9 outcomes by confirmation-price/VWAP ordering",
+    )
+    compare_vwap_alignment.add_argument("--start", type=parse_iso_date, required=True)
+    compare_vwap_alignment.add_argument("--end", type=parse_iso_date, required=True)
+    compare_vwap_alignment.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="research YAML path (default: config/research.yaml)",
+    )
+    compare_vwap_alignment.add_argument(
+        "--raw-data-root",
+        type=Path,
+        default=DEFAULT_RAW_DATA_ROOT,
+        help="raw one-minute data root (default: data/raw)",
+    )
+    compare_vwap_alignment.add_argument(
+        "--processed-data-root",
+        type=Path,
+        default=DEFAULT_PROCESSED_DATA_ROOT,
+        help="processed five-minute data root (default: data/processed)",
+    )
+
+    compare_ema9_vwap = subparsers.add_parser(
+        "compare-ema9-vwap-alignment",
+        help="compare frozen Stage 9 outcomes by confirmation-row EMA9/VWAP ordering",
+    )
+    compare_ema9_vwap.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema9_vwap.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema9_vwap.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    compare_ema9_vwap.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    compare_ema9_vwap.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    compare_ema9_vwap_cross = subparsers.add_parser(
+        "compare-ema9-vwap-cross-context",
+        help="compare frozen outcomes by exact prior EMA9/VWAP cross context",
+    )
+    compare_ema9_vwap_cross.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema9_vwap_cross.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema9_vwap_cross.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    compare_ema9_vwap_cross.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    compare_ema9_vwap_cross.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    compare_ema20_vwap = subparsers.add_parser(
+        "compare-ema20-vwap-alignment",
+        help="compare frozen Stage 9 outcomes by confirmation-row EMA20/VWAP ordering",
+    )
+    compare_ema20_vwap.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema20_vwap.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema20_vwap.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    compare_ema20_vwap.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    compare_ema20_vwap.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    compare_ema20_vwap_cross = subparsers.add_parser(
+        "compare-ema20-vwap-cross-context",
+        help="compare frozen outcomes by exact prior EMA20/VWAP cross context",
+    )
+    compare_ema20_vwap_cross.add_argument("--start", type=parse_iso_date, required=True)
+    compare_ema20_vwap_cross.add_argument("--end", type=parse_iso_date, required=True)
+    compare_ema20_vwap_cross.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    compare_ema20_vwap_cross.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    compare_ema20_vwap_cross.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    combined_context = subparsers.add_parser(
+        "compare-combined-context-matrix",
+        help="reconcile Stage 10.1-10.7 context and unchanged Stage 9 outcomes",
+    )
+    combined_context.add_argument("--start", type=parse_iso_date, required=True)
+    combined_context.add_argument("--end", type=parse_iso_date, required=True)
+    combined_context.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    combined_context.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    combined_context.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
     return parser
 
 
@@ -1344,6 +1523,229 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to calculate base strategy statistics: {exc}", file=sys.stderr)
             return 2
         _print_base_strategy_statistics(result)
+        return 0
+
+    if args.command == "compare-ema-alignment":
+        try:
+            config = load_research_config(args.config)
+            result = EmaAlignmentComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (EmaComparisonInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA alignment: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA alignment: {exc}", file=sys.stderr)
+            return 2
+        _print_ema_alignment_comparison(result)
+        return 0
+
+    if args.command == "compare-ema-cross-context":
+        try:
+            config = load_research_config(args.config)
+            result = EmaCrossContextComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (EmaCrossContextInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA cross context: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA cross context: {exc}", file=sys.stderr)
+            return 2
+        _print_ema_cross_context_comparison(result)
+        return 0
+
+    if args.command == "compare-vwap-alignment":
+        try:
+            config = load_research_config(args.config)
+            result = VwapAlignmentComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (VwapComparisonInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare VWAP alignment: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare VWAP alignment: {exc}", file=sys.stderr)
+            return 2
+        _print_vwap_alignment_comparison(result)
+        return 0
+
+    if args.command == "compare-ema9-vwap-alignment":
+        try:
+            config = load_research_config(args.config)
+            result = Ema9VwapAlignmentComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (Ema9VwapComparisonInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA9/VWAP alignment: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA9/VWAP alignment: {exc}", file=sys.stderr)
+            return 2
+        _print_ema9_vwap_alignment_comparison(result)
+        return 0
+
+    if args.command == "compare-ema9-vwap-cross-context":
+        try:
+            config = load_research_config(args.config)
+            result = Ema9VwapCrossContextComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (Ema9VwapCrossInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA9/VWAP cross context: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA9/VWAP cross context: {exc}", file=sys.stderr)
+            return 2
+        _print_ema9_vwap_cross_context_comparison(result)
+        return 0
+
+    if args.command == "compare-ema20-vwap-alignment":
+        try:
+            config = load_research_config(args.config)
+            result = Ema20VwapAlignmentComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (Ema20VwapComparisonInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA20/VWAP alignment: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA20/VWAP alignment: {exc}", file=sys.stderr)
+            return 2
+        _print_ema20_vwap_alignment_comparison(result)
+        return 0
+
+    if args.command == "compare-ema20-vwap-cross-context":
+        try:
+            config = load_research_config(args.config)
+            result = Ema20VwapCrossContextComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (Ema20VwapCrossInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare EMA20/VWAP cross context: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare EMA20/VWAP cross context: {exc}", file=sys.stderr)
+            return 2
+        _print_ema20_vwap_cross_context_comparison(result)
+        return 0
+
+    if args.command == "compare-combined-context-matrix":
+        try:
+            config = load_research_config(args.config)
+            result = CombinedContextMatrixService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (CombinedContextInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to build combined context matrix: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to build combined context matrix: {exc}", file=sys.stderr)
+            return 2
+        _print_combined_context_matrix(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -2132,6 +2534,698 @@ def _print_base_strategy_statistics(result: BaseStrategyStatistics) -> None:
     )
     print("MFE/MAE and MFE-MAE are descriptive excursions, not realized returns.")
     print("No stops, targets, exits, EMA/VWAP filters, or position sizing are applied.")
+    print("Status: PASS")
+
+
+def _print_ema_alignment_comparison(result: EmaAlignmentComparisonResult) -> None:
+    print("SPY CONTROLLED EMA9/EMA20 DIRECTIONAL ALIGNMENT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"non-confirmed: {result.non_confirmed_count}  "
+        f"executable: {result.executable_count}  "
+        f"session-end: {result.session_end_unavailable_count}"
+    )
+    print("Annotation composition")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    print("Horizon comparison")
+    print(
+        "Group Horizon C/I MedianMFE MedianMAE MedianBalance MedianRatio "
+        "DeltaMFE DeltaMAE DeltaBalance"
+    )
+    for group in result.groups:
+        for horizon, delta in zip(group.horizons, group.deltas, strict=True):
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{_format_base_stat(horizon.median_mfe_mae_ratio)} "
+                f"{_format_base_stat(delta.median_mfe_delta)} "
+                f"{_format_base_stat(delta.median_mae_delta)} "
+                f"{_format_base_stat(delta.median_balance_delta)}"
+            )
+    print("Direction × EMA state (EOD)")
+    print("Direction State n MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.direction_groups:
+        eod = group.horizons[-1]
+        comparison = eod.favorable_adverse
+        print(
+            f"{group.direction.value} {group.alignment_state.value} "
+            f"{group.executable_n} {_format_base_stat(eod.mfe.median)} "
+            f"{_format_base_stat(eod.mae.median)} "
+            f"{_format_base_stat(eod.net_excursion_balance.median)} "
+            f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Level × EMA state (counts and EOD)")
+    print("Level State setups executable MedianMFE MedianMAE MedianBalance")
+    for group in result.level_groups:
+        print(
+            f"{group.level_type.value} {group.alignment_state.value} "
+            f"{group.annotation_n} {group.executable_n} "
+            f"{_format_base_stat(group.eod.mfe.median)} "
+            f"{_format_base_stat(group.eod.mae.median)} "
+            f"{_format_base_stat(group.eod.net_excursion_balance.median)}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        "exploratory descriptive research only, not a validated edge."
+    )
+    print("EMA labels do not modify Stage 9 setups, entries, or MFE/MAE outcomes.")
+    print("No VWAP, recent-cross, slope, or separation requirement is applied.")
+    print("Status: PASS")
+
+
+def _print_ema_cross_context_comparison(
+    result: EmaCrossContextComparisonResult,
+) -> None:
+    print("SPY EMA9/EMA20 PRIOR-CROSS CONTEXT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"Stage 4 crosses: {result.stage4_event_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"executable: {result.executable_count}"
+    )
+    print("Population reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n} "
+            f"exec-LONG={group.long_executable_n} exec-SHORT={group.short_executable_n}"
+        )
+    distribution = result.bars_since_cross_distribution
+    print(
+        "Exact bars-since-cross distribution: "
+        f"n={distribution.n} min={_format_base_stat(distribution.minimum)} "
+        f"median={_format_base_stat(distribution.median)} "
+        f"max={_format_base_stat(distribution.maximum)}"
+    )
+    print("Bars Setups Executable LONG SHORT EOD-MFE EOD-MAE EOD-Balance")
+    for row in result.recency_rows:
+        print(
+            f"{row.bars_since_cross} {row.annotation_n} {row.executable_n} "
+            f"{row.long_executable_n} {row.short_executable_n} "
+            f"{_format_base_stat(row.eod.mfe.median)} "
+            f"{_format_base_stat(row.eod.mae.median)} "
+            f"{_format_base_stat(row.eod.net_excursion_balance.median)}"
+        )
+    print("Five-horizon comparison")
+    print("Group Horizon C/I MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.groups:
+        for horizon in group.horizons:
+            comparison = horizon.favorable_adverse
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+            )
+    print("Direction × cross state (EOD)")
+    print("Direction State n MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.direction_groups:
+        comparison = group.eod.favorable_adverse
+        print(
+            f"{group.direction.value} {group.cross_state.value} {group.executable_n} "
+            f"{_format_base_stat(group.eod.mfe.median)} "
+            f"{_format_base_stat(group.eod.mae.median)} "
+            f"{_format_base_stat(group.eod.net_excursion_balance.median)} "
+            f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Stage 10.1 EMA alignment × Stage 10.2 cross context")
+    for item in result.alignment_cross_tab:
+        print(f"{item.alignment_state.value} × {item.cross_state.value}: {item.annotation_n}")
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("Exact recency is reported without any recent-cross cutoff or optimization.")
+    print("Stage 9 setups, entries, and MFE/MAE outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_vwap_alignment_comparison(result: VwapAlignmentComparisonResult) -> None:
+    print("SPY CONTROLLED CONFIRMATION-PRICE/VWAP ALIGNMENT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"executable: {result.executable_count}  "
+        f"session-end: {result.session_end_unavailable_count}"
+    )
+    print("Population reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    print("Five-horizon comparison")
+    print(
+        "Group Horizon C/I MedianMFE MedianMAE MedianBalance MedianRatio "
+        "DeltaMFE DeltaMAE DeltaBalance"
+    )
+    for group in result.groups:
+        for horizon, delta in zip(group.horizons, group.deltas, strict=True):
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{_format_base_stat(horizon.median_mfe_mae_ratio)} "
+                f"{_format_base_stat(delta.median_mfe_delta)} "
+                f"{_format_base_stat(delta.median_mae_delta)} "
+                f"{_format_base_stat(delta.median_balance_delta)}"
+            )
+    print("Direction × VWAP state (EOD)")
+    print("Direction State n MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.direction_groups:
+        comparison = group.eod.favorable_adverse
+        print(
+            f"{group.direction.value} {group.alignment_state.value} "
+            f"{group.executable_n} {_format_base_stat(group.eod.mfe.median)} "
+            f"{_format_base_stat(group.eod.mae.median)} "
+            f"{_format_base_stat(group.eod.net_excursion_balance.median)} "
+            f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Level × VWAP state (counts and EOD)")
+    print("Level State setups executable MedianMFE MedianMAE MedianBalance")
+    for group in result.level_groups:
+        print(
+            f"{group.level_type.value} {group.alignment_state.value} "
+            f"{group.annotation_n} {group.executable_n} "
+            f"{_format_base_stat(group.eod.mfe.median)} "
+            f"{_format_base_stat(group.eod.mae.median)} "
+            f"{_format_base_stat(group.eod.net_excursion_balance.median)}"
+        )
+    print("Stage 10.1 EMA alignment × VWAP")
+    for item in result.ema_vwap_cross_tab:
+        print(f"{item.ema_state.value} × {item.vwap_state.value}: {item.annotation_n}")
+    print("Stage 10.2 cross context × VWAP")
+    for item in result.cross_context_vwap_cross_tab:
+        print(f"{item.cross_state.value} × {item.vwap_state.value}: {item.annotation_n}")
+    print("Directional VWAP-distance summaries")
+    print("Direction n Min Median Max Positive/Zero/Negative")
+    for item in result.distance_statistics:
+        direction = item.direction.value if item.direction is not None else "ALL"
+        distribution = item.distribution
+        print(
+            f"{direction} {distribution.n} "
+            f"{_format_base_stat(distribution.minimum)} "
+            f"{_format_base_stat(distribution.median)} "
+            f"{_format_base_stat(distribution.maximum)} "
+            f"{item.positive_n}/{item.zero_n}/{item.negative_n}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("Price/VWAP distance is descriptive; no threshold or strategy filter is applied.")
+    print("Stage 9 setups, entries, and MFE/MAE outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_ema9_vwap_alignment_comparison(
+    result: Ema9VwapAlignmentComparisonResult,
+) -> None:
+    print("SPY CONTROLLED EMA9/VWAP DIRECTIONAL ALIGNMENT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"executable: {result.executable_count}  "
+        f"session-end: {result.session_end_unavailable_count}"
+    )
+    print("Population reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    print("Directional EMA9/VWAP-distance summaries")
+    print("Direction n Min Median Max Positive/Zero/Negative Unavailable")
+    for item in result.distance_statistics:
+        label = item.direction.value if item.direction is not None else "ALL"
+        distribution = item.distribution
+        print(
+            f"{label} {distribution.n} "
+            f"{_format_base_stat(distribution.minimum)} "
+            f"{_format_base_stat(distribution.median)} "
+            f"{_format_base_stat(distribution.maximum)} "
+            f"{item.positive_n}/{item.zero_n}/{item.negative_n} "
+            f"{item.unavailable_n}"
+        )
+    print("Five-horizon comparison")
+    print(
+        "Group Horizon C/I MedianMFE MedianMAE MedianBalance MedianRatio "
+        "DeltaMFE DeltaMAE DeltaBalance"
+    )
+    for group in result.groups:
+        for horizon, delta in zip(group.horizons, group.deltas, strict=True):
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{_format_base_stat(horizon.median_mfe_mae_ratio)} "
+                f"{_format_base_stat(delta.median_mfe_delta)} "
+                f"{_format_base_stat(delta.median_mae_delta)} "
+                f"{_format_base_stat(delta.median_balance_delta)}"
+            )
+    print("Direction × EMA9/VWAP state (EOD)")
+    for group in result.direction_groups:
+        comparison = group.eod.favorable_adverse
+        print(
+            f"{group.direction.value} {group.alignment_state.value} "
+            f"n={group.executable_n} MFE={_format_base_stat(group.eod.mfe.median)} "
+            f"MAE={_format_base_stat(group.eod.mae.median)} "
+            f"balance={_format_base_stat(group.eod.net_excursion_balance.median)} "
+            f">/=/<={comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Price/VWAP × EMA9/VWAP")
+    for item in result.price_vwap_cross_tab:
+        print(
+            f"{item.price_vwap_state.value} × {item.ema9_vwap_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("EMA9/20 × EMA9/VWAP")
+    for item in result.ema_alignment_cross_tab:
+        print(
+            f"{item.ema_alignment_state.value} × {item.ema9_vwap_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("Prior-cross context × EMA9/VWAP")
+    for item in result.cross_context_cross_tab:
+        print(
+            f"{item.cross_state.value} × {item.ema9_vwap_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("Price/EMA9 VWAP agreement states (EOD)")
+    for item in result.agreement_groups:
+        print(
+            f"{item.state.value}: setups={item.annotation_n} "
+            f"LONG={item.long_annotation_n} SHORT={item.short_annotation_n} "
+            f"executable={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print("Level × EMA9/VWAP state (counts and EOD)")
+    for item in result.level_groups:
+        print(
+            f"{item.level_type.value} {item.alignment_state.value} "
+            f"setups={item.annotation_n} executable={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("No EMA9/VWAP cross, distance threshold, or combined filter is applied.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_ema20_vwap_alignment_comparison(
+    result: Ema20VwapAlignmentComparisonResult,
+) -> None:
+    print("SPY CONTROLLED EMA20/VWAP DIRECTIONAL ALIGNMENT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"seeds: {result.break_seed_count}  confirmed: {result.confirmed_count}  "
+        f"executable: {result.executable_count}  "
+        f"session-end: {result.session_end_unavailable_count}"
+    )
+    print("Population reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    print("Directional EMA20/VWAP-distance summaries")
+    print("Direction n Min Median Max Positive/Zero/Negative Unavailable")
+    for item in result.distance_statistics:
+        label = item.direction.value if item.direction is not None else "ALL"
+        distribution = item.distribution
+        print(
+            f"{label} {distribution.n} "
+            f"{_format_base_stat(distribution.minimum)} "
+            f"{_format_base_stat(distribution.median)} "
+            f"{_format_base_stat(distribution.maximum)} "
+            f"{item.positive_n}/{item.zero_n}/{item.negative_n} "
+            f"{item.unavailable_n}"
+        )
+    print("Five-horizon comparison")
+    print(
+        "Group Horizon C/I MedianMFE MedianMAE MedianBalance MedianRatio "
+        "DeltaMFE DeltaMAE DeltaBalance"
+    )
+    for group in result.groups:
+        for horizon, delta in zip(group.horizons, group.deltas, strict=True):
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{_format_base_stat(horizon.median_mfe_mae_ratio)} "
+                f"{_format_base_stat(delta.median_mfe_delta)} "
+                f"{_format_base_stat(delta.median_mae_delta)} "
+                f"{_format_base_stat(delta.median_balance_delta)}"
+            )
+    print("Direction × EMA20/VWAP state (EOD)")
+    for group in result.direction_groups:
+        comparison = group.eod.favorable_adverse
+        print(
+            f"{group.direction.value} {group.alignment_state.value} "
+            f"n={group.executable_n} MFE={_format_base_stat(group.eod.mfe.median)} "
+            f"MAE={_format_base_stat(group.eod.mae.median)} "
+            f"balance={_format_base_stat(group.eod.net_excursion_balance.median)} "
+            f">/=/<={comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    for title, table in (
+        ("EMA9/VWAP × EMA20/VWAP", result.ema9_vwap_cross_tab),
+        ("EMA9/20 × EMA20/VWAP", result.ema_alignment_cross_tab),
+        ("Price/VWAP × EMA20/VWAP", result.price_vwap_cross_tab),
+        ("EMA9/VWAP cross context × EMA20/VWAP", result.ema9_vwap_cross_context_cross_tab),
+    ):
+        print(title)
+        for item in table:
+            print(
+                f"{item.source_state} × {item.ema20_vwap_state.value}: "
+                f"{item.annotation_n}"
+            )
+    print("Observed EMA9/EMA20/VWAP stack states (EOD)")
+    for item in result.stack_groups:
+        print(
+            f"{item.stack_state}: setups={item.annotation_n} "
+            f"executable={item.executable_n} LONG={item.long_annotation_n} "
+            f"SHORT={item.short_annotation_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print("Level × EMA20/VWAP state (counts and EOD)")
+    for item in result.level_groups:
+        print(
+            f"{item.level_type.value} {item.alignment_state.value} "
+            f"setups={item.annotation_n} executable={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("No EMA20/VWAP cross, distance threshold, or combined filter is applied.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_combined_context_matrix(result: CombinedContextMatrixResult) -> None:
+    print("SPY STAGE 10 COMBINED CONTEXT MATRIX")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.development_session_count} "
+        f"confirmed={result.confirmed_count} executable={result.executable_count}"
+    )
+    print("BASE_ALL exact Stage 9.3 reproduction")
+    print("Horizon C/I MedianMFE MedianMAE MedianBalance")
+    for item in result.base_all_horizons:
+        print(
+            f"{item.horizon} {item.complete_n}/{item.incomplete_n} "
+            f"{_format_base_stat(item.mfe.median)} "
+            f"{_format_base_stat(item.mae.median)} "
+            f"{_format_base_stat(item.net_excursion_balance.median)}"
+        )
+    print("Marginal reconciliation")
+    for item in result.marginal_counts:
+        print(
+            f"{item.dimension} {item.state}: "
+            f"setups={item.annotation_n} executable={item.executable_n}"
+        )
+    print(
+        f"Observed exact combinations={len(result.context_groups)} "
+        f"singletons={result.singleton_group_count} "
+        f"n<=5={result.n_le_5_group_count}"
+    )
+    print("Exact combined-context rows")
+    for index, group in enumerate(result.context_groups, start=1):
+        key = group.context_key
+        levels = ",".join(
+            f"{item.level_type.value}:{item.annotation_n}"
+            for item in group.level_composition
+        )
+        sparse = "singleton" if group.singleton else ("n<=5" if group.n_le_5 else "")
+        print(
+            f"[{index}] n={group.annotation_n} exec={group.executable_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"sessions={group.session_count} base={_format_percentage(group.percentage_of_base_all)} "
+            f"sparse={sparse or 'no'} levels={levels}"
+        )
+        print(
+            f"  direction={key.direction.value} "
+            f"EMA9/20={key.ema9_20_alignment.value} "
+            f"EMA9/20-cross={key.ema9_20_cross_context.value}@{key.ema9_20_bars_since_cross} "
+            f"price/VWAP={key.price_vwap_alignment.value}"
+        )
+        print(
+            f"  EMA9/VWAP={key.ema9_vwap_alignment.value} "
+            f"EMA9/VWAP-cross={key.ema9_vwap_cross_context.value}@{key.ema9_vwap_bars_since_cross} "
+            f"EMA20/VWAP={key.ema20_vwap_alignment.value} "
+            f"EMA20/VWAP-cross={key.ema20_vwap_cross_context.value}@{key.ema20_vwap_bars_since_cross}"
+        )
+        for item in group.horizons:
+            print(
+                f"  {item.horizon} C/I={item.complete_n}/{item.incomplete_n} "
+                f"MFE={_format_base_stat(item.mfe.median)} "
+                f"MAE={_format_base_stat(item.mae.median)} "
+                f"balance={_format_base_stat(item.net_excursion_balance.median)}"
+            )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("No context combination is ranked, filtered, scored, or qualified.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_ema20_vwap_cross_context_comparison(
+    result: Ema20VwapCrossContextComparisonResult,
+) -> None:
+    print("SPY EMA20/VWAP COMPLETED-CANDLE CROSS CONTEXT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"events: {len(result.events)}  bullish: {result.bullish_event_count}  "
+        f"bearish: {result.bearish_event_count}"
+    )
+    print("Cross-event universe by session")
+    for item in result.event_sessions:
+        first = (
+            item.first_cross_timestamp.isoformat()
+            if item.first_cross_timestamp is not None
+            else "N/A"
+        )
+        last = (
+            item.last_cross_timestamp.isoformat()
+            if item.last_cross_timestamp is not None
+            else "N/A"
+        )
+        print(
+            f"{item.session_date.isoformat()} total={item.total_crosses} "
+            f"bullish={item.bullish_crosses} bearish={item.bearish_crosses} "
+            f"first={first} last={last}"
+        )
+    print("Setup reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    distribution = result.bars_since_cross_distribution
+    print(
+        "Exact bars-since-cross distribution: "
+        f"n={distribution.n} min={_format_base_stat(distribution.minimum)} "
+        f"median={_format_base_stat(distribution.median)} "
+        f"max={_format_base_stat(distribution.maximum)}"
+    )
+    print("Bars Setups Exec LONG SHORT EOD-MFE EOD-MAE EOD-Balance")
+    for item in result.recency_rows:
+        print(
+            f"{item.bars_since_cross} {item.annotation_n} {item.executable_n} "
+            f"{item.long_executable_n} {item.short_executable_n} "
+            f"{_format_base_stat(item.eod.mfe.median)} "
+            f"{_format_base_stat(item.eod.mae.median)} "
+            f"{_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print("Five-horizon comparison")
+    print("Group Horizon C/I MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.groups:
+        for horizon in group.horizons:
+            comparison = horizon.favorable_adverse
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+            )
+    print("Direction × EMA20/VWAP cross context (EOD)")
+    for item in result.direction_groups:
+        comparison = item.eod.favorable_adverse
+        print(
+            f"{item.direction.value} {item.cross_state.value} n={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)} "
+            f">/=/<={comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Current EMA20/VWAP state × cross context")
+    for item in result.ema20_vwap_state_cross_tab:
+        print(
+            f"{item.alignment_state.value} × {item.cross_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("EMA9/VWAP cross context × EMA20/VWAP cross context")
+    for item in result.ema9_ema20_vwap_cross_tab:
+        print(
+            f"{item.ema9_vwap_cross_state.value} × "
+            f"{item.ema20_vwap_cross_state.value}: {item.annotation_n}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("No recency cutoff, optimization, or cross-only strategy is applied.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_ema9_vwap_cross_context_comparison(
+    result: Ema9VwapCrossContextComparisonResult,
+) -> None:
+    print("SPY EMA9/VWAP COMPLETED-CANDLE CROSS CONTEXT COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions: {result.development_session_count}  "
+        f"events: {len(result.events)}  bullish: {result.bullish_event_count}  "
+        f"bearish: {result.bearish_event_count}"
+    )
+    print("Cross-event universe by session")
+    for item in result.event_sessions:
+        first = (
+            item.first_cross_timestamp.isoformat()
+            if item.first_cross_timestamp is not None
+            else "N/A"
+        )
+        last = (
+            item.last_cross_timestamp.isoformat()
+            if item.last_cross_timestamp is not None
+            else "N/A"
+        )
+        print(
+            f"{item.session_date.isoformat()} total={item.total_crosses} "
+            f"bullish={item.bullish_crosses} bearish={item.bearish_crosses} "
+            f"first={first} last={last}"
+        )
+    print("Setup reconciliation")
+    for group in result.groups:
+        print(
+            f"{group.name.value}: setups={group.annotation_n} "
+            f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+            f"executable={group.executable_n}"
+        )
+    distribution = result.bars_since_cross_distribution
+    print(
+        "Exact bars-since-cross distribution: "
+        f"n={distribution.n} min={_format_base_stat(distribution.minimum)} "
+        f"median={_format_base_stat(distribution.median)} "
+        f"max={_format_base_stat(distribution.maximum)}"
+    )
+    print("Bars Setups Exec LONG SHORT EOD-MFE EOD-MAE EOD-Balance")
+    for item in result.recency_rows:
+        print(
+            f"{item.bars_since_cross} {item.annotation_n} {item.executable_n} "
+            f"{item.long_executable_n} {item.short_executable_n} "
+            f"{_format_base_stat(item.eod.mfe.median)} "
+            f"{_format_base_stat(item.eod.mae.median)} "
+            f"{_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print("Five-horizon comparison")
+    print("Group Horizon C/I MedianMFE MedianMAE MedianBalance Compare(>/=/<)")
+    for group in result.groups:
+        for horizon in group.horizons:
+            comparison = horizon.favorable_adverse
+            print(
+                f"{group.name.value} {horizon.horizon} "
+                f"{horizon.complete_n}/{horizon.incomplete_n} "
+                f"{_format_base_stat(horizon.mfe.median)} "
+                f"{_format_base_stat(horizon.mae.median)} "
+                f"{_format_base_stat(horizon.net_excursion_balance.median)} "
+                f"{comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+            )
+    print("Direction × EMA9/VWAP cross context (EOD)")
+    for item in result.direction_groups:
+        comparison = item.eod.favorable_adverse
+        print(
+            f"{item.direction.value} {item.cross_state.value} n={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)} "
+            f">/=/<={comparison.mfe_greater}/{comparison.equal}/{comparison.mfe_less}"
+        )
+    print("Current EMA9/VWAP state × cross context")
+    for item in result.ema9_vwap_state_cross_tab:
+        print(
+            f"{item.alignment_state.value} × {item.cross_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("Price/VWAP state × EMA9/VWAP cross context")
+    for item in result.price_vwap_cross_tab:
+        print(
+            f"{item.price_vwap_state.value} × {item.cross_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("EMA9/20 alignment × EMA9/VWAP cross context")
+    for item in result.ema_alignment_cross_tab:
+        print(
+            f"{item.ema_alignment_state.value} × {item.cross_state.value}: "
+            f"{item.annotation_n}"
+        )
+    print("EMA9/20 cross context × EMA9/VWAP cross context")
+    for item in result.cross_system_cross_tab:
+        print(
+            f"{item.ema9_20_cross_state.value} × "
+            f"{item.ema9_vwap_cross_state.value}: {item.annotation_n}"
+        )
+    print(
+        f"WARNING: development sample = {result.development_session_count} sessions; "
+        f"{result.sample_warning}"
+    )
+    print("No recency cutoff, optimization, or cross-only strategy is applied.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
     print("Status: PASS")
 
 

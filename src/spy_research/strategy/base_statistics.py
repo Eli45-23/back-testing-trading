@@ -208,7 +208,7 @@ def _summarize_horizon(
     )
 
 
-def _group(
+def summarize_base_outcome_group(
     dimension: BaseStrategyGroupDimension,
     name: str,
     items: Sequence[SetupOutcome],
@@ -321,7 +321,7 @@ def calculate_base_strategy_statistics(
         for label, _, _ in TIME_BUCKETS
     )
     groups = tuple(
-        _group(
+        summarize_base_outcome_group(
             dimension,
             name,
             tuple(item for item in available if predicate(item)),

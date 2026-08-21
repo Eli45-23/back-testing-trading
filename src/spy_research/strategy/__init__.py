@@ -14,6 +14,7 @@ from spy_research.strategy.base_statistics import (
     BaseStrategyStatistics,
     calculate_base_strategy_statistics,
     entry_time_bucket,
+    summarize_base_outcome_group,
 )
 from spy_research.strategy.base_statistics_service import (
     BaseStrategyStatisticsService,
@@ -61,6 +62,7 @@ __all__ = [
     "calculate_setup_outcomes",
     "calculate_base_strategy_statistics",
     "entry_time_bucket",
+    "summarize_base_outcome_group",
     "interaction_identity",
     "qualify_base_price_action_candidate",
     "select_entry_reference",

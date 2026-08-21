@@ -700,6 +700,240 @@ descriptions—not realized returns, winning trades, or execution results. Stage
 9 contains no stop, target, exit, position-sizing, EMA, VWAP, ATR-tolerance,
 room, chop, or regime logic.
 
+## Stage 10.1 controlled EMA directional comparison
+
+Stage 10 comparisons never modify the frozen Stage 9 control group. Stage 10.1
+attaches one descriptive EMA label to every confirmed setup and compares the
+unchanged Stage 9.2 MFE/MAE outcomes. It does not regenerate setup qualification,
+entry references, or excursions.
+
+The EMA source is the accepted daily-reset RTH five-minute EMA9/EMA20 engine.
+For a setup known at the end of a completed confirmation candle, alignment uses
+only the indicator row keyed to `confirmation_bar_timestamp`. It never uses the
+next five-minute row or the one-minute entry timestamp. If either EMA is still
+warming up, the setup remains explicitly `EMA_UNAVAILABLE`; values are never
+backfilled from an earlier or previous session.
+
+Directional labels are frozen as follows:
+
+- LONG is `EMA_ALIGNED` only when EMA9 is strictly greater than EMA20.
+- SHORT is `EMA_ALIGNED` only when EMA9 is strictly less than EMA20.
+- Equality is `EMA_NOT_ALIGNED` for either direction.
+
+Stage 10.1 has no recent-cross requirement and no EMA slope, separation,
+expansion, distance, or ATR-normalized threshold. It does not use VWAP. The
+comparison reports `BASE_ALL`, aligned, not-aligned, and unavailable groups with
+the same complete-window Decimal statistics used by Stage 9.3, including simple
+median deltas from the baseline.
+
+```bash
+spy-research compare-ema-alignment --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. The development sample
+contains only 13 sessions, so the output is exploratory descriptive research—not
+evidence of statistical significance, stable expectancy, or a validated edge.
+
+## Stage 10.2 exact prior-cross context
+
+Stage 10.2 joins every frozen Stage 9 confirmed setup to the accepted Stage 4
+EMA9/EMA20 cross history. It does not redetect crosses. A Stage 4 cross timestamp
+is the five-minute bucket start, so its information becomes available only at
+`cross_timestamp + 5 minutes`. Only a cross from the same RTH session with
+`cross_known_at <= setup.signal_known_at` is eligible. The chronologically most
+recent eligible cross is authoritative, even when an older cross would match the
+setup direction.
+
+A cross on the setup confirmation candle is contemporaneous, not future data,
+and has `bars_since_cross = 0`. LONG setups match bullish crosses; SHORT setups
+match bearish crosses. The other direction is `OPPOSING_CROSS`, and a session
+with no eligible cross is explicitly `NO_PRIOR_CROSS`; prior sessions are never
+bridged.
+
+The annotation stores the exact integer bars since cross and minutes since cross
+completion. Stage 10.2 deliberately does not define or optimize a “recent”
+cutoff. It reuses unchanged Stage 9 entries and MFE/MAE outcomes, while the Stage
+10.1 confirmation-bar EMA alignment remains a separate descriptive dimension.
+
+```bash
+spy-research compare-ema-cross-context --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Its exact-recency rows and
+alignment cross-tab describe only the 13-session development sample. Tiny groups
+must not be interpreted as statistical significance, stable expectancy, or a
+validated strategy filter.
+
+## Stage 10.3 controlled price/VWAP comparison
+
+Stage 10.3 labels every frozen Stage 9 confirmed setup using only the completed
+five-minute confirmation candle close and the accepted Stage 3 VWAP at that exact
+same bucket timestamp. The setup is already knowable at the candle completion,
+five minutes after its bucket-start timestamp; the next five-minute bar and the
+one-minute entry reference are never used for this annotation.
+
+The VWAP source remains the daily-reset RTH HLC3/volume calculation. It starts at
+09:30 America/New_York each session and excludes premarket and overnight volume.
+LONG requires `confirmation close > VWAP`, while SHORT requires
+`confirmation close < VWAP`. Equality is `VWAP_NOT_ALIGNED`. A missing exact-row
+VWAP remains explicitly `VWAP_UNAVAILABLE` without backfill or another-bar
+fallback.
+
+Signed, absolute, and direction-normalized price/VWAP distances are retained as
+exact Decimal descriptions. Stage 10.3 defines no distance threshold, VWAP slope,
+price/VWAP cross, EMA/VWAP cross, or combined EMA+VWAP strategy filter. Stage
+10.1 EMA alignment and Stage 10.2 prior-cross context remain separate dimensions,
+and Stage 9 setups, entries, and outcomes remain unchanged.
+
+```bash
+spy-research compare-vwap-alignment --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Results describe only the
+13-session development sample and are not evidence of significance, stable
+expectancy, or a validated edge.
+
+## Stage 10.4 controlled EMA9/VWAP comparison
+
+Stage 10.4 compares accepted Stage 3 EMA9 directly with accepted Stage 3 RTH
+VWAP on the exact completed five-minute confirmation row. Both values are keyed
+to `confirmation_bar_timestamp` and are known at `signal_known_at`, five minutes
+after the bucket start. Entry-time, next-bar, later-session, and prior-session
+indicator values are never substitutes.
+
+LONG is aligned only when EMA9 is strictly greater than VWAP. SHORT is aligned
+only when EMA9 is strictly less than VWAP. Equality is not aligned. The accepted
+daily EMA9 warm-up remains intact; a missing same-row EMA9 or VWAP is explicitly
+`EMA9_VWAP_UNAVAILABLE` and is never backfilled.
+
+Signed, absolute, and direction-normalized EMA9/VWAP distances remain exact
+Decimal descriptions without cutoffs or ATR normalization. Price/VWAP from
+Stage 10.3 and EMA9/VWAP are separate dimensions, including explicit agreement
+and disagreement counts. Stage 10.4 does not inspect the prior EMA9/VWAP
+relationship and does not detect an EMA9/VWAP cross.
+
+```bash
+spy-research compare-ema9-vwap-alignment --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. Stage 9 remains immutable,
+and the 13-session development sample remains exploratory rather than evidence
+of stable expectancy or a validated strategy rule.
+
+## Stage 10.5 EMA9/VWAP cross-event context
+
+Stage 10.5 builds a reusable completed-candle event universe from the accepted
+Stage 3 EMA9 and RTH VWAP rows. A bullish event requires `EMA9[t] > VWAP[t]`
+after `EMA9[t-1] <= VWAP[t-1]`; a bearish event requires `EMA9[t] < VWAP[t]`
+after `EMA9[t-1] >= VWAP[t-1]`. Equality followed by separation counts, while a
+persistent same-side relationship does not repeat events.
+
+Detection resets every RTH session and requires valid EMA9 and VWAP on adjacent
+same-session five-minute rows. EMA9 warm-up is preserved without backfill or an
+overnight bridge. The event timestamp is the five-minute bucket start, and the
+event becomes known only at `cross_timestamp + 5 minutes`.
+
+Each frozen Stage 9 setup receives only the latest same-session event satisfying
+`cross_known_at <= signal_known_at`. A cross on the confirmation candle is valid
+with zero bars of recency. LONG maps to bullish and SHORT to bearish; the latest
+opposite event remains authoritative even when an older matching event exists.
+No prior event is explicit, and exact bars/minutes since cross are retained.
+
+```bash
+spy-research compare-ema9-vwap-cross-context \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+Current EMA9/VWAP alignment and prior EMA9/VWAP cross context remain separate
+descriptive concepts. The command is offline, read-only, and non-persistent. It
+defines no recent-cross cutoff, optimization, or cross-only strategy, and the
+13-session sample is not evidence of stable expectancy or a validated edge.
+
+## Stage 10.6 controlled EMA20/VWAP comparison
+
+Stage 10.6 compares accepted Stage 3 EMA20 directly with accepted Stage 3 RTH
+VWAP on the exact completed five-minute confirmation row. Both values are keyed
+to `confirmation_bar_timestamp`; signal-known time and entry time never select a
+later indicator row. The accepted daily EMA20 warm-up remains intact, and a
+missing same-row EMA20 or VWAP is explicitly `EMA20_VWAP_UNAVAILABLE` without
+backfill, alternate-row lookup, or previous-session fallback.
+
+LONG is aligned only when EMA20 is strictly above VWAP. SHORT is aligned only
+when EMA20 is strictly below VWAP. Equality is not aligned. Signed, absolute,
+and direction-normalized EMA20/VWAP distances use exact Decimal arithmetic with
+no cutoff or ATR normalization.
+
+EMA20/VWAP remains separate from EMA9/VWAP. The report preserves their full
+cross-tab and every naturally observed descending EMA9/EMA20/VWAP stack order,
+including equality or unavailable values if present. Stack states are
+descriptive annotations only and do not qualify setups or rank configurations.
+
+```bash
+spy-research compare-ema20-vwap-alignment \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. It does not detect
+EMA20/VWAP crosses, create combined confirmation rules, or alter the frozen
+Stage 9 setups, entries, and outcomes. The 13-session development sample remains
+exploratory rather than evidence of stable expectancy or a validated edge.
+
+## Stage 10.7 EMA20/VWAP cross-event context
+
+Stage 10.7 detects completed-candle EMA20/VWAP reversals from accepted Stage 3
+rows. A bullish event requires `EMA20[t] > VWAP[t]` after
+`EMA20[t-1] <= VWAP[t-1]`; a bearish event requires `EMA20[t] < VWAP[t]` after
+`EMA20[t-1] >= VWAP[t-1]`. Equality followed by separation counts, while a
+persistent relationship does not produce repeated events.
+
+Detection requires adjacent valid RTH five-minute rows in the same session.
+EMA20 warm-up remains unchanged, sessions never bridge overnight, and an event
+on the bucket beginning at `cross_timestamp` becomes known only at
+`cross_timestamp + 5 minutes`.
+
+Each frozen Stage 9 setup receives the latest same-session event satisfying
+`cross_known_at <= signal_known_at`. LONG matches bullish and SHORT matches
+bearish. A cross on the confirmation candle is valid with zero bars of recency;
+future events and events from other sessions cannot annotate the setup.
+
+```bash
+spy-research compare-ema20-vwap-cross-context \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, and non-persistent. It reports the event
+universe, matching/opposing/no-prior populations, exact recency, unchanged
+five-horizon outcomes, and EMA9/VWAP-versus-EMA20/VWAP cross context. It defines
+no cutoff, score, filter, optimization, or trading rule.
+
+## Stage 10.8 combined context matrix
+
+Stage 10.8 joins the accepted Stage 10.1–10.7 annotations by immutable Stage 9
+setup identity. Each record retains direction, level, confirmation and
+signal-known timestamps, EMA9/EMA20 alignment and prior-cross context,
+price/VWAP alignment, EMA9/VWAP alignment and prior-cross context, and
+EMA20/VWAP alignment and prior-cross context. All three cross systems preserve
+their exact bars-since-cross value or explicit no-prior state.
+
+Exact matrix groups use direction, all seven context states, and all three
+recencies. Level and session are reported as composition and coverage; they are
+not qualification fields. Every group retains the unchanged Stage 9 outcomes at
+5, 15, 30, and 60 minutes and EOD, including complete and incomplete counts.
+
+The report reconciles every marginal state to its accepted source stage and
+reproduces Stage 9.3 `BASE_ALL` exactly. It also exposes percentage of BASE_ALL,
+singletons, and groups with `n <= 5`. These are neutral sparsity disclosures,
+not significance tests or minimum-sample rules.
+
+```bash
+spy-research compare-combined-context-matrix \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The matrix is offline, read-only, deterministic, and non-persistent. It does
+not label combinations as good, bad, trend, transition, chop, or qualified; it
+does not rank, score, filter, optimize, or create a trading strategy.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -755,6 +989,7 @@ spy-research atr-tolerance --start 2026-08-19 --end 2026-08-19
 spy-research base-setups --start 2026-08-19 --end 2026-08-19
 spy-research base-setup-outcomes --start 2026-08-19 --end 2026-08-19
 spy-research base-strategy-stats --start 2026-08-03 --end 2026-08-19
+spy-research compare-ema-alignment --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
