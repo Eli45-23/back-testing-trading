@@ -934,6 +934,188 @@ The matrix is offline, read-only, deterministic, and non-persistent. It does
 not label combinations as good, bad, trend, transition, chop, or qualified; it
 does not rank, score, filter, optimize, or create a trading strategy.
 
+## Stage 10.9 market-condition feature measurements
+
+Stage 10.9 measures chart conditions at each frozen Stage 9 confirmation without
+classifying a regime. Every rolling window ends at the completed confirmation
+candle, contains exactly the latest 6, 12, or 24 same-session candles, and never
+bridges an RTH session boundary. Future candles and entry data are not inputs.
+
+The immutable annotation contains absolute EMA9/EMA20 separation; separation
+divided by confirmation-row ATR14; per-bar EMA9, EMA20, and VWAP slopes over 1,
+2, and 3 bars; EMA9/EMA20, EMA9/VWAP, and EMA20/VWAP cross counts; price/VWAP
+side-change counts; rolling high-low range; range divided by ATR14; directional
+efficiency; candle-range overlap; close-direction alternation; and absolute
+confirmation-close, EMA9, and EMA20 distances from VWAP in ATR14 units.
+
+For an N-bar window, directional efficiency is
+`abs(close[-1] - close[0]) / sum(abs(close[i] - close[i-1]))`. A zero path is
+unavailable. Range overlap is the fraction of the N-1 adjacent bar pairs whose
+closed high-low intervals intersect. Close-direction alternation is the fraction
+of the N-2 adjacent move pairs with nonzero opposite signs. Crosses and strict
+price/VWAP side changes are counted only between adjacent rows inside the exact
+window; equality itself is not a side change. Slopes are
+`(value[t] - value[t-k]) / k` per completed bar.
+
+ATR-normalized fields use only ATR14 on the confirmation row. Missing ATR,
+nonpositive ATR, indicator warm-up, an insufficient same-session window, or a
+zero directional path remains explicitly unavailable—there is no backfill.
+All applicable calculations use Decimal arithmetic.
+
+```bash
+spy-research market-condition-features \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The offline, read-only report gives each feature's available and unavailable
+count, minimum, quartiles, median, and maximum. Q1-Q4 boundaries use deterministic
+linear `(n-1)` sample percentiles and are stored only in the report. Each quartile
+reuses unchanged Stage 9 outcomes and reports setup/executable counts, direction
+composition, session coverage, and median MFE, MAE, and MFE-minus-MAE at all five
+horizons. Quartiles are descriptive sample partitions, not persistent settings,
+strategy thresholds, ranks, filters, scores, or evidence of causation.
+
+## Stage 11.1 predeclared market-regime hypotheses
+
+Stage 11.1 projects the accepted Stage 10.9 confirmation-time measurements into
+a deliberately small set of research labels. Assignment is outcome-blind: the
+classifier accepts only an immutable Stage 10.9 annotation and the exact
+quartile boundaries already stored in its report. Outcomes are joined only
+after every label has been assigned.
+
+The individual hypotheses are frozen as follows:
+
+- 24-bar directional efficiency: Q4 `HIGH_EFFICIENCY`, Q2-Q3
+  `MID_EFFICIENCY`, Q1 `LOW_EFFICIENCY`.
+- EMA9/EMA20 separation divided by ATR14: Q4 `WIDE_SEPARATION`, Q2-Q3
+  `MID_SEPARATION`, Q1 `TIGHT_SEPARATION`.
+- 24-bar close-direction alternation: Q4 `HIGH_ALTERNATION`, Q2-Q3
+  `MID_ALTERNATION`, Q1 `LOW_ALTERNATION`.
+- Confirmation-close distance from VWAP divided by ATR14: Q4
+  `FAR_FROM_VWAP`, Q2-Q3 `MID_DISTANCE`, Q1 `NEAR_VWAP`.
+
+Unavailable Stage 10.9 values remain `UNAVAILABLE`. The four accepted 24-bar
+cross-activity measurements—EMA9/EMA20, EMA9/VWAP, EMA20/VWAP, and strict
+price/VWAP side changes—retain both their exact integer count categories and a
+separate neutral Q1/Q2-Q3/Q4 description. No new count cutoff is introduced.
+
+Exactly two combined hypotheses are declared:
+
+```text
+TREND_LIKE_A = HIGH_EFFICIENCY and WIDE_SEPARATION
+CHOP_LIKE_A  = LOW_EFFICIENCY and HIGH_ALTERNATION
+```
+
+All three inputs used by the combined hypothesis—efficiency, separation, and
+alternation—must be available; otherwise the combined state is `UNAVAILABLE`.
+An available setup matching neither declaration is `OTHER`. The names are
+hypotheses only, not market facts, setup qualifications, or trading filters.
+
+```bash
+spy-research compare-regime-hypotheses \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. It reports
+unchanged five-horizon Stage 9 outcomes, direction/level/session composition,
+session concentration, and overlap with accepted Stage 10 alignment and cross
+context. States below 10 executable setups or five represented sessions are
+flagged as sparse disclosures. The 13-session development sample is not used
+for significance tests, threshold searches, optimization, promotion, scoring,
+or filtering.
+
+## Stage 11.2 objective room to the next level
+
+Stage 11.2 measures directional space from each frozen Stage 9 confirmation
+close to the nearest known objective Stage 7 level. The candidate universe is
+limited to PDH, PDL, PDC, PMH, PML, ORH5, and ORL5. Previous-day and finalized
+premarket values are available from the XNYS RTH open; ORH5/ORL5 retain their
+accepted `available_from_timestamp` at 09:35 America/New_York. A level with an
+availability timestamp after `setup.signal_known_at` is never eligible.
+
+For LONG, the selector chooses the minimum eligible level price strictly above
+the confirmation close. For SHORT, it chooses the maximum eligible price
+strictly below. Equality is excluded, and the triggering level type is removed
+from the directional candidate set. Multiple level types at the selected price
+are retained in deterministic `LevelType` order. No directional candidate is
+reported as `OPEN_ENDED`; no HOD, LOD, target, or fabricated level is substituted.
+
+Confirmation room is `next - confirmation` for LONG and `confirmation - next`
+for SHORT. The accepted Stage 9.2 entry reference never selects the next level;
+when available, its separate descriptive value reports the remaining signed
+distance to that already selected confirmation-time level. ATR normalization
+uses only accepted ATR14 at the confirmation timestamp. Missing or nonpositive
+ATR remains unavailable without later substitution.
+
+The fixed confirmation-room/ATR buckets are:
+
+```text
+[0, 0.5)   LT_0_5_ATR
+[0.5, 1.0) ATR_0_5_TO_1_0
+[1.0, 1.5) ATR_1_0_TO_1_5
+[1.5, 2.0) ATR_1_5_TO_2_0
+[2.0, 3.0] ATR_2_0_TO_3_0
+> 3.0      GT_3_0_ATR
+```
+
+`OPEN_ENDED` and `UNAVAILABLE_ATR` remain separate. Stacked-level descriptions
+count eligible directional level records at distances less than or equal to
+0.5 and 1.0 confirmation-time ATR; tied level types count separately. These
+counts are not congestion scores.
+
+```bash
+spy-research compare-room-to-next-level \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. It reports
+raw and normalized distributions, unchanged Stage 9 outcomes by fixed bucket,
+trigger-to-next-level counts, and count/EOD cross-tabs against accepted Stage
+10 alignment and Stage 11.1 regime context. Nothing in the report filters,
+ranks, scores, targets, or changes a setup.
+
+## Stage 11.3 confirmed five-minute swing structure
+
+Stage 11.3 detects one frozen swing definition from the accepted Stage 2 RTH
+five-minute candles. Detection resets at every session and uses exactly two
+left bars and two right bars. A swing high requires the pivot high to be
+strictly greater than both left highs and greater than or equal to both right
+highs. A swing low requires the pivot low to be strictly less than both left
+lows and less than or equal to both right lows. Thus a tie on the left rejects
+the pivot while a tie on the right is accepted. Pivot width is not optimized.
+
+A candle timestamp identifies the start of its five-minute interval. The pivot
+candle completes at `t+5`, the first right candle at `t+10`, and the second right
+candle at `t+15`; consequently `pivot_known_at = pivot_timestamp + 15 minutes`.
+A setup can see only same-session swings whose `pivot_known_at` is no later than
+its frozen `signal_known_at`. Prior-session, next-session, and future-confirmed
+swings never participate.
+
+The latest two visible highs classify as `HIGHER_HIGH`, `LOWER_HIGH`, or
+`EQUAL_HIGH`; the latest two lows classify as `HIGHER_LOW`, `LOWER_LOW`, or
+`EQUAL_LOW`. Missing either pair is `UNAVAILABLE`. `BULLISH_STRUCTURE` means
+higher high plus higher low, `BEARISH_STRUCTURE` means lower high plus lower
+low, and every other fully available pair is `MIXED_STRUCTURE`. Mixed is not a
+synonym for chop. LONG/bullish and SHORT/bearish are separately annotated as
+`STRUCTURE_ALIGNED`; this is descriptive and cannot qualify a setup.
+
+Absolute confirmation-close distances use only the latest visible swing high
+and low. ATR-normalized distances use only accepted ATR14 at the confirmation
+timestamp; later ATR is never substituted. A separate structural-room field
+compares the latest directional swing with the already-selected Stage 11.2
+objective level without changing that level or creating a target.
+
+```bash
+spy-research compare-market-structure \
+  --start 2026-08-03 --end 2026-08-19
+```
+
+The offline, read-only, non-persistent report includes the complete confirmed
+swing universe, structure and direction-agreement populations, unchanged
+five-horizon Stage 9 outcomes, and count/EOD cross-tabs against accepted regime,
+room, and alignment context. It does not create alternative pivot widths,
+filters, scores, trades, stops, targets, exits, or persistent output.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -990,6 +1172,10 @@ spy-research base-setups --start 2026-08-19 --end 2026-08-19
 spy-research base-setup-outcomes --start 2026-08-19 --end 2026-08-19
 spy-research base-strategy-stats --start 2026-08-03 --end 2026-08-19
 spy-research compare-ema-alignment --start 2026-08-03 --end 2026-08-19
+spy-research market-condition-features --start 2026-08-03 --end 2026-08-19
+spy-research compare-regime-hypotheses --start 2026-08-03 --end 2026-08-19
+spy-research compare-room-to-next-level --start 2026-08-03 --end 2026-08-19
+spy-research compare-market-structure --start 2026-08-03 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

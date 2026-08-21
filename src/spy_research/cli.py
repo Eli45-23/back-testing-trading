@@ -117,6 +117,18 @@ from spy_research.strategy.comparisons import (
     CombinedContextInputError,
     CombinedContextMatrixResult,
     CombinedContextMatrixService,
+    MarketConditionFeatureResult,
+    MarketConditionFeatureService,
+    MarketConditionInputError,
+    RegimeHypothesisComparisonResult,
+    RegimeHypothesisComparisonService,
+    RegimeHypothesisInputError,
+    RoomToLevelComparisonResult,
+    RoomToLevelComparisonService,
+    RoomToLevelInputError,
+    MarketStructureComparisonResult,
+    MarketStructureComparisonService,
+    MarketStructureInputError,
     EmaAlignmentComparisonResult,
     EmaAlignmentComparisonService,
     Ema9VwapAlignmentComparisonResult,
@@ -910,6 +922,66 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     combined_context.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    market_condition = subparsers.add_parser(
+        "market-condition-features",
+        help="measure confirmation-time market conditions without classifying them",
+    )
+    market_condition.add_argument("--start", type=parse_iso_date, required=True)
+    market_condition.add_argument("--end", type=parse_iso_date, required=True)
+    market_condition.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    market_condition.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    market_condition.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    regime_hypotheses = subparsers.add_parser(
+        "compare-regime-hypotheses",
+        help="compare predeclared Stage 11.1 research labels without filtering",
+    )
+    regime_hypotheses.add_argument("--start", type=parse_iso_date, required=True)
+    regime_hypotheses.add_argument("--end", type=parse_iso_date, required=True)
+    regime_hypotheses.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    regime_hypotheses.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    regime_hypotheses.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    room_to_level = subparsers.add_parser(
+        "compare-room-to-next-level",
+        help="measure objective directional room without filtering setups",
+    )
+    room_to_level.add_argument("--start", type=parse_iso_date, required=True)
+    room_to_level.add_argument("--end", type=parse_iso_date, required=True)
+    room_to_level.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    room_to_level.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    room_to_level.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    market_structure = subparsers.add_parser(
+        "compare-market-structure",
+        help="measure confirmed 2x2 five-minute swing structure without filtering",
+    )
+    market_structure.add_argument("--start", type=parse_iso_date, required=True)
+    market_structure.add_argument("--end", type=parse_iso_date, required=True)
+    market_structure.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    market_structure.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    market_structure.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -1746,6 +1818,117 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to build combined context matrix: {exc}", file=sys.stderr)
             return 2
         _print_combined_context_matrix(result)
+        return 0
+
+    if args.command == "market-condition-features":
+        try:
+            config = load_research_config(args.config)
+            result = MarketConditionFeatureService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (MarketConditionInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to measure market conditions: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to measure market conditions: {exc}", file=sys.stderr)
+            return 2
+        _print_market_condition_features(result)
+        return 0
+
+    if args.command == "compare-regime-hypotheses":
+        try:
+            config = load_research_config(args.config)
+            result = RegimeHypothesisComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (RegimeHypothesisInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare regime hypotheses: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare regime hypotheses: {exc}", file=sys.stderr)
+            return 2
+        _print_regime_hypothesis_comparison(result)
+        return 0
+
+    if args.command == "compare-room-to-next-level":
+        try:
+            config = load_research_config(args.config)
+            result = RoomToLevelComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (RoomToLevelInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare room to next level: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare room to next level: {exc}", file=sys.stderr)
+            return 2
+        _print_room_to_level_comparison(result)
+        return 0
+
+    if args.command == "compare-market-structure":
+        try:
+            config = load_research_config(args.config)
+            result = MarketStructureComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (MarketStructureInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to compare market structure: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare market structure: {exc}", file=sys.stderr)
+            return 2
+        _print_market_structure_comparison(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -3025,6 +3208,323 @@ def _print_combined_context_matrix(result: CombinedContextMatrixResult) -> None:
         f"{result.sample_warning}"
     )
     print("No context combination is ranked, filtered, scored, or qualified.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_market_condition_features(
+    result: MarketConditionFeatureResult,
+) -> None:
+    print("SPY STAGE 10.9 MARKET-CONDITION FEATURE MEASUREMENTS")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.development_session_count} "
+        f"confirmed={result.confirmed_count} executable={result.executable_count}"
+    )
+    print("BASE_ALL exact Stage 9.3 reproduction")
+    for item in result.base_all_horizons:
+        print(
+            f"{item.horizon} C/I={item.complete_n}/{item.incomplete_n} "
+            f"MFE={_format_base_stat(item.mfe.median)} "
+            f"MAE={_format_base_stat(item.mae.median)} "
+            f"balance={_format_base_stat(item.net_excursion_balance.median)}"
+        )
+    for report in result.feature_reports:
+        summary = report.distribution.distribution
+        print(f"FEATURE {report.feature_name}")
+        print(
+            f"n={summary.n} unavailable={report.distribution.unavailable_n} "
+            f"min={_format_base_stat(summary.minimum)} "
+            f"p25={_format_base_stat(summary.p25)} "
+            f"median={_format_base_stat(summary.median)} "
+            f"p75={_format_base_stat(summary.p75)} "
+            f"max={_format_base_stat(summary.maximum)}"
+        )
+        for group in report.quartiles:
+            print(
+                f"  {group.quartile.value} "
+                f"({ _format_base_stat(group.lower_exclusive)}, "
+                f"{_format_base_stat(group.upper_inclusive)}] "
+                f"setups={group.annotation_n} executable={group.executable_n} "
+                f"LONG={group.long_annotation_n} SHORT={group.short_annotation_n} "
+                f"sessions={group.session_count}"
+            )
+            for horizon in group.horizons:
+                print(
+                    f"    {horizon.horizon} C/I={horizon.complete_n}/"
+                    f"{horizon.incomplete_n} "
+                    f"MFE={_format_base_stat(horizon.mfe.median)} "
+                    f"MAE={_format_base_stat(horizon.mae.median)} "
+                    f"balance={_format_base_stat(horizon.net_excursion_balance.median)}"
+                )
+    print(f"WARNING: {result.sample_warning}")
+    print("No trend/chop label, score, threshold, filter, or qualification is applied.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_regime_hypothesis_comparison(
+    result: RegimeHypothesisComparisonResult,
+) -> None:
+    print("SPY STAGE 11.1 PREDECLARED MARKET-REGIME HYPOTHESES")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.development_session_count} "
+        f"confirmed={result.confirmed_count} executable={result.executable_count}"
+    )
+    print(f"Frozen Stage 10.9 source hash: {result.source_stage10_9_hash}")
+    print("Frozen Stage 10.9 quartile boundaries")
+    for item in result.boundaries:
+        print(
+            f"{item.feature_name}: Q1<={_format_base_stat(item.q1_upper)} "
+            f"Q2<={_format_base_stat(item.q2_upper)} "
+            f"Q3<={_format_base_stat(item.q3_upper)}"
+        )
+    print("BASE_ALL exact Stage 9.3 reproduction")
+    for item in result.base_all_horizons:
+        print(
+            f"{item.horizon} C/I={item.complete_n}/{item.incomplete_n} "
+            f"MFE={_format_base_stat(item.mfe.median)} "
+            f"MAE={_format_base_stat(item.mae.median)} "
+            f"balance={_format_base_stat(item.net_excursion_balance.median)} "
+            f">/=/<={item.favorable_adverse.mfe_greater}/"
+            f"{item.favorable_adverse.equal}/"
+            f"{item.favorable_adverse.mfe_less} "
+            f"ratio={_format_base_stat(item.median_mfe_mae_ratio)}"
+        )
+    print("Individual and combined hypothesis states")
+    for group in result.groups:
+        levels = ",".join(
+            f"{item.level_type.value}:{item.annotation_n}"
+            for item in group.level_composition
+        )
+        sessions = ",".join(
+            f"{item.session_date.isoformat()}:{item.annotation_n}"
+            for item in group.session_composition
+        )
+        warnings = []
+        if group.fewer_than_10_executable:
+            warnings.append("exec<10")
+        if group.fewer_than_5_sessions:
+            warnings.append("sessions<5")
+        print(
+            f"{group.hypothesis} {group.state}: setups={group.annotation_n} "
+            f"executable={group.executable_n} LONG={group.long_annotation_n} "
+            f"SHORT={group.short_annotation_n} sessions={group.session_count} "
+            f"max-session={group.max_session_annotation_n}/"
+            f"{_format_base_stat(group.max_session_percentage)}% "
+            f"warnings={','.join(warnings) or 'none'}"
+        )
+        print(f"  levels={levels or 'none'} sessions={sessions or 'none'}")
+        for horizon in group.horizons:
+            print(
+                f"  {horizon.horizon} C/I={horizon.complete_n}/"
+                f"{horizon.incomplete_n} "
+                f"MFE={_format_base_stat(horizon.mfe.median)} "
+                f"MAE={_format_base_stat(horizon.mae.median)} "
+                f"balance={_format_base_stat(horizon.net_excursion_balance.median)} "
+                f">/=/<={horizon.favorable_adverse.mfe_greater}/"
+                f"{horizon.favorable_adverse.equal}/"
+                f"{horizon.favorable_adverse.mfe_less} "
+                f"ratio={_format_base_stat(horizon.median_mfe_mae_ratio)}"
+            )
+    print("Combined-label overlap with accepted Stage 10 context")
+    for item in result.context_overlaps:
+        print(
+            f"{item.combined_state.value} {item.context_dimension} "
+            f"{item.context_state}: setups={item.annotation_n} "
+            f"executable={item.executable_n}"
+        )
+    print(f"WARNING: {result.sample_warning}")
+    print("Sparse warnings are disclosures, not minimum-sample filters.")
+    print("No hypothesis is promoted, scored, optimized, or used to qualify a setup.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_room_to_level_comparison(result: RoomToLevelComparisonResult) -> None:
+    print("SPY STAGE 11.2 OBJECTIVE ROOM-TO-NEXT-LEVEL COMPARISON")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.development_session_count} "
+        f"confirmed={result.confirmed_count} executable={result.executable_count}"
+    )
+    print(f"Frozen Stage 11.1 source hash: {result.source_stage11_1_hash}")
+    print("BASE_ALL exact Stage 9.3 reproduction")
+    for item in result.base_all_horizons:
+        print(
+            f"{item.horizon} C/I={item.complete_n}/{item.incomplete_n} "
+            f"MFE={_format_base_stat(item.mfe.median)} "
+            f"MAE={_format_base_stat(item.mae.median)} "
+            f"balance={_format_base_stat(item.net_excursion_balance.median)}"
+        )
+    print("Room distributions")
+    for item in result.distributions:
+        summary = item.distribution
+        print(
+            f"{item.metric} {item.direction}: n={summary.n} "
+            f"open-ended={item.open_ended_n} unavailable={item.unavailable_n} "
+            f"min={_format_base_stat(summary.minimum)} "
+            f"Q1={_format_base_stat(summary.p25)} "
+            f"median={_format_base_stat(summary.median)} "
+            f"Q3={_format_base_stat(summary.p75)} "
+            f"max={_format_base_stat(summary.maximum)}"
+        )
+    print("Fixed room/ATR buckets")
+    for group in result.bucket_statistics:
+        levels = ",".join(
+            f"{item.level_type.value}:{item.annotation_n}"
+            for item in group.level_composition
+        )
+        print(
+            f"{group.bucket.value}: setups={group.annotation_n} "
+            f"executable={group.executable_n} LONG={group.long_annotation_n} "
+            f"SHORT={group.short_annotation_n} sessions={group.session_count} "
+            f"levels={levels or 'none'}"
+        )
+        for horizon in group.horizons:
+            print(
+                f"  {horizon.horizon} C/I={horizon.complete_n}/"
+                f"{horizon.incomplete_n} "
+                f"MFE={_format_base_stat(horizon.mfe.median)} "
+                f"MAE={_format_base_stat(horizon.mae.median)} "
+                f"balance={_format_base_stat(horizon.net_excursion_balance.median)} "
+                f">/=/<={horizon.favorable_adverse.mfe_greater}/"
+                f"{horizon.favorable_adverse.equal}/"
+                f"{horizon.favorable_adverse.mfe_less} "
+                f"ratio={_format_base_stat(horizon.median_mfe_mae_ratio)}"
+            )
+    print("Trigger → nearest-level transitions")
+    for item in result.transitions:
+        target = (
+            "+".join(level.value for level in item.next_level_types)
+            if item.next_level_types
+            else item.next_level_availability.value
+        )
+        print(f"{item.triggering_level_type.value} → {target}: {item.count}")
+    print("Room-bucket cross-tabs (counts and EOD medians)")
+    for item in result.cross_tabs:
+        print(
+            f"{item.bucket.value} {item.dimension} {item.state}: "
+            f"setups={item.annotation_n} executable={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    print(f"WARNING: {result.sample_warning}")
+    print("No room bucket, transition, or stacked-level count qualifies a setup.")
+    print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_market_structure_comparison(
+    result: MarketStructureComparisonResult,
+) -> None:
+    print("SPY STAGE 11.3 CONFIRMED FIVE-MINUTE MARKET STRUCTURE")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.development_session_count} "
+        f"confirmed={result.confirmed_count} executable={result.executable_count}"
+    )
+    print(
+        f"Confirmed swings: highs={result.total_confirmed_swing_highs} "
+        f"lows={result.total_confirmed_swing_lows}"
+    )
+    print(f"Frozen Stage 11.1 source hash: {result.source_stage11_1_hash}")
+    print(f"Frozen Stage 11.2 source hash: {result.source_stage11_2_hash}")
+    print("Swing universe by RTH session")
+    for item in result.swing_sessions:
+        print(
+            f"{item.session_date.isoformat()} highs={item.swing_high_count} "
+            f"lows={item.swing_low_count} "
+            f"earliest-known={_format_timestamp(item.earliest_pivot_known_at)} "
+            f"latest-known={_format_timestamp(item.latest_pivot_known_at)}"
+        )
+    print("BASE_ALL exact Stage 9.3 reproduction")
+    for item in result.base_all_horizons:
+        print(
+            f"{item.horizon} C/I={item.complete_n}/{item.incomplete_n} "
+            f"MFE={_format_base_stat(item.mfe.median)} "
+            f"MAE={_format_base_stat(item.mae.median)} "
+            f"balance={_format_base_stat(item.net_excursion_balance.median)}"
+        )
+    print("Structure populations and unchanged outcomes")
+    for group in result.groups:
+        levels = ",".join(
+            f"{item.level_type.value}:{item.annotation_n}"
+            for item in group.level_composition
+        )
+        print(
+            f"{group.dimension} {group.state}: setups={group.annotation_n} "
+            f"executable={group.executable_n} LONG={group.long_annotation_n} "
+            f"SHORT={group.short_annotation_n} sessions={group.session_count} "
+            f"levels={levels or 'none'}"
+        )
+        for horizon in group.horizons:
+            print(
+                f"  {horizon.horizon} C/I={horizon.complete_n}/"
+                f"{horizon.incomplete_n} "
+                f"MFE={_format_base_stat(horizon.mfe.median)} "
+                f"MAE={_format_base_stat(horizon.mae.median)} "
+                f"balance={_format_base_stat(horizon.net_excursion_balance.median)} "
+                f">/=/<={horizon.favorable_adverse.mfe_greater}/"
+                f"{horizon.favorable_adverse.equal}/"
+                f"{horizon.favorable_adverse.mfe_less} "
+                f"ratio={_format_base_stat(horizon.median_mfe_mae_ratio)}"
+            )
+    print("Structure cross-tabs (counts and EOD medians)")
+    for item in result.cross_tabs:
+        print(
+            f"{item.structure_state.value} {item.context_dimension} "
+            f"{item.context_state}: setups={item.annotation_n} "
+            f"executable={item.executable_n} "
+            f"MFE={_format_base_stat(item.eod.mfe.median)} "
+            f"MAE={_format_base_stat(item.eod.mae.median)} "
+            f"balance={_format_base_stat(item.eod.net_excursion_balance.median)}"
+        )
+    audit_date = date(2026, 8, 19)
+    audits = tuple(
+        item for item in result.audit_rows if item.annotation.session_date == audit_date
+    )
+    if audits:
+        print("August 19 setup audit")
+    for item in audits:
+        annotation = item.annotation
+        latest_high = annotation.latest_confirmed_swing_high
+        previous_high = annotation.previous_confirmed_swing_high
+        latest_low = annotation.latest_confirmed_swing_low
+        previous_low = annotation.previous_confirmed_swing_low
+
+        def swing_text(swing):
+            if swing is None:
+                return "N/A"
+            return (
+                f"{_format_base_stat(swing.swing_price)}@"
+                f"{swing.pivot_timestamp.isoformat()} "
+                f"known={swing.pivot_known_at.isoformat()}"
+            )
+
+        print(
+            f"{annotation.setup_identity} {annotation.direction.value} "
+            f"known={annotation.signal_known_at.isoformat()} "
+            f"high={swing_text(latest_high)} previous-high={swing_text(previous_high)} "
+            f"low={swing_text(latest_low)} previous-low={swing_text(previous_low)} "
+            f"states={annotation.high_structure.value}/"
+            f"{annotation.low_structure.value}/"
+            f"{annotation.combined_structure.value}/"
+            f"{annotation.direction_agreement.value} "
+            f"close={_format_base_stat(annotation.confirmation_close)} "
+            f"dist-high={_format_base_stat(annotation.confirmation_close_to_latest_swing_high)} "
+            f"dist-low={_format_base_stat(annotation.confirmation_close_to_latest_swing_low)} "
+            f"atr-high={_format_base_stat(annotation.distance_to_swing_high_in_atr)} "
+            f"atr-low={_format_base_stat(annotation.distance_to_swing_low_in_atr)} "
+            f"room-context={annotation.structural_room_state.value} "
+            f"regime={item.regime_hypothesis.value} room={item.room_bucket.value} "
+            f"EOD={_format_base_stat(item.eod_mfe)}/{_format_base_stat(item.eod_mae)}"
+        )
+    print(f"WARNING: {result.sample_warning}")
+    print("MIXED_STRUCTURE is not labeled chop.")
+    print("No structure state, agreement, or swing distance qualifies a setup.")
     print("Stage 9 setups, entries, and outcomes remain unchanged.")
     print("Status: PASS")
 
