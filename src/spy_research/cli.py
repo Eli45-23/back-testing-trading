@@ -110,13 +110,17 @@ from spy_research.strategy import (
     EntryStatus,
     ExpandedStabilityReport,
     ExpandedStabilityService,
+    ControlledVariantSelectionReport,
+    ControlledVariantSelectionService,
     SetupOutcomeInputError,
     SetupOutcomeResult,
     SetupOutcomeService,
     SetupDirection,
     StabilityInputError,
+    VariantSelectionInputError,
     ValidationPartition,
     stability_report_hash,
+    controlled_variant_selection_hash,
 )
 from spy_research.strategy.comparisons import (
     CombinedContextInputError,
@@ -1003,6 +1007,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     expanded_stability.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    variant_selection = subparsers.add_parser(
+        "select-stage13-variants",
+        help="select only the ten frozen Stage 13 research candidates",
+    )
+    variant_selection.add_argument("--start", type=parse_iso_date, required=True)
+    variant_selection.add_argument("--end", type=parse_iso_date, required=True)
+    variant_selection.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    variant_selection.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    variant_selection.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -1978,6 +1998,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to validate expanded stability: {exc}", file=sys.stderr)
             return 2
         _print_expanded_stability(result)
+        return 0
+
+    if args.command == "select-stage13-variants":
+        try:
+            config = load_research_config(args.config)
+            result = ControlledVariantSelectionService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (VariantSelectionInputError, StabilityInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to select Stage 13 variants: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to select Stage 13 variants: {exc}", file=sys.stderr)
+            return 2
+        _print_controlled_variant_selection(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -3713,6 +3761,114 @@ def _print_expanded_stability(result: ExpandedStabilityReport) -> None:
         )
     print(f"Deterministic Stage 12.2 hash: {stability_report_hash(result)}")
     print("No strategy qualification, ranking, optimization, or trading metric added.")
+    print("Status: PASS")
+
+
+def _print_controlled_variant_selection(
+    result: ControlledVariantSelectionReport,
+) -> None:
+    print("SPY STAGE 12.3 CONTROLLED STRATEGY-VARIANT SELECTION")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"setups={result.expanded_setup_n} executable={result.expanded_executable_n}"
+    )
+    print(
+        f"Development: {result.development_start.isoformat()} → "
+        f"{result.development_end.isoformat()}"
+    )
+    print(f"CAVEAT: {result.caveat}")
+    for evaluation in result.evaluations:
+        expanded = evaluation.expanded
+        levels = ",".join(
+            f"{level.value}:{count}" for level, count in expanded.level_composition
+        )
+        print(f"VARIANT {evaluation.variant.value}")
+        print(
+            f"population setups/executable={expanded.setup_n}/{expanded.executable_n} "
+            f"sessions/executable-sessions={expanded.session_count}/"
+            f"{expanded.executable_session_count} months={expanded.month_coverage} "
+            f"LONG/SHORT={expanded.long_n}/{expanded.short_n} "
+            f"BASE_ALL%={expanded.percentage_of_base_all} "
+            f"largest1/5-session%={evaluation.largest_session_percentage}/"
+            f"{evaluation.largest_five_sessions_percentage} levels={levels}"
+        )
+        for label, partition in (
+            ("DEVELOPMENT", evaluation.development),
+            ("PRE_DEVELOPMENT", evaluation.pre_development),
+            ("EXPANDED", evaluation.expanded),
+        ):
+            print(
+                f"{label} setups/executable={partition.setup_n}/"
+                f"{partition.executable_n} sessions={partition.session_count}"
+            )
+            for horizon in partition.horizons:
+                print(
+                    f"  {horizon.horizon} C/I={horizon.complete_n}/"
+                    f"{horizon.incomplete_n} MFE mean/median={horizon.mfe.mean}/"
+                    f"{horizon.mfe.median} MAE mean/median={horizon.mae.mean}/"
+                    f"{horizon.mae.median} balance mean/median="
+                    f"{horizon.net_excursion_balance.mean}/"
+                    f"{horizon.net_excursion_balance.median} >/=/<="
+                    f"{horizon.favorable_adverse.mfe_greater}/"
+                    f"{horizon.favorable_adverse.equal}/"
+                    f"{horizon.favorable_adverse.mfe_less} ratio-valid/zero/median="
+                    f"{horizon.valid_ratio_n}/{horizon.zero_mae_n}/"
+                    f"{horizon.median_mfe_mae_ratio}"
+                )
+        print("MONTHLY EOD")
+        for partition in evaluation.monthly:
+            eod = partition.horizons[-1]
+            print(
+                f"  {partition.partition.value} executable={partition.executable_n} "
+                f"MFE/MAE/balance={eod.mfe.median}/{eod.mae.median}/"
+                f"{eod.net_excursion_balance.median}"
+            )
+        print(
+            f"monthly positive/zero/negative/unavailable="
+            f"{evaluation.positive_months}/{evaluation.zero_months}/"
+            f"{evaluation.negative_months}/{evaluation.unavailable_months}"
+        )
+        loo = evaluation.leave_one_month_out
+        print(
+            f"LOO full/min/max/sign-changes={loo.full_median_eod_balance}/"
+            f"{loo.minimum_exclusion_median_balance}/"
+            f"{loo.maximum_exclusion_median_balance}/{loo.sign_change_count} "
+            f"exclusions={','.join(f'{month}:{value}' for month, value in loo.exclusions)}"
+        )
+        for direction in evaluation.direction_decomposition:
+            eod = direction.horizons[-1]
+            print(
+                f"DIRECTION {direction.direction.value} setups/executable="
+                f"{direction.setup_n}/{direction.executable_n} "
+                f"sessions={direction.session_count} EOD="
+                f"{eod.mfe.median}/{eod.mae.median}/"
+                f"{eod.net_excursion_balance.median}"
+            )
+        if evaluation.bootstrap_uncertainty is not None:
+            intervals = " ".join(
+                f"{item.metric}={item.p2_5}/{item.p50}/{item.p97_5}"
+                for item in evaluation.bootstrap_uncertainty.intervals
+            )
+            print(
+                f"BOOTSTRAP seed={evaluation.bootstrap_uncertainty.seed} "
+                f"resamples={evaluation.bootstrap_uncertainty.resamples} {intervals}"
+            )
+        else:
+            print("BOOTSTRAP unavailable: INSUFFICIENT_COVERAGE")
+        for criterion in evaluation.criteria:
+            print(
+                f"CRITERION {criterion.name.value} passed={criterion.passed} "
+                f"observed={criterion.observed} required={criterion.required}"
+            )
+        print(
+            f"SELECTION {evaluation.selection_label.value}: "
+            f"{evaluation.label_reason}"
+        )
+    print(
+        f"Deterministic Stage 12.3 hash: "
+        f"{controlled_variant_selection_hash(result)}"
+    )
+    print("No stops, targets, exits, realized P/L, optimization, or Stage 13 logic added.")
     print("Status: PASS")
 
 

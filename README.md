@@ -1151,6 +1151,37 @@ not rank groups, produce a trade or quality score, optimize parameters, create
 filters, or calculate stops, targets, exits, win rate, realized P/L,
 expectancy, sizing, option results, or live/paper signals.
 
+## Stage 12.3 controlled strategy-variant selection
+
+Stage 12.3 freezes exactly ten research candidates before joining the accepted
+Stage 9 outcomes: `BASE_ALL`, `BASE_LONG`, `BASE_SHORT`, `EMA_STACK_ALIGNED`,
+`STRUCTURE_ALIGNED`, `ROOM_GE_1_ATR`, `EMA_STACK_AND_STRUCTURE`,
+`EMA_STACK_AND_ROOM_GE_1_ATR`, `STRUCTURE_AND_ROOM_GE_1_ATR`, and
+`FULL_CONFLUENCE`. The closed candidate enum prevents arbitrary combination
+search. EMA stack membership requires all four accepted directional alignment
+states. Room membership requires an exact finite Stage 11.2 `room_in_atr >=
+1.0`; open-ended or ATR-unavailable room never receives a substitute value.
+
+Membership consumes only context already known at `signal_known_at`. Outcomes
+are joined afterward for descriptive five-horizon, chronological partition,
+monthly, leave-one-month-out, and session-bootstrap reporting. A scorecard
+requires at least 30 executable setups across at least 20 executable sessions.
+`BASE_ALL` always remains `RETAIN_AS_CONTROL`; every other eligible candidate
+must pass all seven documented mechanical criteria to receive
+`ADVANCE_TO_STAGE_13`. The bootstrap uses the frozen seed `12022026` and 10,000
+whole-session resamples. Its output remains an uncertainty interval, not a
+formal confidence interval.
+
+```bash
+spy-research select-stage13-variants \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. Selection
+does not execute a strategy and does not calculate stops, targets, exits,
+first-hit order, realized P/L, win rate, expectancy, sizing, options, live
+signals, or paper trades.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1212,6 +1243,7 @@ spy-research compare-regime-hypotheses --start 2026-08-03 --end 2026-08-19
 spy-research compare-room-to-next-level --start 2026-08-03 --end 2026-08-19
 spy-research compare-market-structure --start 2026-08-03 --end 2026-08-19
 spy-research validate-expanded-stability --start 2026-01-02 --end 2026-08-19
+spy-research select-stage13-variants --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

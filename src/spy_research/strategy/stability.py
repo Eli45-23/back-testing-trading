@@ -236,7 +236,7 @@ class SessionBootstrapUncertainty(BaseModel):
 
     dimension: str
     state: str
-    executable_n: int = Field(ge=100)
+    executable_n: int = Field(ge=30)
     session_count: int = Field(ge=20)
     seed: int
     resamples: int = Field(gt=0)
@@ -528,6 +528,25 @@ def _bootstrap(
         seed=seed,
         resamples=resamples,
         intervals=tuple(intervals),
+    )
+
+
+def bootstrap_session_uncertainty(
+    dimension: str,
+    state: str,
+    records: Sequence[FrozenStabilityRecord],
+    *,
+    seed: int = BOOTSTRAP_SEED,
+    resamples: int = BOOTSTRAP_RESAMPLES,
+) -> SessionBootstrapUncertainty:
+    """Reuse the frozen session-clustered bootstrap for eligible research groups."""
+
+    return _bootstrap(
+        dimension,
+        state,
+        records,
+        seed=seed,
+        resamples=resamples,
     )
 
 
