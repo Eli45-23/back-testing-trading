@@ -1311,6 +1311,30 @@ options, or persist live bars and signals. The two Stage 13.3 forward-test
 identities are attached to each `BASE_SHORT` signal as research metadata; the
 adapter does not choose between them.
 
+## Stage 14.3 deterministic live shadow forward testing
+
+Stage 14.3 consumes confirmed `BASE_SHORT` events from the unchanged Stage
+14.1/14.2 market-data path and creates both accepted Stage 13.3 objective-level
+simulations. Each candidate independently uses the first eligible one-minute
+open, the confirmation-candle ATR14, its frozen 0.75 or 1.00 ATR stop, and the
+next known objective level below the confirmation price. The entry minute is
+included in first-hit evaluation; a same-minute stop and target touch remains
+explicitly ambiguous.
+
+```bash
+spy-research live-shadow-forward-test --symbol SPY --dry-run --max-bars 10
+```
+
+Restart recovery replays the completed current session through Stage 14.1,
+14.2, and the same shadow state machine before resuming the SIP stream. No
+hidden prior process state is required. Open paths close on the final RTH
+minute, unavailable ATR/objective/entry states remain explicit, completed
+paths cannot reactivate, and no position carries overnight.
+
+The command is non-persistent and market-data-only. It has no order submission,
+replacement, cancellation, account-position mutation, buying-power sizing,
+paper-trading, live-trading, or options capability.
+
 ## Local setup
 
 Python 3.12 or newer is required.

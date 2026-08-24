@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Protocol
 from zoneinfo import ZoneInfo
@@ -69,6 +69,7 @@ class LiveBootstrapper:
         self,
         *,
         as_of: datetime,
+        on_seed_update: Callable | None = None,
     ) -> tuple[LiveMarketDataAdapter, LiveBootstrapResult]:
         if as_of.utcoffset() is None:
             raise LiveBootstrapError("bootstrap as-of must be timezone-aware")
@@ -132,7 +133,9 @@ class LiveBootstrapper:
         if expected_rth_end >= session.market_open:
             self._validate_complete_rth(rth, session.market_open, expected_rth_end + timedelta(minutes=1))
         for bar in accepted:
-            adapter.seed(bar)
+            update = adapter.seed(bar)
+            if on_seed_update is not None:
+                on_seed_update(update, adapter.engine.current_levels)
         premarket_count = len(accepted) - len(rth)
         return adapter, LiveBootstrapResult(
             session_date=target,

@@ -123,6 +123,12 @@ from spy_research.research_stats import (
     Phase1CrossStatisticsService,
     StatisticsSequenceError,
 )
+from spy_research.shadow import (
+    LiveShadowForwardTestService,
+    ShadowEventType,
+    ShadowInputError,
+    live_shadow_report_hash,
+)
 from spy_research.replay import (
     ReplayInputError,
     SignalReplayReport,
@@ -1147,6 +1153,21 @@ def build_parser() -> argparse.ArgumentParser:
     live_signal.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
     live_signal.add_argument("--timeout", type=float, default=10.0)
     live_signal.add_argument("--max-reconnects", type=int, default=3)
+
+    live_shadow = subparsers.add_parser(
+        "live-shadow-forward-test",
+        help="dry-run both accepted Stage 13.3 candidates without orders",
+    )
+    live_shadow.add_argument("--symbol", choices=("SPY",), default="SPY")
+    live_shadow.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="required market-data-only shadow mode",
+    )
+    live_shadow.add_argument("--max-bars", type=int)
+    live_shadow.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    live_shadow.add_argument("--timeout", type=float, default=10.0)
+    live_shadow.add_argument("--max-reconnects", type=int, default=3)
 
     return parser
 
@@ -2336,6 +2357,90 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"signals={len(result.signals)}"
         )
         print(f"Deterministic Stage 14.2 hash: {live_signal_report_hash(result)}")
+        return 0
+
+    if args.command == "live-shadow-forward-test":
+        if not args.dry_run:
+            print(
+                "Unable to run live shadow test: --dry-run is required; "
+                "Stage 14.3 has no order mode",
+                file=sys.stderr,
+            )
+            return 2
+        try:
+            settings = load_settings(config_path=args.config)
+            with AlpacaDataClient.from_environment(
+                settings.alpaca,
+                timeout=args.timeout,
+            ) as client:
+                historical = AlpacaHistoricalBootstrapSource(
+                    HistoricalStockDataService(client, settings.research),
+                    settings.research,
+                )
+                service = LiveShadowForwardTestService(
+                    LiveBootstrapper(historical),
+                    AlpacaSipWebSocketTransport.from_environment(
+                        settings.alpaca,
+                        max_reconnects=args.max_reconnects,
+                    ),
+                )
+
+                def print_shadow_update(live_update, shadow_events) -> None:
+                    for signal in live_update.signal_events:
+                        print(
+                            "CONFIRMED_SIGNAL "
+                            f"known_at={signal.signal_known_at.isoformat()} "
+                            f"direction={signal.direction.value} "
+                            f"setup={signal.setup_identity}"
+                        )
+                    for event in shadow_events:
+                        if event.event_type is ShadowEventType.ENTRY:
+                            position = event.position
+                            print(
+                                "SHADOW_ENTRY "
+                                f"timestamp={event.event_timestamp.isoformat()} "
+                                f"candidate={event.candidate_id} "
+                                f"entry={position.entry_price} "
+                                f"stop={position.stop_price} "
+                                f"target={position.target_price}"
+                            )
+                        elif event.event_type in (
+                            ShadowEventType.EXIT,
+                            ShadowEventType.UNAVAILABLE,
+                        ):
+                            position = event.position
+                            print(
+                                "SHADOW_FINAL "
+                                f"timestamp={event.event_timestamp.isoformat()} "
+                                f"candidate={event.candidate_id} "
+                                f"state={position.state.value} "
+                                f"realized_r={position.realized_r}"
+                            )
+
+                result = service.run(
+                    as_of=datetime.now(UTC),
+                    max_bars=args.max_bars,
+                    on_live_update=print_shadow_update,
+                )
+        except (
+            AlpacaDataError,
+            LiveDataError,
+            ShadowInputError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to run live shadow test: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "LIVE_SHADOW_DRY_RUN "
+            f"live={result.accepted_live_bar_count} "
+            f"duplicates={result.duplicate_bar_count} "
+            f"positions={len(result.positions)} "
+            f"events={len(result.transition_events)}"
+        )
+        print(f"Deterministic Stage 14.3 live hash: {live_shadow_report_hash(result)}")
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
