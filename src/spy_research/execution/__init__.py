@@ -1,5 +1,23 @@
 """Deterministic, offline realized-trade simulation research."""
 
+from spy_research.execution.classification import classify_execution_variants
+from spy_research.execution.classification_models import (
+    ExecutionClassificationInputError,
+    ExecutionControlReference,
+    ExecutionGateResults,
+    ExecutionVariantClassification,
+    ExecutionVariantClassificationReport,
+    ExecutionVariantClassificationRow,
+    ExecutionWarning,
+    Stage14ExecutionHandoff,
+    execution_variant_classification_hash,
+)
+from spy_research.execution.classification_service import (
+    ACCEPTED_STAGE13_1_HASH,
+    ACCEPTED_STAGE13_2_HASH,
+    ExecutionVariantClassificationService,
+)
+
 from spy_research.execution.exit_models import (
     ExitBootstrapInterval,
     ExitBootstrapUncertainty,
@@ -66,6 +84,8 @@ from spy_research.execution.statistics import (
 )
 
 __all__ = [
+    "ACCEPTED_STAGE13_1_HASH",
+    "ACCEPTED_STAGE13_2_HASH",
     "BOOTSTRAP_RESAMPLES",
     "BOOTSTRAP_SEED",
     "STOP_MULTIPLIERS",
@@ -89,6 +109,14 @@ __all__ = [
     "ExitSliceStatistics",
     "ExitVariantStatistics",
     "ExecutionInputError",
+    "ExecutionClassificationInputError",
+    "ExecutionControlReference",
+    "ExecutionGateResults",
+    "ExecutionVariantClassification",
+    "ExecutionVariantClassificationReport",
+    "ExecutionVariantClassificationRow",
+    "ExecutionVariantClassificationService",
+    "ExecutionWarning",
     "FixedRiskSimulationReport",
     "FixedRiskSimulationService",
     "FixedRiskTradeStatistics",
@@ -101,13 +129,16 @@ __all__ = [
     "RiskTargetModel",
     "ScheduledExit",
     "StrategyPopulation",
+    "Stage14ExecutionHandoff",
     "TradeExitReason",
     "TradeSimulationStatus",
     "calculate_fixed_risk_report",
+    "classify_execution_variants",
     "bootstrap_exit_variant",
     "exit_model_comparison_hash",
     "exit_model_variants",
     "exit_variant_identity",
+    "execution_variant_classification_hash",
     "fixed_risk_simulation_hash",
     "fixed_risk_variants",
     "simulate_fixed_risk_trade",

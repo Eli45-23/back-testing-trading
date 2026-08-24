@@ -42,6 +42,9 @@ from spy_research.events import (
     EventContextAlignmentError,
 )
 from spy_research.execution import (
+    ExecutionClassificationInputError,
+    ExecutionVariantClassificationReport,
+    ExecutionVariantClassificationService,
     ExitComparisonInputError,
     ExitModelComparisonReport,
     ExitModelComparisonService,
@@ -53,6 +56,7 @@ from spy_research.execution import (
     TradeExitReason,
     TradeSimulationStatus,
     exit_model_comparison_hash,
+    execution_variant_classification_hash,
     fixed_risk_simulation_hash,
 )
 from spy_research.indicators import (
@@ -1067,6 +1071,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     exit_comparison.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    execution_classification = subparsers.add_parser(
+        "classify-execution-variants",
+        help="mechanically classify frozen Stage 13.2 execution variants",
+    )
+    execution_classification.add_argument(
+        "--start", type=parse_iso_date, required=True
+    )
+    execution_classification.add_argument("--end", type=parse_iso_date, required=True)
+    execution_classification.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    execution_classification.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    execution_classification.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -2130,6 +2152,39 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to compare exit models: {exc}", file=sys.stderr)
             return 2
         _print_exit_model_comparison(result)
+        return 0
+
+    if args.command == "classify-execution-variants":
+        try:
+            config = load_research_config(args.config)
+            result = ExecutionVariantClassificationService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            ExecutionClassificationInputError,
+            ExitComparisonInputError,
+            ExecutionInputError,
+            SetupOutcomeInputError,
+        ) as exc:
+            print(f"Unable to classify execution variants: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to classify execution variants: {exc}", file=sys.stderr)
+            return 2
+        _print_execution_variant_classification(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -4199,6 +4254,64 @@ def _print_exit_model_comparison(result: ExitModelComparisonReport) -> None:
         "not predictive CIs."
     )
     print("No exit ranking, selection, optimization, or recommendation.")
+    print("Status: PASS")
+
+
+def _print_execution_variant_classification(
+    result: ExecutionVariantClassificationReport,
+) -> None:
+    print("SPY STAGE 13.3 CONTROLLED EXECUTION-VARIANT CLASSIFICATION")
+    print(f"Range: {result.start_date} → {result.end_date}")
+    print(f"CAVEAT: {result.caveat}")
+    for row in result.rows:
+        gates = row.gates
+        warnings = ",".join(item.value for item in row.warnings) or "NONE"
+        print(
+            f"VARIANT BASE_SHORT {row.variant_id} family={row.family.value} "
+            f"stop={row.stop_multiplier} exit={row.exit_definition} "
+            f"realized/sessions={row.realized_paths}/{row.session_count}"
+        )
+        print(
+            f"  expanded mean/median={row.expanded_mean_r}/{row.expanded_median_r} "
+            f"jan-jul={row.january_july_mean_r}/{row.january_july_median_r} "
+            f"august={row.development_mean_r}/{row.development_median_r}"
+        )
+        print(
+            f"  months +/-/0={row.positive_month_count}/"
+            f"{row.negative_month_count}/{row.zero_month_count} "
+            f"worst-loo-mean={row.worst_loo_mean_r} bootstrap-mean="
+            f"{row.bootstrap_mean_p2_5}/{row.bootstrap_mean_p50}/"
+            f"{row.bootstrap_mean_p97_5}"
+        )
+        print(
+            "  gates "
+            f"realized100={gates.realized_paths_at_least_100} "
+            f"sessions50={gates.represented_sessions_at_least_50} "
+            f"expanded-mean={gates.expanded_mean_positive} "
+            f"expanded-median={gates.expanded_median_positive} "
+            f"jan-jul-mean={gates.january_july_mean_positive} "
+            f"august-mean={gates.development_mean_positive} "
+            f"worst-loo={gates.worst_loo_mean_nonnegative} "
+            f"positive-months={gates.at_least_five_positive_monthly_medians} "
+            f"bootstrap-lower={gates.bootstrap_mean_lower_bound_positive}"
+        )
+        print(f"  CLASSIFICATION {row.classification.value} WARNINGS {warnings}")
+    print("STAGE 14 HANDOFF")
+    print(f"  robust-candidates={len(result.handoff.robust_candidates)}")
+    print(
+        "  forward-test-candidates="
+        + (",".join(result.handoff.forward_test_candidates) or "NONE")
+    )
+    print(f"  controls={len(result.handoff.controls)}")
+    print(f"  rejected={len(result.handoff.rejected_variants)}")
+    print(f"  framing={result.handoff.framing}")
+    print(
+        "Deterministic Stage 13.3 hash: "
+        f"{execution_variant_classification_hash(result)}"
+    )
+    print(f"Source Stage 13.2 hash: {result.source_stage13_2_hash}")
+    print(f"Source Stage 13.1 hash: {result.source_stage13_1_hash}")
+    print("No ranking, optimization, new execution model, persistence, or Stage 14.")
     print("Status: PASS")
 
 

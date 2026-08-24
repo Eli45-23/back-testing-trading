@@ -1243,6 +1243,27 @@ intervals are descriptive, not predictive confidence intervals. Stage 13.2
 does not add costs, sizing, options, persistence, optimization, orders, or a
 recommendation.
 
+## Stage 13.3 controlled execution-variant classification
+
+Stage 13.3 mechanically applies predeclared robustness and forward-test gates
+to the frozen Stage 13.2 statistical records. `BASE_ALL` remains the universal
+research control, `BASE_SHORT` remains the only advanced strategy population,
+and fixed-R variants remain references. The classifier cannot receive market
+bars, indicator rows, parameter ranges, optimization objectives, or new
+candidate definitions.
+
+```bash
+spy-research classify-execution-variants \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The offline, read-only, non-persistent report exposes every individual gate,
+classification, and measured warning for all 36 `BASE_SHORT` variants. Its
+Stage 14 handoff is explicitly prospective forward/paper-validation research,
+not deployment or a claim of historically established positive expectancy.
+Stage 13.3 adds no execution model, strategy filter, ranking, optimization,
+cost, sizing, options logic, order, paper trading, or live-data behavior.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1307,6 +1328,7 @@ spy-research validate-expanded-stability --start 2026-01-02 --end 2026-08-19
 spy-research select-stage13-variants --start 2026-01-02 --end 2026-08-19
 spy-research simulate-fixed-risk-trades --start 2026-01-02 --end 2026-08-19
 spy-research compare-exit-models --start 2026-01-02 --end 2026-08-19
+spy-research classify-execution-variants --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in
