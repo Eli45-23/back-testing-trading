@@ -1264,6 +1264,28 @@ not deployment or a claim of historically established positive expectancy.
 Stage 13.3 adds no execution model, strategy filter, ranking, optimization,
 cost, sizing, options logic, order, paper trading, or live-data behavior.
 
+## Stage 14.1 deterministic signal-state replay
+
+Stage 14.1 feeds accepted local SPY one-minute bars chronologically through a
+single incremental state machine intended for both historical replay and
+future live market-data input. A five-minute candle and anything derived from
+it become available only after all five source minutes complete. Session
+levels retain their accepted availability rules, pending break/retest state is
+reset at every XNYS boundary, and confirmed Stage 9 setups are emitted exactly
+once at `signal_known_at`.
+
+```bash
+spy-research replay-signal-engine \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. It
+independently reconciles the incremental signal stream with the accepted batch
+Stage 9 pipeline and attaches both frozen Stage 13.3 forward-test candidate
+identities to `BASE_SHORT` signals. It does not simulate their exits or add
+fills, orders, sizing, costs, options, persistence, paper trading, or live
+connectivity.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1329,6 +1351,7 @@ spy-research select-stage13-variants --start 2026-01-02 --end 2026-08-19
 spy-research simulate-fixed-risk-trades --start 2026-01-02 --end 2026-08-19
 spy-research compare-exit-models --start 2026-01-02 --end 2026-08-19
 spy-research classify-execution-variants --start 2026-01-02 --end 2026-08-19
+spy-research replay-signal-engine --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

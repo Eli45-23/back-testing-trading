@@ -115,6 +115,12 @@ from spy_research.research_stats import (
     Phase1CrossStatisticsService,
     StatisticsSequenceError,
 )
+from spy_research.replay import (
+    ReplayInputError,
+    SignalReplayReport,
+    SignalReplayService,
+    signal_replay_hash,
+)
 from spy_research.strategy import (
     BasePriceActionResult,
     BasePriceActionService,
@@ -1089,6 +1095,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     execution_classification.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    signal_replay = subparsers.add_parser(
+        "replay-signal-engine",
+        help="replay frozen SPY one-minute bars through incremental signal state",
+    )
+    signal_replay.add_argument("--start", type=parse_iso_date, required=True)
+    signal_replay.add_argument("--end", type=parse_iso_date, required=True)
+    signal_replay.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    signal_replay.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    signal_replay.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -2185,6 +2205,30 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to classify execution variants: {exc}", file=sys.stderr)
             return 2
         _print_execution_variant_classification(result)
+        return 0
+
+    if args.command == "replay-signal-engine":
+        try:
+            config = load_research_config(args.config)
+            result = SignalReplayService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (ReplayInputError, BaseSetupInputError) as exc:
+            print(f"Unable to replay signal engine: {exc}", file=sys.stderr)
+            return 1
+        except (
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to replay signal engine: {exc}", file=sys.stderr)
+            return 2
+        _print_signal_replay(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -4312,6 +4356,72 @@ def _print_execution_variant_classification(
     print(f"Source Stage 13.2 hash: {result.source_stage13_2_hash}")
     print(f"Source Stage 13.1 hash: {result.source_stage13_1_hash}")
     print("No ranking, optimization, new execution model, persistence, or Stage 14.")
+    print("Status: PASS")
+
+
+def _print_signal_replay(result: SignalReplayReport) -> None:
+    print("SPY STAGE 14.1 DETERMINISTIC INCREMENTAL SIGNAL REPLAY")
+    print(f"Range: {result.start_date} → {result.end_date}")
+    print(f"CAVEAT: {result.caveat}")
+    print(
+        f"INPUT raw={result.raw_bar_count} rth-1m={result.rth_one_minute_count} "
+        f"self-built-5m={result.five_minute_count} seeds={result.break_seed_count}"
+    )
+    print(
+        f"SETUPS confirmed={result.confirmed_signal_count} "
+        f"executable={result.executable_signal_count} "
+        f"base-short={result.base_short_confirmed_count} "
+        f"base-short-executable={result.base_short_executable_count}"
+    )
+    for item in result.sessions:
+        print(
+            f"SESSION {item.session_date} raw/pre/rth/5m="
+            f"{item.raw_bar_count}/{item.premarket_bar_count}/"
+            f"{item.rth_one_minute_count}/{item.five_minute_count} "
+            f"seeds/signals/executable={item.break_seed_count}/"
+            f"{item.confirmed_signal_count}/{item.executable_signal_count} "
+            f"short/short-executable={item.base_short_confirmed_count}/"
+            f"{item.base_short_executable_count} ema9/ema20/atr-valid="
+            f"{item.ema9_valid_count}/{item.ema20_valid_count}/"
+            f"{item.atr14_valid_count} crosses={item.ema9_ema20_cross_count}/"
+            f"{item.ema9_vwap_cross_count}/{item.ema20_vwap_cross_count} "
+            f"levels-pd/pm/or={item.previous_day_levels_available}/"
+            f"{item.premarket_levels_available}/{item.opening_levels_available}"
+        )
+    for signal in result.signals:
+        print(
+            f"SIGNAL {signal.signal_known_at.isoformat()} {signal.setup_identity} "
+            f"{signal.direction.value} {signal.triggering_level_type.value}@"
+            f"{signal.triggering_level_price} break={signal.break_timestamp.isoformat()} "
+            f"confirmation={signal.confirmation_type.value}@"
+            f"{signal.confirmation_candle_timestamp.isoformat()} "
+            f"executable={signal.same_session_executable} "
+            f"base-short={signal.base_short_membership} candidates="
+            f"{','.join(signal.eligible_stage14_candidate_ids) or 'NONE'}"
+        )
+    reconciliation = result.batch_reconciliation
+    print(
+        f"BATCH-RECONCILIATION exact={reconciliation.exact_match} "
+        f"seeds={reconciliation.replay_break_seed_count}/"
+        f"{reconciliation.batch_break_seed_count} "
+        f"confirmed={reconciliation.replay_confirmed_count}/"
+        f"{reconciliation.batch_confirmed_count} executable="
+        f"{reconciliation.replay_executable_count}/"
+        f"{reconciliation.batch_executable_count} base-short="
+        f"{reconciliation.replay_base_short_confirmed_count}/"
+        f"{reconciliation.batch_base_short_confirmed_count} "
+        f"base-short-executable="
+        f"{reconciliation.replay_base_short_executable_count}/"
+        f"{reconciliation.batch_base_short_executable_count} mismatches="
+        f"{len(reconciliation.mismatched_setup_identities)}"
+    )
+    print(
+        f"Processed five-minute exact match: "
+        f"{result.processed_five_minute_exact_match}"
+    )
+    print(f"Session-chunk replay exact match: {result.session_chunk_replay_exact_match}")
+    print(f"Deterministic Stage 14.1 hash: {signal_replay_hash(result)}")
+    print("Offline, read-only, non-persistent; no orders, fills, P/L, or Stage 14.2.")
     print("Status: PASS")
 
 
