@@ -7,7 +7,7 @@ import json
 import sys
 from collections import Counter
 from collections.abc import Sequence
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from statistics import median
@@ -101,6 +101,14 @@ from spy_research.levels import (
     PreviousDayLevelsResult,
     PreviousDayLevelsService,
 )
+from spy_research.live import (
+    AlpacaHistoricalBootstrapSource,
+    AlpacaSipWebSocketTransport,
+    LiveBootstrapper,
+    LiveDataError,
+    LiveSignalEngineService,
+    live_signal_report_hash,
+)
 from spy_research.market import MarketSessionClassifier, SessionSummary, SessionType
 from spy_research.outcomes import (
     EmaCrossOutcomeContextResult,
@@ -193,6 +201,18 @@ def parse_iso_date(value: str) -> date:
         return date.fromisoformat(value)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("expected a date in YYYY-MM-DD format") from exc
+
+
+def parse_iso_datetime(value: str) -> datetime:
+    """Parse a timezone-aware CLI timestamp without guessing a timezone."""
+
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("expected an ISO-8601 timestamp") from exc
+    if parsed.utcoffset() is None:
+        raise argparse.ArgumentTypeError("timestamp must include a timezone offset")
+    return parsed
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1111,6 +1131,22 @@ def build_parser() -> argparse.ArgumentParser:
     signal_replay.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
+
+    live_signal = subparsers.add_parser(
+        "live-signal-engine",
+        help="dry-run Alpaca SIP bars through deterministic signal state",
+    )
+    live_signal.add_argument("--symbol", choices=("SPY",), default="SPY")
+    live_signal.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="required market-data-only mode; no trading endpoints exist",
+    )
+    live_signal.add_argument("--max-bars", type=int)
+    live_signal.add_argument("--until", type=parse_iso_datetime)
+    live_signal.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    live_signal.add_argument("--timeout", type=float, default=10.0)
+    live_signal.add_argument("--max-reconnects", type=int, default=3)
 
     return parser
 
@@ -2229,6 +2265,77 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to replay signal engine: {exc}", file=sys.stderr)
             return 2
         _print_signal_replay(result)
+        return 0
+
+    if args.command == "live-signal-engine":
+        if not args.dry_run:
+            print(
+                "Unable to run live signal engine: --dry-run is required; "
+                "Stage 14.2 has no trading mode",
+                file=sys.stderr,
+            )
+            return 2
+        try:
+            settings = load_settings(config_path=args.config)
+            with AlpacaDataClient.from_environment(
+                settings.alpaca,
+                timeout=args.timeout,
+            ) as client:
+                historical = AlpacaHistoricalBootstrapSource(
+                    HistoricalStockDataService(client, settings.research),
+                    settings.research,
+                )
+                service = LiveSignalEngineService(
+                    LiveBootstrapper(historical),
+                    AlpacaSipWebSocketTransport.from_environment(
+                        settings.alpaca,
+                        max_reconnects=args.max_reconnects,
+                    ),
+                )
+
+                def print_live_update(update) -> None:
+                    if update.normalized_bar is not None:
+                        bar = update.normalized_bar
+                        print(
+                            "CLOSED_BAR "
+                            f"timestamp={bar.timestamp.isoformat()} "
+                            f"open={bar.open} high={bar.high} low={bar.low} "
+                            f"close={bar.close} volume={bar.volume}"
+                        )
+                    for event in update.signal_events:
+                        print(
+                            "SIGNAL "
+                            f"known_at={event.signal_known_at.isoformat()} "
+                            f"direction={event.direction.value} "
+                            f"level={event.triggering_level_type.value} "
+                            f"price={event.triggering_level_price} "
+                            f"setup={event.setup_identity}"
+                        )
+
+                result = service.run(
+                    as_of=datetime.now(UTC),
+                    max_bars=args.max_bars,
+                    until=args.until,
+                    on_update=print_live_update,
+                )
+        except (
+            AlpacaDataError,
+            LiveDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to run live signal engine: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "LIVE_DRY_RUN "
+            f"bootstrap={result.bootstrap.seeded_bar_count} "
+            f"live={result.accepted_live_bar_count} "
+            f"duplicates={result.duplicate_identical_count} "
+            f"signals={len(result.signals)}"
+        )
+        print(f"Deterministic Stage 14.2 hash: {live_signal_report_hash(result)}")
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:

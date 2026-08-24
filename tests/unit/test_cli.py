@@ -51,6 +51,21 @@ def test_help_reports_foundation_commands(capsys) -> None:
     assert "compare-ema20-vwap-alignment" in captured.out
     assert "compare-ema20-vwap-cross-context" in captured.out
     assert "compare-combined-context-matrix" in captured.out
+    assert "live-signal-engine" in captured.out
+
+
+def test_live_signal_engine_requires_explicit_dry_run_without_network(
+    monkeypatch, capsys
+) -> None:
+    def reject_network(*args, **kwargs):
+        raise AssertionError("missing --dry-run must fail before network access")
+
+    monkeypatch.setattr(socket, "create_connection", reject_network)
+    exit_code = main(["live-signal-engine", "--symbol", "SPY", "--max-bars", "1"])
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "--dry-run is required" in captured.err
+    assert captured.out == ""
 
 
 def test_config_check_reports_success_without_credentials(monkeypatch, capsys) -> None:

@@ -1286,6 +1286,31 @@ identities to `BASE_SHORT` signals. It does not simulate their exits or add
 fills, orders, sizing, costs, options, persistence, paper trading, or live
 connectivity.
 
+## Stage 14.2 Alpaca SIP live market-data adapter
+
+Stage 14.2 connects final SPY one-minute bars from Alpaca's SIP stock-data
+WebSocket (`wss://stream.data.alpaca.markets/v2/sip`) to the unchanged Stage
+14.1 incremental engine. Startup state is reconstructed by fetching only the
+prior XNYS RTH session and the completed current-session premarket/RTH minutes
+from the accepted historical endpoint, then replaying those raw bars through
+the same engine before the live handoff.
+
+```bash
+spy-research live-signal-engine --symbol SPY --dry-run --max-bars 10
+```
+
+The adapter accepts only final `b` messages, requires each minute to be
+complete, ignores non-SPY/control messages, suppresses only value-identical
+duplicates, and fails on conflicting timestamps or out-of-order new bars.
+Reconnects retain the same adapter state, so repeated handoff bars cannot
+duplicate signals. Output is console-only by default.
+
+This command has no trading mode or trading client. It cannot place or cancel
+orders, query execution positions or buying power, size trades, execute
+options, or persist live bars and signals. The two Stage 13.3 forward-test
+identities are attached to each `BASE_SHORT` signal as research metadata; the
+adapter does not choose between them.
+
 ## Local setup
 
 Python 3.12 or newer is required.
