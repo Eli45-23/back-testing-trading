@@ -1182,6 +1182,36 @@ does not execute a strategy and does not calculate stops, targets, exits,
 first-hit order, realized P/L, win rate, expectancy, sizing, options, live
 signals, or paper trades.
 
+## Stage 13.1 deterministic realized-trade simulation
+
+Stage 13.1 simulates SPY-share trade paths for only the accepted `BASE_ALL`
+control and `BASE_SHORT` Stage 12.3 candidate. It does not requalify setups.
+Entry is the exact Stage 9.2 first same-session RTH one-minute open at or after
+`signal_known_at`, and the entry minute is included in the path.
+
+The frozen stop family is `ATR_0_50`, `ATR_0_75`, and `ATR_1_00`, using ATR14
+from the confirmation five-minute candle only. The frozen targets are `1R`,
+`1.5R`, `2R`, `2.5R`, and `3R`, producing exactly fifteen stop/target variants.
+Missing or nonpositive confirmation ATR makes the trade unavailable. No later
+ATR may backfill it.
+
+First-hit sequencing uses same-session RTH one-minute highs and lows. A bar that
+touches both stop and target is retained as `AMBIGUOUS_BOTH_TOUCHED`; its OHLC
+is audited and it is excluded from primary realized statistics. If neither
+level is touched, the exit is the final same-session RTH one-minute close.
+Exact stops are `-1R`, exact targets equal their requested R, and EOD exits use
+exact Decimal price P/L divided by initial risk.
+
+```bash
+spy-research simulate-fixed-risk-trades \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. It reports
+all fifteen variants without ranking or recommending one. Stage 13.1 does not
+include slippage, commissions, position sizing, options, next-level targets,
+trailing stops, breakeven logic, optimization, live orders, or paper trading.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1244,6 +1274,7 @@ spy-research compare-room-to-next-level --start 2026-08-03 --end 2026-08-19
 spy-research compare-market-structure --start 2026-08-03 --end 2026-08-19
 spy-research validate-expanded-stability --start 2026-01-02 --end 2026-08-19
 spy-research select-stage13-variants --start 2026-01-02 --end 2026-08-19
+spy-research simulate-fixed-risk-trades --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

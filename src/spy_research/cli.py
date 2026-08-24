@@ -41,6 +41,14 @@ from spy_research.events import (
     EmaCrossEventService,
     EventContextAlignmentError,
 )
+from spy_research.execution import (
+    ExecutionInputError,
+    FixedRiskSimulationReport,
+    FixedRiskSimulationService,
+    TradeExitReason,
+    TradeSimulationStatus,
+    fixed_risk_simulation_hash,
+)
 from spy_research.indicators import (
     AtrCalculationResult,
     AtrIndicatorService,
@@ -1023,6 +1031,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     variant_selection.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    fixed_risk_simulation = subparsers.add_parser(
+        "simulate-fixed-risk-trades",
+        help="simulate the frozen Stage 13.1 SPY-share stop/target family",
+    )
+    fixed_risk_simulation.add_argument("--start", type=parse_iso_date, required=True)
+    fixed_risk_simulation.add_argument("--end", type=parse_iso_date, required=True)
+    fixed_risk_simulation.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    fixed_risk_simulation.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    fixed_risk_simulation.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -2026,6 +2050,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to select Stage 13 variants: {exc}", file=sys.stderr)
             return 2
         _print_controlled_variant_selection(result)
+        return 0
+
+    if args.command == "simulate-fixed-risk-trades":
+        try:
+            config = load_research_config(args.config)
+            result = FixedRiskSimulationService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (ExecutionInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to simulate fixed-risk trades: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to simulate fixed-risk trades: {exc}", file=sys.stderr)
+            return 2
+        _print_fixed_risk_simulation(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -3869,6 +3921,97 @@ def _print_controlled_variant_selection(
         f"{controlled_variant_selection_hash(result)}"
     )
     print("No stops, targets, exits, realized P/L, optimization, or Stage 13 logic added.")
+    print("Status: PASS")
+
+
+def _print_fixed_risk_simulation(result: FixedRiskSimulationReport) -> None:
+    print("SPY STAGE 13.1 DETERMINISTIC FIXED-RISK SHARE SIMULATION")
+    print(f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}")
+    print(f"CAVEAT: {result.caveat}")
+    for population in result.populations:
+        print(
+            f"POPULATION {population.strategy_population.value} "
+            f"confirmed-membership={population.confirmed_membership_n} "
+            f"eligible-entry={population.eligible_entry_n}"
+        )
+    print(f"Frozen variants: {len(result.variants)}")
+    for item in result.statistics:
+        r = item.r_multiple
+        pnl = item.price_pnl
+        holding = item.holding_minutes
+        levels = ",".join(
+            f"{level.value}:{count}" for level, count in item.level_composition
+        )
+        print(
+            f"VARIANT {item.strategy_population.value} "
+            f"{item.variant.stop_model.value}/{item.variant.target_model.value} "
+            f"eligible={item.eligible_setup_n} unavailable-atr={item.unavailable_atr_n} "
+            f"simulated={item.executable_simulated_n} realized={item.realized_trade_n} "
+            f"target/stop/eod/ambiguous={item.target_exit_n}/{item.stop_exit_n}/"
+            f"{item.eod_exit_n}/{item.ambiguous_both_touched_n}"
+        )
+        print(
+            f"  R mean/median={r.mean}/{r.median} "
+            f"price-PnL mean/median={pnl.mean}/{pnl.median} "
+            f"R +/-/0={item.positive_r_n}/{item.negative_r_n}/{item.zero_r_n} "
+            f"win/loss%={item.win_rate_percentage}/{item.loss_rate_percentage} "
+            f"holding mean/median={holding.mean}/{holding.median}"
+        )
+        print(
+            "  monthly="
+            + ",".join(
+                f"{month.month}:{month.trade_n}:{month.median_r}"
+                for month in item.monthly
+            )
+        )
+        for direction in item.direction_decomposition:
+            print(
+                f"  direction={direction.direction.value} n={direction.trade_n} "
+                f"R mean/median={direction.r_multiple.mean}/"
+                f"{direction.r_multiple.median} PnL mean/median="
+                f"{direction.price_pnl.mean}/{direction.price_pnl.median}"
+            )
+        print(f"  realized-levels={levels}")
+    print("REPRESENTATIVE PATH AUDITS")
+    audit_keys = (
+        (TradeSimulationStatus.SIMULATED, TradeExitReason.STOP),
+        (TradeSimulationStatus.SIMULATED, TradeExitReason.TARGET),
+        (TradeSimulationStatus.SIMULATED, TradeExitReason.EOD_CLOSE),
+        (TradeSimulationStatus.AMBIGUOUS_BOTH_TOUCHED, None),
+        (TradeSimulationStatus.TRADE_UNAVAILABLE_ATR, None),
+    )
+    for status, reason in audit_keys:
+        trade = next(
+            (
+                item
+                for item in result.trades
+                if item.exit_status is status
+                and (reason is None or item.exit_reason is reason)
+            ),
+            None,
+        )
+        if trade is None:
+            print(f"  {status.value}/{reason.value if reason else '-'}: NONE")
+            continue
+        ambiguity = (
+            f" OHLC={trade.ambiguity.open}/{trade.ambiguity.high}/"
+            f"{trade.ambiguity.low}/{trade.ambiguity.close}"
+            if trade.ambiguity is not None
+            else ""
+        )
+        print(
+            f"  {status.value}/{reason.value if reason else '-'} "
+            f"setup={trade.setup_identity} session={trade.session_date} "
+            f"entry={trade.entry_timestamp}@{trade.entry_price} "
+            f"stop={trade.stop_price} target={trade.target_price} "
+            f"exit={trade.exit_timestamp}@{trade.exit_price} "
+            f"R={trade.r_multiple} bars={trade.bars_observed}{ambiguity}"
+        )
+    print(
+        f"Deterministic Stage 13.1 hash: {fixed_risk_simulation_hash(result)}"
+    )
+    print("Ambiguous both-touch trades are excluded from primary statistics.")
+    print("No variant ranking, optimization, sizing, costs, options, or recommendation.")
     print("Status: PASS")
 
 
