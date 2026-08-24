@@ -1212,6 +1212,37 @@ all fifteen variants without ranking or recommending one. Stage 13.1 does not
 include slippage, commissions, position sizing, options, next-level targets,
 trailing stops, breakeven logic, optimization, live orders, or paper trading.
 
+## Stage 13.2 controlled exit-model comparison
+
+Stage 13.2 keeps the accepted `BASE_ALL` and `BASE_SHORT` memberships, Stage
+9.2 entry timestamp, and entry price unchanged. It compares all fifteen Stage
+13.1 fixed-risk controls with twenty-one predeclared exits: three ATR stops for
+each of opposite EMA9/20, EMA9/VWAP, and EMA20/VWAP crosses; three ATR stops at
+15-, 30-, and 60-minute exits; and three ATR stops paired with the frozen Stage
+11.2 next objective level. It does not rank or select an exit.
+
+An opposite cross can act only after its completed five-minute candle is
+knowable (`cross_timestamp + 5 minutes`) and strictly after entry. Cross and
+time exits use the first same-session one-minute open at or after that time.
+When an open exit and a stop touch share a minute, the open exit occurs before
+that minute's high/low. A stop touched in an earlier minute wins. Objective
+targets retain Stage 13.1 first-hit behavior, including an explicit ambiguous
+state when stop and target touch in the same one-minute bar. Open-ended Stage
+11.2 room is unavailable and is never replaced with another target. Every
+remaining trade exits at the final RTH close; nothing carries overnight.
+
+```bash
+spy-research compare-exit-models \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The offline, read-only report includes exact Decimal SPY-share P/L and R,
+monthly and leave-one-month-out descriptions, and deterministic 10,000-draw
+session-clustered bootstrap uncertainty intervals for mean and median R. Those
+intervals are descriptive, not predictive confidence intervals. Stage 13.2
+does not add costs, sizing, options, persistence, optimization, orders, or a
+recommendation.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1275,6 +1306,7 @@ spy-research compare-market-structure --start 2026-08-03 --end 2026-08-19
 spy-research validate-expanded-stability --start 2026-01-02 --end 2026-08-19
 spy-research select-stage13-variants --start 2026-01-02 --end 2026-08-19
 spy-research simulate-fixed-risk-trades --start 2026-01-02 --end 2026-08-19
+spy-research compare-exit-models --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

@@ -42,11 +42,17 @@ from spy_research.events import (
     EventContextAlignmentError,
 )
 from spy_research.execution import (
+    ExitComparisonInputError,
+    ExitModelComparisonReport,
+    ExitModelComparisonService,
+    ExitModelExitReason,
+    ExitModelStatus,
     ExecutionInputError,
     FixedRiskSimulationReport,
     FixedRiskSimulationService,
     TradeExitReason,
     TradeSimulationStatus,
+    exit_model_comparison_hash,
     fixed_risk_simulation_hash,
 )
 from spy_research.indicators import (
@@ -1047,6 +1053,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     fixed_risk_simulation.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    exit_comparison = subparsers.add_parser(
+        "compare-exit-models",
+        help="compare the frozen Stage 13.1/13.2 exit-model universe",
+    )
+    exit_comparison.add_argument("--start", type=parse_iso_date, required=True)
+    exit_comparison.add_argument("--end", type=parse_iso_date, required=True)
+    exit_comparison.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    exit_comparison.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    exit_comparison.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -2078,6 +2098,38 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to simulate fixed-risk trades: {exc}", file=sys.stderr)
             return 2
         _print_fixed_risk_simulation(result)
+        return 0
+
+    if args.command == "compare-exit-models":
+        try:
+            config = load_research_config(args.config)
+            result = ExitModelComparisonService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (
+            ExitComparisonInputError,
+            ExecutionInputError,
+            SetupOutcomeInputError,
+        ) as exc:
+            print(f"Unable to compare exit models: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to compare exit models: {exc}", file=sys.stderr)
+            return 2
+        _print_exit_model_comparison(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -4012,6 +4064,141 @@ def _print_fixed_risk_simulation(result: FixedRiskSimulationReport) -> None:
     )
     print("Ambiguous both-touch trades are excluded from primary statistics.")
     print("No variant ranking, optimization, sizing, costs, options, or recommendation.")
+    print("Status: PASS")
+
+
+def _print_exit_model_comparison(result: ExitModelComparisonReport) -> None:
+    print("SPY STAGE 13.2 CONTROLLED EXIT-MODEL COMPARISON")
+    print(f"Range: {result.start_date} → {result.end_date}")
+    print(f"CAVEAT: {result.caveat}")
+    print(
+        f"Variants: total={len(result.variants)} control=15 new=21 "
+        f"bootstrap={result.bootstrap_resamples} seed={result.bootstrap_seed}"
+    )
+    for population in result.populations:
+        print(
+            f"POPULATION {population.strategy_population.value} "
+            f"membership={population.confirmed_membership_n} "
+            f"eligible-entry={population.eligible_entry_n}"
+        )
+    bootstrap_by_key = {
+        (item.strategy_population, item.variant_id): item
+        for item in result.bootstrap_uncertainty
+    }
+    for item in result.statistics:
+        variant = item.variant
+        bootstrap = bootstrap_by_key[
+            (item.strategy_population, variant.variant_id)
+        ]
+        controls = ",".join(variant.corresponding_control_variant_ids)
+        print(
+            f"VARIANT {item.strategy_population.value} {variant.variant_id} "
+            f"membership/atr/context={item.membership_n}/{item.atr_eligible_n}/"
+            f"{item.target_context_eligible_n} realized/unavailable/ambiguous="
+            f"{item.realized_n}/{item.unavailable_n}/{item.ambiguous_n}"
+        )
+        print(
+            f"  exits stop/target/cross/time/eod={item.stop_exit_n}/"
+            f"{item.target_exit_n}/{item.cross_exit_n}/{item.time_exit_n}/"
+            f"{item.eod_exit_n} R mean/median/std={item.r_multiple.mean}/"
+            f"{item.r_multiple.median}/{item.r_standard_deviation} "
+            f"R +/-/0={item.positive_r_n}/{item.negative_r_n}/{item.zero_r_n} "
+            f"win/loss%={item.win_rate_percentage}/{item.loss_rate_percentage} "
+            f"holding mean/median={item.holding_minutes.mean}/"
+            f"{item.holding_minutes.median} sessions={item.session_count}"
+        )
+        print(
+            "  monthly="
+            + ",".join(
+                f"{row.month}:{row.trade_n}:{row.mean_r}:{row.median_r}:"
+                f"{row.positive_n}/{row.negative_n}/{row.zero_n}"
+                for row in item.monthly
+            )
+        )
+        print(
+            "  partitions="
+            + ",".join(
+                f"{row.partition}:{row.trade_n}:{row.mean_r}:{row.median_r}"
+                for row in item.partitions
+            )
+            + f" positive/negative-months={item.positive_month_n}/"
+            f"{item.negative_month_n}"
+        )
+        print(
+            "  leave-one-month-out="
+            + ",".join(
+                f"{row.excluded_month}:{row.trade_n}:{row.mean_r}:{row.median_r}"
+                for row in item.leave_one_month_out
+            )
+        )
+        if item.direction_composition:
+            print(
+                "  directions="
+                + ",".join(
+                    f"{row.name}:{row.trade_n}:{row.r_multiple.mean}:"
+                    f"{row.r_multiple.median}"
+                    for row in item.direction_composition
+                )
+            )
+        print(
+            "  levels="
+            + ",".join(
+                f"{level.value}:{count}" for level, count in item.level_composition
+            )
+            + f" controls={controls}"
+        )
+        print(
+            "  bootstrap="
+            + ",".join(
+                f"{row.metric}:{row.p2_5}/{row.p50}/{row.p97_5}"
+                for row in bootstrap.intervals
+            )
+            + f" label={bootstrap.label}"
+        )
+    print("REPRESENTATIVE NEW PATH AUDITS")
+    reasons = (
+        ExitModelExitReason.OPPOSITE_EMA9_20_CROSS,
+        ExitModelExitReason.OPPOSITE_EMA9_VWAP_CROSS,
+        ExitModelExitReason.OPPOSITE_EMA20_VWAP_CROSS,
+        ExitModelExitReason.TIME_15M,
+        ExitModelExitReason.NEXT_OBJECTIVE_LEVEL,
+        ExitModelExitReason.EOD_CLOSE,
+        ExitModelExitReason.AMBIGUOUS_BOTH_TOUCHED,
+        ExitModelExitReason.UNAVAILABLE_OBJECTIVE,
+        ExitModelExitReason.UNAVAILABLE_ATR,
+    )
+    for reason in reasons:
+        trade = next(
+            (item for item in result.new_trades if item.exit_reason is reason),
+            None,
+        )
+        if trade is None:
+            print(f"  {reason.value}: NONE")
+            continue
+        ambiguity = (
+            f" OHLC={trade.ambiguity.open}/{trade.ambiguity.high}/"
+            f"{trade.ambiguity.low}/{trade.ambiguity.close}"
+            if trade.ambiguity is not None
+            else ""
+        )
+        print(
+            f"  {reason.value} setup={trade.setup_identity} session={trade.session_date} "
+            f"variant={trade.variant.variant_id} entry={trade.entry_timestamp}@"
+            f"{trade.entry_price} stop={trade.stop_price} objective="
+            f"{trade.objective_price} scheduled={trade.scheduled_exit} exit="
+            f"{trade.exit_timestamp}@{trade.exit_price} R={trade.r_multiple} "
+            f"bars={trade.bars_observed}{ambiguity}"
+        )
+    print(
+        f"Embedded Stage 13.1 hash: "
+        f"{fixed_risk_simulation_hash(result.stage13_1_control)}"
+    )
+    print(f"Deterministic Stage 13.2 hash: {exit_model_comparison_hash(result)}")
+    print(
+        "Bootstrap intervals are descriptive uncertainty intervals, "
+        "not predictive CIs."
+    )
+    print("No exit ranking, selection, optimization, or recommendation.")
     print("Status: PASS")
 
 
