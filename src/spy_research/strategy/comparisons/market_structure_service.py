@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from typing import Sequence
 
 from spy_research.bars.store import ProcessedFiveMinuteStore
 from spy_research.config import ResearchConfig
@@ -19,6 +20,9 @@ from spy_research.strategy.comparisons.market_structure import (
     build_market_structure_annotations,
     calculate_market_structure_comparison,
     detect_confirmed_swings,
+)
+from spy_research.strategy.comparisons.regime_hypotheses import (
+    FrozenQuartileBoundary,
 )
 from spy_research.strategy.comparisons.regime_hypotheses_service import (
     RegimeHypothesisComparisonService,
@@ -46,7 +50,11 @@ class MarketStructureComparisonService:
         self._calendar = calendar or XNYSCalendar()
 
     def calculate(
-        self, *, start: date, end: date
+        self,
+        *,
+        start: date,
+        end: date,
+        regime_boundaries: Sequence[FrozenQuartileBoundary] | None = None,
     ) -> MarketStructureComparisonResult:
         setup_result = BasePriceActionService(
             self._config,
@@ -91,13 +99,17 @@ class MarketStructureComparisonService:
             self._processed_store,
             self._raw_store,
             calendar=self._calendar,
-        ).calculate(start=start, end=end)
+        ).calculate(start=start, end=end, boundaries=regime_boundaries)
         room_result = RoomToLevelComparisonService(
             self._config,
             self._processed_store,
             self._raw_store,
             calendar=self._calendar,
-        ).calculate(start=start, end=end)
+        ).calculate(
+            start=start,
+            end=end,
+            regime_boundaries=regime_boundaries,
+        )
         swings = detect_confirmed_swings(bars)
         annotations = build_market_structure_annotations(
             setup_result,

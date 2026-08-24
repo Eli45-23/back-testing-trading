@@ -1116,6 +1116,41 @@ five-horizon Stage 9 outcomes, and count/EOD cross-tabs against accepted regime,
 room, and alignment context. It does not create alternative pivot widths,
 filters, scores, trades, stops, targets, exits, or persistent output.
 
+## Stage 12.2 expanded frozen-rule stability analysis
+
+Stage 12.2 analyzes the accepted January 2–August 19 population without
+changing any setup, context, outcome, threshold, or source object. The Stage
+11.1 quartile boundaries remain the exact values derived from the isolated
+August 3–19 development snapshot. Applying those boundaries backward to
+January–July is an **expanded frozen-rule stability analysis**, not a
+chronological out-of-sample test, predictive validation, statistical
+significance claim, or demonstration of stable expectancy.
+
+The deterministic report separates the isolated development snapshot,
+January–July pre-development observations, the complete expanded sample, and
+each represented calendar month. It reports accepted Stage 9–11 groups,
+direction- and level-controlled views, session concentration, only the three
+predeclared Stage 11 two-way relationships, leave-one-month-out sensitivity,
+and development-versus-expanded differences. Sample-size labels are disclosure
+only: `<10` is `VERY_SMALL`, `10–29` is `SMALL`, `30–99` is `MODERATE`, and
+`>=100` is `LARGE`.
+
+Bootstrap uncertainty resamples complete sessions rather than individual
+setups. It uses seed `12022026` and exactly 10,000 resamples for BASE_ALL and
+eligible groups with at least 100 executable observations across at least 20
+sessions. The 2.5th/50th/97.5th percentiles are labeled bootstrap uncertainty
+intervals, not formal confidence intervals about future profitability.
+
+```bash
+spy-research validate-expanded-stability \
+  --start 2026-01-02 --end 2026-08-19
+```
+
+The command is offline, read-only, deterministic, and non-persistent. It does
+not rank groups, produce a trade or quality score, optimize parameters, create
+filters, or calculate stops, targets, exits, win rate, realized P/L,
+expectancy, sizing, option results, or live/paper signals.
+
 ## Local setup
 
 Python 3.12 or newer is required.
@@ -1176,6 +1211,7 @@ spy-research market-condition-features --start 2026-08-03 --end 2026-08-19
 spy-research compare-regime-hypotheses --start 2026-08-03 --end 2026-08-19
 spy-research compare-room-to-next-level --start 2026-08-03 --end 2026-08-19
 spy-research compare-market-structure --start 2026-08-03 --end 2026-08-19
+spy-research validate-expanded-stability --start 2026-01-02 --end 2026-08-19
 ```
 
 These commands do not make network requests. The feed is configured only in

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from typing import Sequence
 
 from spy_research.bars.store import ProcessedFiveMinuteStore
 from spy_research.config import ResearchConfig
@@ -17,6 +18,7 @@ from spy_research.strategy.comparisons.market_condition_service import (
     MarketConditionFeatureService,
 )
 from spy_research.strategy.comparisons.regime_hypotheses import (
+    FrozenQuartileBoundary,
     RegimeHypothesisComparisonResult,
     build_regime_hypothesis_annotations,
     calculate_regime_hypothesis_comparison,
@@ -40,7 +42,13 @@ class RegimeHypothesisComparisonService:
         self._raw_store = raw_store
         self._calendar = calendar or XNYSCalendar()
 
-    def calculate(self, *, start: date, end: date) -> RegimeHypothesisComparisonResult:
+    def calculate(
+        self,
+        *,
+        start: date,
+        end: date,
+        boundaries: Sequence[FrozenQuartileBoundary] | None = None,
+    ) -> RegimeHypothesisComparisonResult:
         setup_result = BasePriceActionService(
             self._config,
             self._processed_store,
@@ -76,7 +84,10 @@ class RegimeHypothesisComparisonService:
             self._raw_store,
             calendar=self._calendar,
         ).calculate(start=start, end=end)
-        annotations = build_regime_hypothesis_annotations(market_result)
+        annotations = build_regime_hypothesis_annotations(
+            market_result,
+            boundaries=boundaries,
+        )
         return calculate_regime_hypothesis_comparison(
             setup_result,
             outcome_result,
@@ -84,4 +95,5 @@ class RegimeHypothesisComparisonService:
             market_result,
             context_result,
             annotations,
+            boundaries=boundaries,
         )

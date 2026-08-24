@@ -37,6 +37,21 @@ from spy_research.strategy.models import (
 )
 from spy_research.strategy.setup_outcome_service import SetupOutcomeService
 from spy_research.strategy.setup_outcomes import calculate_setup_outcomes
+from spy_research.strategy.stability import (
+    BOOTSTRAP_RESAMPLES,
+    BOOTSTRAP_SEED,
+    ExpandedStabilityReport,
+    FrozenStabilityHorizon,
+    FrozenStabilityRecord,
+    FrozenState,
+    GroupPartitionStatistics,
+    SampleSizeLabel,
+    StabilityInputError,
+    ValidationPartition,
+    calculate_expanded_stability,
+    stability_report_hash,
+)
+from spy_research.strategy.stability_service import ExpandedStabilityService
 
 __all__ = [
     "BasePriceActionCandidate",
@@ -59,6 +74,17 @@ __all__ = [
     "SetupOutcomeResult",
     "SetupOutcomeService",
     "SetupDirection",
+    "BOOTSTRAP_RESAMPLES",
+    "BOOTSTRAP_SEED",
+    "ExpandedStabilityReport",
+    "ExpandedStabilityService",
+    "FrozenStabilityHorizon",
+    "FrozenStabilityRecord",
+    "FrozenState",
+    "GroupPartitionStatistics",
+    "SampleSizeLabel",
+    "StabilityInputError",
+    "ValidationPartition",
     "calculate_setup_outcomes",
     "calculate_base_strategy_statistics",
     "entry_time_bucket",
@@ -66,4 +92,6 @@ __all__ = [
     "interaction_identity",
     "qualify_base_price_action_candidate",
     "select_entry_reference",
+    "calculate_expanded_stability",
+    "stability_report_hash",
 ]

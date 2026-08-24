@@ -500,10 +500,14 @@ def classify_regime_hypothesis(
 
 def build_regime_hypothesis_annotations(
     result: MarketConditionFeatureResult,
+    *,
+    boundaries: Sequence[FrozenQuartileBoundary] | None = None,
 ) -> tuple[RegimeHypothesisAnnotation, ...]:
-    boundaries = frozen_boundaries(result)
+    effective_boundaries = (
+        tuple(boundaries) if boundaries is not None else frozen_boundaries(result)
+    )
     return tuple(
-        classify_regime_hypothesis(annotation, boundaries)
+        classify_regime_hypothesis(annotation, effective_boundaries)
         for annotation in result.annotations
     )
 
@@ -639,6 +643,8 @@ def calculate_regime_hypothesis_comparison(
     market_result: MarketConditionFeatureResult,
     context_result: CombinedContextMatrixResult,
     annotations: Sequence[RegimeHypothesisAnnotation],
+    *,
+    boundaries: Sequence[FrozenQuartileBoundary] | None = None,
 ) -> RegimeHypothesisComparisonResult:
     """Join frozen outcomes only after all hypothesis labels are assigned."""
 
@@ -785,7 +791,11 @@ def calculate_regime_hypothesis_comparison(
         source_stage10_9_hash=sha256(
             market_result.model_dump_json().encode()
         ).hexdigest(),
-        boundaries=frozen_boundaries(market_result),
+        boundaries=(
+            tuple(boundaries)
+            if boundaries is not None
+            else frozen_boundaries(market_result)
+        ),
         annotations=tuple(annotations),
         base_all_horizons=baseline.horizons,
         groups=tuple(groups),

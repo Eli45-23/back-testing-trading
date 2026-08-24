@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from typing import Sequence
 
 from spy_research.bars.store import ProcessedFiveMinuteStore
 from spy_research.config import ResearchConfig
@@ -19,6 +20,9 @@ from spy_research.strategy.base_price_action_service import BasePriceActionServi
 from spy_research.strategy.base_statistics import calculate_base_strategy_statistics
 from spy_research.strategy.comparisons.combined_context_service import (
     CombinedContextMatrixService,
+)
+from spy_research.strategy.comparisons.regime_hypotheses import (
+    FrozenQuartileBoundary,
 )
 from spy_research.strategy.comparisons.regime_hypotheses_service import (
     RegimeHypothesisComparisonService,
@@ -47,7 +51,13 @@ class RoomToLevelComparisonService:
         self._raw_store = raw_store
         self._calendar = calendar or XNYSCalendar()
 
-    def calculate(self, *, start: date, end: date) -> RoomToLevelComparisonResult:
+    def calculate(
+        self,
+        *,
+        start: date,
+        end: date,
+        regime_boundaries: Sequence[FrozenQuartileBoundary] | None = None,
+    ) -> RoomToLevelComparisonResult:
         setup_result = BasePriceActionService(
             self._config,
             self._processed_store,
@@ -82,7 +92,7 @@ class RoomToLevelComparisonService:
             self._processed_store,
             self._raw_store,
             calendar=self._calendar,
-        ).calculate(start=start, end=end)
+        ).calculate(start=start, end=end, boundaries=regime_boundaries)
         previous = PreviousDayLevelsService(
             self._config, self._raw_store, calendar=self._calendar
         ).calculate(start=start, end=end)

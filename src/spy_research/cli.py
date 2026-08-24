@@ -108,10 +108,15 @@ from spy_research.strategy import (
     BaseStrategyStatisticsService,
     ConfirmationType,
     EntryStatus,
+    ExpandedStabilityReport,
+    ExpandedStabilityService,
     SetupOutcomeInputError,
     SetupOutcomeResult,
     SetupOutcomeService,
     SetupDirection,
+    StabilityInputError,
+    ValidationPartition,
+    stability_report_hash,
 )
 from spy_research.strategy.comparisons import (
     CombinedContextInputError,
@@ -982,6 +987,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
     )
     market_structure.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    expanded_stability = subparsers.add_parser(
+        "validate-expanded-stability",
+        help="run offline expanded frozen-rule stability analysis",
+    )
+    expanded_stability.add_argument("--start", type=parse_iso_date, required=True)
+    expanded_stability.add_argument("--end", type=parse_iso_date, required=True)
+    expanded_stability.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    expanded_stability.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    expanded_stability.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
     )
 
@@ -1929,6 +1950,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to compare market structure: {exc}", file=sys.stderr)
             return 2
         _print_market_structure_comparison(result)
+        return 0
+
+    if args.command == "validate-expanded-stability":
+        try:
+            config = load_research_config(args.config)
+            result = ExpandedStabilityService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+        except (StabilityInputError, SetupOutcomeInputError) as exc:
+            print(f"Unable to validate expanded stability: {exc}", file=sys.stderr)
+            return 1
+        except (
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to validate expanded stability: {exc}", file=sys.stderr)
+            return 2
+        _print_expanded_stability(result)
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:
@@ -3526,6 +3575,144 @@ def _print_market_structure_comparison(
     print("MIXED_STRUCTURE is not labeled chop.")
     print("No structure state, agreement, or swing distance qualifies a setup.")
     print("Stage 9 setups, entries, and outcomes remain unchanged.")
+    print("Status: PASS")
+
+
+def _print_expanded_stability(result: ExpandedStabilityReport) -> None:
+    print("SPY STAGE 12.2 EXPANDED FROZEN-RULE STABILITY ANALYSIS")
+    print(
+        f"Range: {result.start_date.isoformat()} → {result.end_date.isoformat()}  "
+        f"sessions={result.expanded_session_count} setups={result.expanded_setup_n} "
+        f"executable={result.expanded_executable_n}"
+    )
+    print(
+        f"Development: {result.development_start.isoformat()} → "
+        f"{result.development_end.isoformat()} sessions="
+        f"{result.development_session_count} setups={result.development_setup_n} "
+        f"executable={result.development_executable_n}"
+    )
+    print(f"Methodology: {result.methodological_label}")
+    print(f"CAVEAT: {result.caveat}")
+    base = next(
+        item
+        for item in result.partition_statistics
+        if item.partition is ValidationPartition.EXPANDED_ALL
+        and item.dimension == "BASE_ALL"
+    )
+    print("BASE_ALL full-sample horizons")
+    for horizon in base.horizons:
+        print(
+            f"{horizon.horizon} executable={horizon.executable_n} "
+            f"C/I={horizon.complete_n}/{horizon.incomplete_n} "
+            f"MFE mean/median={horizon.mfe.mean}/{horizon.mfe.median} "
+            f"MAE mean/median={horizon.mae.mean}/{horizon.mae.median} "
+            f"balance mean/median={horizon.balance.mean}/{horizon.balance.median} "
+            f">/=/<={horizon.favorable_adverse.mfe_greater}/"
+            f"{horizon.favorable_adverse.equal}/"
+            f"{horizon.favorable_adverse.mfe_less} "
+            f"ratio={horizon.median_mfe_mae_ratio} zero-MAE={horizon.zero_mae_n}"
+        )
+    print("Validation partitions and monthly EOD table")
+    for row in result.partition_statistics:
+        eod = row.horizons[-1]
+        print(
+            f"{row.partition.value} {row.dimension} {row.state}: "
+            f"setups={row.setup_n} executable={row.executable_n} "
+            f"sessions={row.session_count} LONG/SHORT={row.long_n}/{row.short_n} "
+            f"parent%={row.percentage_of_parent} "
+            f"EOD={eod.mfe.median}/{eod.mae.median}/{eod.balance.median} "
+            f">/=/<={eod.favorable_adverse.mfe_greater}/"
+            f"{eod.favorable_adverse.equal}/{eod.favorable_adverse.mfe_less}"
+        )
+    print("Research stability records (descriptive; not trade scores)")
+    for item in result.stability_scorecard:
+        print(
+            f"{item.dimension} {item.state}: n={item.total_executable_n} "
+            f"sessions={item.distinct_sessions} months={item.months_represented} "
+            f"positive/negative/zero/unavailable={item.positive_months}/"
+            f"{item.negative_months}/{item.zero_months}/{item.unavailable_months} "
+            f"monthly-balance min/median/max="
+            f"{item.minimum_monthly_median_balance}/"
+            f"{item.median_of_monthly_median_balances}/"
+            f"{item.maximum_monthly_median_balance} "
+            f"overall={item.overall_median_eod_balance} "
+            f"month>25%={item.one_month_over_25_percent} "
+            f"session>10%={item.one_session_over_10_percent}"
+        )
+    print("Direction-controlled Stage 10 EOD comparisons")
+    for row in result.direction_controlled:
+        eod = row.horizons[-1]
+        print(
+            f"{row.direction_scope.value} {row.dimension} {row.state}: "
+            f"n={row.executable_n} sessions={row.session_count} "
+            f"MFE/MAE/balance={eod.mfe.median}/{eod.mae.median}/"
+            f"{eod.balance.median} >/=/<={eod.favorable_adverse.mfe_greater}/"
+            f"{eod.favorable_adverse.equal}/{eod.favorable_adverse.mfe_less}"
+        )
+    print("Level-controlled Stage 10/11 EOD comparisons")
+    for row in result.level_controlled:
+        eod = row.horizons[-1]
+        print(
+            f"{row.level_scope.value} {row.dimension} {row.state}: "
+            f"n={row.executable_n} sample={row.sample_size.value} "
+            f"sessions={row.session_count} MFE/MAE/balance="
+            f"{eod.mfe.median}/{eod.mae.median}/{eod.balance.median}"
+        )
+    print("Session concentration")
+    for item in result.session_concentration:
+        print(
+            f"{item.dimension} {item.state}: setups/executable="
+            f"{item.setup_n}/{item.executable_n} sessions={item.distinct_sessions} "
+            f"median/max={item.median_setups_per_present_session}/"
+            f"{item.maximum_single_session_n} largest1/5%="
+            f"{item.largest_session_percentage}/{item.largest_five_sessions_percentage}"
+        )
+    print("Predeclared Stage 11 two-way relationships")
+    for item in result.two_way_relationships:
+        print(
+            f"{item.left_dimension}={item.left_state} × "
+            f"{item.right_dimension}={item.right_state}: setups={item.setup_n} "
+            f"executable={item.executable_n} sessions={item.session_count} "
+            f"LONG/SHORT={item.long_n}/{item.short_n} "
+            f"below30={item.below_30_executable} EOD="
+            f"{item.eod.mfe.median}/{item.eod.mae.median}/"
+            f"{item.eod.balance.median}"
+        )
+    print("Leave-one-month-out sensitivity")
+    for item in result.leave_one_month_out:
+        print(
+            f"{item.dimension} {item.state}: n={item.executable_n} "
+            f"full={item.full_median_mfe}/{item.full_median_mae}/"
+            f"{item.full_median_balance} exclusion-balance min/max="
+            f"{item.minimum_exclusion_median_balance}/"
+            f"{item.maximum_exclusion_median_balance} "
+            f"sign-changes={item.sign_change_exclusions}"
+        )
+    print(
+        f"Session bootstrap: seed={result.bootstrap_seed} "
+        f"resamples={result.bootstrap_resamples}"
+    )
+    for item in result.bootstrap_uncertainty:
+        intervals = " ".join(
+            f"{value.metric}={value.p2_5}/{value.p50}/{value.p97_5}"
+            for value in item.intervals
+        )
+        print(
+            f"{item.dimension} {item.state}: n={item.executable_n} "
+            f"sessions={item.session_count} {intervals}"
+        )
+    print("Development comparisons")
+    for item in result.development_comparisons:
+        print(
+            f"{item.dimension} {item.state} vs {item.comparison_partition}: "
+            f"n={item.development_n}/{item.comparison_n} sessions="
+            f"{item.development_sessions}/{item.comparison_sessions} balance="
+            f"{item.development_median_balance}/{item.comparison_median_balance} "
+            f"difference={item.median_balance_difference} "
+            f"sign-agrees={item.sign_agrees}"
+        )
+    print(f"Deterministic Stage 12.2 hash: {stability_report_hash(result)}")
+    print("No strategy qualification, ranking, optimization, or trading metric added.")
     print("Status: PASS")
 
 

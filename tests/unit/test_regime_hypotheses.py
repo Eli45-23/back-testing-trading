@@ -30,6 +30,7 @@ from spy_research.strategy.comparisons import (
 from spy_research.strategy.comparisons.regime_hypotheses import (
     BOUNDARY_FEATURES,
     CROSS_FEATURES,
+    build_regime_hypothesis_annotations,
 )
 
 
@@ -94,6 +95,41 @@ def test_exact_frozen_boundaries_are_copied_without_recalculation() -> None:
     assert tuple(item.feature_name for item in copied) == BOUNDARY_FEATURES
     assert copied[0].q1_upper == Decimal("1.1")
     assert copied[-1].q3_upper == Decimal("8.3")
+
+
+def test_explicit_frozen_boundaries_are_reused_without_reoptimization() -> None:
+    expanded_annotation = source_annotation(
+        directional_efficiency_24_bars=Decimal("3.5"),
+        ema9_ema20_separation_atr14=Decimal("3.5"),
+    )
+    expanded_reports = tuple(
+        SimpleNamespace(
+            feature_name=name,
+            distribution=SimpleNamespace(
+                q1_upper=Decimal("10"),
+                q2_upper=Decimal("20"),
+                q3_upper=Decimal("30"),
+            ),
+        )
+        for name in BOUNDARY_FEATURES
+    )
+    expanded_result = SimpleNamespace(
+        annotations=(expanded_annotation,),
+        feature_reports=expanded_reports,
+    )
+
+    frozen = build_regime_hypothesis_annotations(
+        expanded_result,
+        boundaries=boundaries(),
+    )
+    recomputed = build_regime_hypothesis_annotations(expanded_result)
+
+    assert frozen[0].efficiency_state is EfficiencyState.HIGH
+    assert frozen[0].separation_state is SeparationState.WIDE
+    assert frozen[0].combined_state is CombinedRegimeState.TREND_LIKE_A
+    assert recomputed[0].efficiency_state is EfficiencyState.LOW
+    assert recomputed[0].separation_state is SeparationState.TIGHT
+    assert recomputed[0].combined_state is CombinedRegimeState.OTHER
 
 
 @pytest.mark.parametrize(
