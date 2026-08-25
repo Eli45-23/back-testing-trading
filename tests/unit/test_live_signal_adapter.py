@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import ssl
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
@@ -13,10 +14,12 @@ from spy_research.live import (
     ALPACA_SIP_STREAM_URL,
     AlpacaLiveBarNormalizer,
     AlpacaSipWebSocketTransport,
+    LiveAuthenticationError,
     LiveBootstrapper,
     LiveDataError,
     LiveMarketDataAdapter,
     LiveSignalEngineService,
+    LiveTransportError,
     live_signal_report_hash,
 )
 from spy_research.levels import PreviousDayLevels
@@ -350,7 +353,7 @@ class FakeSocket:
     def send(self, value):
         self.sent.append(json.loads(value))
 
-    def recv(self):
+    def recv(self, timeout=None):
         value = next(self.responses)
         if isinstance(value, BaseException):
             raise value
@@ -363,6 +366,7 @@ def test_transport_uses_only_sip_bar_subscription_and_redacts_errors() -> None:
     bar = bullish_signal_bars()[0]
     socket = FakeSocket(
         [
+            '[{"T":"success","msg":"connected"}]',
             '[{"T":"success","msg":"authenticated"}]',
             '[{"T":"subscription","bars":["SPY"]}]',
             json.dumps([live_message(bar)]),
@@ -370,8 +374,10 @@ def test_transport_uses_only_sip_bar_subscription_and_redacts_errors() -> None:
     )
     endpoints = []
 
-    def connector(endpoint):
+    def connector(endpoint, **kwargs):
         endpoints.append(endpoint)
+        assert kwargs["ssl"].verify_mode == ssl.CERT_REQUIRED
+        assert kwargs["ssl"].check_hostname
         return socket
 
     transport = AlpacaSipWebSocketTransport(
@@ -391,20 +397,21 @@ def test_transport_uses_only_sip_bar_subscription_and_redacts_errors() -> None:
 
 def test_transport_reconnect_retains_adapter_state_and_does_not_duplicate_signal() -> None:
     bars = bullish_signal_bars()
+    connected = '[{"T":"success","msg":"connected"}]'
     auth = '[{"T":"success","msg":"authenticated"}]'
     subscription = '[{"T":"subscription","bars":["SPY"]}]'
     sockets = iter(
         (
-            FakeSocket((auth, subscription, json.dumps([live_message(bars[4])]), OSError())),
+            FakeSocket((connected, auth, subscription, json.dumps([live_message(bars[4])]), OSError())),
             FakeSocket(
-                (auth, subscription)
+                (connected, auth, subscription)
                 + tuple(json.dumps([live_message(bar)]) for bar in bars[4:])
             ),
         )
     )
     connector_count = 0
 
-    def connector(endpoint):
+    def connector(endpoint, **_kwargs):
         nonlocal connector_count
         assert endpoint == ALPACA_SIP_STREAM_URL
         connector_count += 1
@@ -434,17 +441,97 @@ def test_transport_reconnect_retains_adapter_state_and_does_not_duplicate_signal
 def test_authentication_failure_is_sanitized() -> None:
     key = "auth-api-key-that-must-not-leak"
     secret = "auth-secret-that-must-not-leak"
-    socket = FakeSocket(('[{"T":"error","code":401,"msg":"auth failed"}]',))
+    socket = FakeSocket(
+        (
+            '[{"T":"success","msg":"connected"}]',
+            '[{"T":"error","code":401,"msg":"auth failed"}]',
+        )
+    )
     transport = AlpacaSipWebSocketTransport(
         api_key=SecretStr(key),
         secret_key=SecretStr(secret),
-        connector=lambda endpoint: socket,
+        connector=lambda endpoint, **kwargs: socket,
     )
     with pytest.raises(LiveDataError) as error:
         next(transport.messages())
     rendered = str(error.value)
     assert key not in rendered
     assert secret not in rendered
+
+
+def transport_for_socket(socket: FakeSocket, **kwargs) -> AlpacaSipWebSocketTransport:
+    return AlpacaSipWebSocketTransport(
+        api_key=SecretStr("handshake-key"),
+        secret_key=SecretStr("handshake-secret"),
+        connector=lambda endpoint, **connector_kwargs: socket,
+        **kwargs,
+    )
+
+
+def test_authenticated_without_connected_is_rejected_before_auth_is_sent() -> None:
+    socket = FakeSocket(('[{"T":"success","msg":"authenticated"}]',))
+    with pytest.raises(LiveAuthenticationError, match="connected-state transition"):
+        next(transport_for_socket(socket).messages())
+    assert socket.sent == []
+
+
+def test_duplicate_connected_frame_is_rejected_during_authentication() -> None:
+    connected = '[{"T":"success","msg":"connected"}]'
+    socket = FakeSocket((connected, connected))
+    with pytest.raises(LiveAuthenticationError, match="authenticated-state transition"):
+        next(transport_for_socket(socket).messages())
+    assert socket.sent == [
+        {"action": "auth", "key": "handshake-key", "secret": "handshake-secret"}
+    ]
+
+
+def test_malformed_handshake_frame_is_rejected() -> None:
+    socket = FakeSocket(("not-json",))
+    with pytest.raises(LiveTransportError, match="malformed JSON"):
+        next(transport_for_socket(socket).messages())
+    assert socket.sent == []
+
+
+def test_authentication_wait_is_bounded_and_subscription_is_not_sent() -> None:
+    socket = FakeSocket(
+        ('[{"T":"success","msg":"connected"}]', TimeoutError())
+    )
+    transport = transport_for_socket(socket, handshake_timeout_seconds=0.25)
+    with pytest.raises(LiveAuthenticationError, match="timed out waiting for authenticated"):
+        next(transport.messages())
+    assert len(socket.sent) == 1
+
+
+def test_bar_before_authentication_fails_without_reaching_stage14_1() -> None:
+    bar = bullish_signal_bars()[0]
+    socket = FakeSocket(
+        (
+            '[{"T":"success","msg":"connected"}]',
+            json.dumps([live_message(bar)]),
+        )
+    )
+    transport = transport_for_socket(socket)
+    source = MemorySource(prior_bars() + bullish_signal_bars()[:5])
+    service = LiveSignalEngineService(
+        LiveBootstrapper(source, calendar=CALENDAR),
+        transport,
+        clock=lambda: bar.timestamp + timedelta(minutes=1),
+    )
+    with pytest.raises(LiveAuthenticationError, match="authenticated-state transition"):
+        service.run(as_of=OPEN + timedelta(minutes=5), max_bars=1)
+    assert len(socket.sent) == 1
+
+
+def test_transport_rejects_insecure_injected_tls_context() -> None:
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    with pytest.raises(LiveTransportError, match="certificate and hostname verification"):
+        AlpacaSipWebSocketTransport(
+            api_key=SecretStr("tls-key"),
+            secret_key=SecretStr("tls-secret"),
+            ssl_context=context,
+        )
 
 
 def test_live_report_hash_is_deterministic() -> None:

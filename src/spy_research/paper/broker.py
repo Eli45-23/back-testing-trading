@@ -122,7 +122,13 @@ class AlpacaPaperBroker:
             self._client.close()
 
     def verify_paper_account(self) -> None:
-        payload = self._request("GET", "/v2/account")
+        response = self._raw_request("GET", "/v2/account")
+        if response.status_code == 401:
+            raise PaperExecutionError(
+                "configured credentials are not authorized for the Alpaca "
+                "paper account (HTTP 401)"
+            )
+        payload = self._validated_response(response)
         if not isinstance(payload, Mapping):
             raise PaperExecutionError("paper account response is invalid")
         if payload.get("status") != "ACTIVE":

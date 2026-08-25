@@ -719,6 +719,7 @@ def test_paper_http_failure_is_sanitized_and_never_echoes_credentials() -> None:
         broker.verify_paper_account()
     rendered = str(error.value)
     assert "HTTP 401" in rendered
+    assert "not authorized for the Alpaca paper account" in rendered
     assert key not in rendered
     assert secret not in rendered
     client.close()
