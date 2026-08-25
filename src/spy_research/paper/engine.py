@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal, localcontext
 from hashlib import sha256
 
@@ -30,6 +31,20 @@ from spy_research.shadow import (
 
 
 CLIENT_ORDER_PREFIX = "s14"
+MAX_ENTRY_SUBMISSIONS_PER_SESSION = 1
+
+
+@dataclass(frozen=True)
+class SessionEntrySubmissionState:
+    """Immutable broker-submission latch for one XNYS RTH session."""
+
+    session_date: date
+    entry_client_order_id: str | None = None
+    reconciliation_uncertain: bool = False
+
+    @property
+    def consumed(self) -> bool:
+        return self.entry_client_order_id is not None
 
 
 def deterministic_client_order_id(
@@ -90,6 +105,9 @@ class PaperExecutionEngine:
         self._actions: list[str] = []
         self._reconciled = not enable_paper_orders
         self._blocked = False
+        self._entry_submission_state = SessionEntrySubmissionState(
+            session_date=session.session_date
+        )
 
     @property
     def candidate(self) -> PaperCandidate:
@@ -102,6 +120,20 @@ class PaperExecutionEngine:
     @property
     def orders_enabled(self) -> bool:
         return self._enabled
+
+    @property
+    def maximum_entry_submissions_per_session(self) -> int:
+        return MAX_ENTRY_SUBMISSIONS_PER_SESSION
+
+    @property
+    def entry_submission_consumed(self) -> bool:
+        """Whether this RTH session has already submitted its one entry order."""
+
+        return self._entry_submission_state.consumed
+
+    @property
+    def entry_submission_state(self) -> SessionEntrySubmissionState:
+        return self._entry_submission_state
 
     @property
     def executions(self) -> tuple[PaperExecutionRecord, ...]:
@@ -131,11 +163,26 @@ class PaperExecutionEngine:
         recovered: list[PaperExecutionRecord] = []
         for position in selected:
             entry_client_id = self._client_id(position, BrokerOrderRole.ENTRY)
-            entry = self._broker.find_order_by_client_id(
-                entry_client_id, role=BrokerOrderRole.ENTRY
-            )
+            try:
+                entry = self._broker.find_order_by_client_id(
+                    entry_client_id, role=BrokerOrderRole.ENTRY
+                )
+            except Exception:
+                self._mark_entry_history_uncertain()
+                self._block_all(
+                    "paper session entry-submission history cannot be reconciled"
+                )
             if entry is None:
                 continue
+            if (
+                self.entry_submission_consumed
+                and self._entry_submission_state.entry_client_order_id
+                != entry.client_order_id
+            ):
+                self._block_all(
+                    "multiple paper entry submissions exist for the current session"
+                )
+            self._consume_entry_submission(entry.client_order_id)
             recognized_ids.add(entry.client_order_id)
             record = self._record_from_shadow(
                 position, state=PaperExecutionState.DRY_RUN_INTENDED
@@ -233,6 +280,29 @@ class PaperExecutionEngine:
         existing = self._executions.get(key)
         if existing is not None:
             return existing
+        record = self._record_from_shadow(
+            position, state=PaperExecutionState.DRY_RUN_INTENDED
+        )
+        if not self._enabled:
+            self._executions[key] = record
+            self._actions.append(
+                f"DRY_RUN_ENTRY setup={position.setup_identity} candidate={position.candidate_id} qty={self._qty}"
+            )
+            return record
+        if not self._reconciled:
+            raise PaperExecutionError("paper broker must reconcile before new submissions")
+        if self.entry_submission_consumed:
+            blocked = _updated(
+                record,
+                state=PaperExecutionState.BLOCKED,
+                failure_reason="paper session entry-submission cap already consumed",
+            )
+            self._executions[key] = blocked
+            self._actions.append(
+                f"ENTRY_BLOCKED_SESSION_CAP setup={position.setup_identity} "
+                f"candidate={position.candidate_id}"
+            )
+            return blocked
         if any(
             item.local_expected_position_qty < 0
             or item.state
@@ -245,30 +315,37 @@ class PaperExecutionEngine:
             for item in self._executions.values()
         ):
             raise PaperExecutionError("paper pyramiding and overlapping entries are disabled")
-        record = self._record_from_shadow(
-            position, state=PaperExecutionState.DRY_RUN_INTENDED
-        )
-        if not self._enabled:
-            self._executions[key] = record
-            self._actions.append(
-                f"DRY_RUN_ENTRY setup={position.setup_identity} candidate={position.candidate_id} qty={self._qty}"
-            )
-            return record
-        if not self._reconciled:
-            raise PaperExecutionError("paper broker must reconcile before new submissions")
         assert self._broker is not None
         client_id = self._client_id(position, BrokerOrderRole.ENTRY)
-        entry = self._broker.find_order_by_client_id(
-            client_id, role=BrokerOrderRole.ENTRY
-        )
-        if entry is None:
-            entry = self._broker.submit_market_entry(
-                qty=self._qty, client_order_id=client_id
+        try:
+            entry = self._broker.find_order_by_client_id(
+                client_id, role=BrokerOrderRole.ENTRY
             )
+        except Exception:
+            self._mark_entry_history_uncertain()
+            self._blocked = True
+            raise PaperExecutionError(
+                "paper session entry-submission history cannot be reconciled"
+            ) from None
+        if entry is None:
+            try:
+                entry = self._broker.submit_market_entry(
+                    qty=self._qty, client_order_id=client_id
+                )
+            except Exception:
+                # A failed transport can leave submission acceptance unknowable.
+                # Permanently fail closed for the rest of this engine/session.
+                self._mark_entry_history_uncertain()
+                self._blocked = True
+                raise PaperExecutionError(
+                    "paper entry submission result is uncertain; session is blocked"
+                ) from None
+            self._consume_entry_submission(entry.client_order_id)
             self._actions.append(
                 f"ENTRY_SUBMITTED setup={position.setup_identity} candidate={position.candidate_id} qty={self._qty}"
             )
         else:
+            self._consume_entry_submission(entry.client_order_id)
             self._actions.append(
                 f"ENTRY_REUSED setup={position.setup_identity} candidate={position.candidate_id}"
             )
@@ -612,6 +689,24 @@ class PaperExecutionEngine:
             raise PaperExecutionError("paper execution time must be timezone-aware")
         if timestamp.astimezone(self._session.market_close.tzinfo).date() != self._session.session_date:
             raise PaperExecutionError("paper execution cannot bridge trading sessions")
+
+    def _consume_entry_submission(self, client_order_id: str) -> None:
+        previous = self._entry_submission_state.entry_client_order_id
+        if previous is not None and previous != client_order_id:
+            self._block_all(
+                "multiple paper entry submissions exist for the current session"
+            )
+        self._entry_submission_state = SessionEntrySubmissionState(
+            session_date=self._session.session_date,
+            entry_client_order_id=client_order_id,
+        )
+
+    def _mark_entry_history_uncertain(self) -> None:
+        self._entry_submission_state = SessionEntrySubmissionState(
+            session_date=self._session.session_date,
+            entry_client_order_id=self._entry_submission_state.entry_client_order_id,
+            reconciliation_uncertain=True,
+        )
 
     def _fail_record(self, key: tuple[str, str], reason: str) -> None:
         record = self._executions[key]

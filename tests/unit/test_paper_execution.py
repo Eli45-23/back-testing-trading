@@ -381,6 +381,147 @@ def test_duplicate_signal_and_reconnect_do_not_duplicate_order() -> None:
     assert broker.entry_submissions == 1
 
 
+def test_first_submission_consumes_one_per_session_cap_and_blocks_second_active_signal() -> None:
+    broker = FakePaperBroker()
+    engine = enabled_engine(broker)
+    first = engine.handle_shadow_event(entry_event(identity="first"), now=KNOWN)
+    second = engine.handle_shadow_event(entry_event(identity="second"), now=KNOWN)
+
+    assert first is not None and first.state is PaperExecutionState.ENTRY_SUBMITTED
+    assert second is not None and second.state is PaperExecutionState.BLOCKED
+    assert second.failure_reason == "paper session entry-submission cap already consumed"
+    assert engine.maximum_entry_submissions_per_session == 1
+    assert engine.entry_submission_consumed
+    assert broker.entry_submissions == 1
+    assert engine.actions[-1].startswith("ENTRY_BLOCKED_SESSION_CAP")
+
+
+@pytest.mark.parametrize("exit_role", (BrokerOrderRole.TARGET, BrokerOrderRole.STOP))
+def test_completed_first_trade_still_blocks_a_second_entry(exit_role) -> None:
+    broker = FakePaperBroker(auto_fill_entry=True)
+    engine = enabled_engine(broker)
+    first = engine.handle_shadow_event(entry_event(identity="first"), now=KNOWN)
+    assert first is not None and first.protective_orders is not None
+    exit_order = (
+        first.protective_orders.target
+        if exit_role is BrokerOrderRole.TARGET
+        else first.protective_orders.stop
+    )
+    broker.fill(exit_order.broker_order_id, "99", position_qty="0")
+    engine.reconcile_broker_state(now=KNOWN + timedelta(minutes=1))
+    assert engine.executions[0].state is PaperExecutionState.FLAT
+
+    second = engine.handle_shadow_event(
+        entry_event(identity="second"), now=KNOWN + timedelta(minutes=2)
+    )
+    assert second is not None and second.state is PaperExecutionState.BLOCKED
+    assert broker.entry_submissions == 1
+
+
+def test_eod_exit_and_rejected_entry_each_consume_the_session_cap() -> None:
+    filled_broker = FakePaperBroker(auto_fill_entry=True)
+    eod_engine = enabled_engine(filled_broker)
+    eod_engine.handle_shadow_event(entry_event(identity="eod"), now=KNOWN)
+    eod_engine.enforce_session_close(now=SESSION.market_close)
+    blocked_after_eod = eod_engine.handle_shadow_event(
+        entry_event(identity="after-eod"), now=SESSION.market_close
+    )
+    assert eod_engine.entry_submission_consumed
+    assert blocked_after_eod is not None
+    assert blocked_after_eod.state is PaperExecutionState.BLOCKED
+    assert filled_broker.entry_submissions == 1
+
+    rejected_broker = FakePaperBroker()
+    original_submit = rejected_broker.submit_market_entry
+
+    def rejected_submit(*, qty, client_order_id):
+        order = original_submit(qty=qty, client_order_id=client_order_id)
+        rejected = order.model_copy(update={"status": BrokerOrderStatus.REJECTED})
+        rejected_broker.orders[order.broker_order_id] = rejected
+        return rejected
+
+    rejected_broker.submit_market_entry = rejected_submit
+    rejected_engine = enabled_engine(rejected_broker)
+    with pytest.raises(PaperExecutionError, match="terminated without a fill"):
+        rejected_engine.handle_shadow_event(entry_event(identity="rejected"), now=KNOWN)
+    assert rejected_engine.entry_submission_consumed
+    assert rejected_broker.entry_submissions == 1
+
+
+def test_dry_run_intentions_never_consume_the_session_cap() -> None:
+    engine = PaperExecutionEngine(SESSION, candidate=PaperCandidate.ATR_0_75)
+    engine.handle_shadow_event(entry_event(identity="first"), now=KNOWN)
+    engine.handle_shadow_event(entry_event(identity="second"), now=KNOWN)
+    assert not engine.entry_submission_consumed
+    assert len(engine.executions) == 2
+
+
+def test_restart_reconstructs_consumed_cap_from_broker_visible_entry_identity() -> None:
+    broker = FakePaperBroker()
+    first_engine = enabled_engine(broker)
+    first_event = entry_event(identity="first")
+    first_engine.handle_shadow_event(first_event, now=KNOWN)
+
+    restarted = PaperExecutionEngine(
+        SESSION,
+        candidate=PaperCandidate.ATR_0_75,
+        enable_paper_orders=True,
+        broker=broker,
+    )
+    restarted.recover((first_event.position,), now=KNOWN + timedelta(minutes=1))
+    restarted.recover((first_event.position,), now=KNOWN + timedelta(minutes=1))
+    assert restarted.entry_submission_consumed
+    second = restarted.handle_shadow_event(
+        entry_event(identity="second"), now=KNOWN + timedelta(minutes=2)
+    )
+    assert second is not None and second.state is PaperExecutionState.BLOCKED
+    assert broker.entry_submissions == 1
+
+
+def test_uncertain_restart_entry_history_fails_closed() -> None:
+    class UncertainBroker(FakePaperBroker):
+        def find_order_by_client_id(self, client_order_id, *, role):
+            raise OSError("simulated unavailable broker history")
+
+    broker = UncertainBroker()
+    engine = PaperExecutionEngine(
+        SESSION,
+        candidate=PaperCandidate.ATR_0_75,
+        enable_paper_orders=True,
+        broker=broker,
+    )
+    with pytest.raises(PaperExecutionError, match="history cannot be reconciled"):
+        engine.recover((entry_event(identity="first").position,), now=KNOWN)
+    assert engine.entry_submission_state.reconciliation_uncertain
+    assert broker.entry_submissions == 0
+
+
+def test_new_xnys_session_gets_a_fresh_immutable_entry_latch() -> None:
+    broker = FakePaperBroker()
+    first = enabled_engine(broker)
+    first.handle_shadow_event(entry_event(identity="first"), now=KNOWN)
+    assert first.entry_submission_consumed
+    next_session = CALENDAR.session_for_date(date(2026, 8, 20))
+    second = PaperExecutionEngine(next_session, candidate=PaperCandidate.ATR_0_75)
+    assert second.entry_submission_state.session_date == date(2026, 8, 20)
+    assert not second.entry_submission_consumed
+
+
+def test_long_signal_never_creates_or_consumes_base_short_paper_entry() -> None:
+    long_signal = signal("long").model_copy(
+        update={
+            "direction": SetupDirection.LONG,
+            "base_short_membership": False,
+            "stage13_forward_test_candidate_ids": (),
+        }
+    )
+    machine = ShadowForwardStateMachine(SESSION)
+    assert machine.register_signal(long_signal, available_levels=levels()) == ()
+    engine = PaperExecutionEngine(SESSION, candidate=PaperCandidate.ATR_0_75)
+    assert not engine.entry_submission_consumed
+    assert engine.executions == ()
+
+
 @pytest.mark.parametrize(
     "candidate,expected_stop",
     (
