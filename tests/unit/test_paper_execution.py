@@ -8,6 +8,7 @@ import pytest
 from pydantic import SecretStr, ValidationError
 
 from spy_research.cli import build_parser
+from spy_research.config import AlpacaEnvironment
 from spy_research.data import RawBarRecord
 from spy_research.interactions import AvailableLevel, LevelType
 from spy_research.live import LiveSignalEvent
@@ -612,6 +613,32 @@ def test_live_alpaca_endpoint_is_structurally_impossible() -> None:
             client=live_client,
         )
     live_client.close()
+
+
+def test_paper_broker_uses_only_dedicated_paper_credentials(monkeypatch) -> None:
+    market_key = "market-key-not-for-paper"
+    market_secret = "market-secret-not-for-paper"
+    paper_key = "dedicated-paper-key"
+    paper_secret = "dedicated-paper-secret"
+    monkeypatch.setenv("ALPACA_API_KEY", market_key)
+    monkeypatch.setenv("ALPACA_SECRET_KEY", market_secret)
+    monkeypatch.setenv("ALPACA_PAPER_API_KEY", paper_key)
+    monkeypatch.setenv("ALPACA_PAPER_SECRET_KEY", paper_secret)
+    environment = AlpacaEnvironment()
+    with AlpacaPaperBroker.from_environment(environment) as broker:
+        assert broker._client.headers["apca-api-key-id"] == paper_key
+        assert broker._client.headers["apca-api-secret-key"] == paper_secret
+        assert broker._client.headers["apca-api-key-id"] != market_key
+        assert broker._client.headers["apca-api-secret-key"] != market_secret
+
+
+def test_missing_dedicated_paper_credentials_fail_closed(monkeypatch) -> None:
+    monkeypatch.setenv("ALPACA_API_KEY", "market-only-key")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "market-only-secret")
+    monkeypatch.delenv("ALPACA_PAPER_API_KEY", raising=False)
+    monkeypatch.delenv("ALPACA_PAPER_SECRET_KEY", raising=False)
+    with pytest.raises(PaperExecutionError, match="paper credentials are required"):
+        AlpacaPaperBroker.from_environment(AlpacaEnvironment())
 
 
 def test_paper_adapter_uses_only_stock_market_entry_and_short_oco_payloads() -> None:

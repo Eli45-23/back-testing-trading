@@ -26,6 +26,8 @@ def test_env_file_is_not_required_for_research_config(tmp_path) -> None:
     assert settings.research.symbol == "SPY"
     assert settings.alpaca.api_key is None
     assert settings.alpaca.secret_key is None
+    assert settings.alpaca.paper_api_key is None
+    assert settings.alpaca.paper_secret_key is None
 
 
 def test_environment_cannot_override_frozen_yaml_feed(monkeypatch) -> None:
@@ -52,6 +54,28 @@ def test_credentials_are_redacted_from_string_representations(monkeypatch) -> No
     assert secret_key not in str(credentials)
     assert secret_key not in repr(credentials)
     assert "**********" in repr(credentials)
+
+
+def test_market_data_and_paper_credentials_are_separate_and_redacted(monkeypatch) -> None:
+    values = {
+        "ALPACA_API_KEY": "separate-market-key",
+        "ALPACA_SECRET_KEY": "separate-market-secret",
+        "ALPACA_PAPER_API_KEY": "separate-paper-key",
+        "ALPACA_PAPER_SECRET_KEY": "separate-paper-secret",
+    }
+    for name, value in values.items():
+        monkeypatch.setenv(name, value)
+
+    credentials = AlpacaEnvironment()
+
+    assert credentials.api_key is not None
+    assert credentials.secret_key is not None
+    assert credentials.paper_api_key is not None
+    assert credentials.paper_secret_key is not None
+    assert credentials.api_key.get_secret_value() == values["ALPACA_API_KEY"]
+    assert credentials.paper_api_key.get_secret_value() == values["ALPACA_PAPER_API_KEY"]
+    assert all(value not in str(credentials) for value in values.values())
+    assert all(value not in credentials.model_dump_json() for value in values.values())
 
 
 @pytest.mark.parametrize(

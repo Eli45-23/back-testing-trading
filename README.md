@@ -1354,6 +1354,17 @@ submission, accepts only SPY, and uses positive whole-share quantities with a
 default of one share. The code contains no options order path, buying-power
 sizing, fractional shares, pyramiding, scaling, or overnight carry.
 
+Paper-account credentials are deliberately separate from the SIP market-data
+credentials and must be supplied in the ignored local `.env` file:
+
+```text
+ALPACA_PAPER_API_KEY=your-paper-key-id
+ALPACA_PAPER_SECRET_KEY=your-paper-secret-key
+```
+
+Missing paper credentials fail closed; the paper adapter never substitutes the
+market-data credentials or changes its fixed paper endpoint.
+
 At the first Stage 14.3 actionable entry minute, enabled mode submits a DAY
 market sell with a deterministic client order ID. The theoretical one-minute
 open remains the intended reference. Once a complete broker fill is confirmed,

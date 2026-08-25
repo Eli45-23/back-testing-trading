@@ -104,13 +104,13 @@ class AlpacaPaperBroker:
 
     @classmethod
     def from_environment(cls, environment: AlpacaEnvironment, **kwargs):
-        if environment.api_key is None or environment.secret_key is None:
+        if environment.paper_api_key is None or environment.paper_secret_key is None:
             raise PaperExecutionError(
                 "Alpaca paper credentials are required in the local .env file"
             )
         return cls(
-            api_key=environment.api_key,
-            secret_key=environment.secret_key,
+            api_key=environment.paper_api_key,
+            secret_key=environment.paper_secret_key,
             **kwargs,
         )
 

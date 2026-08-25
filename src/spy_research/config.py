@@ -145,6 +145,12 @@ class AlpacaEnvironment(BaseSettings):
 
     api_key: SecretStr | None = Field(default=None, validation_alias="ALPACA_API_KEY")
     secret_key: SecretStr | None = Field(default=None, validation_alias="ALPACA_SECRET_KEY")
+    paper_api_key: SecretStr | None = Field(
+        default=None, validation_alias="ALPACA_PAPER_API_KEY"
+    )
+    paper_secret_key: SecretStr | None = Field(
+        default=None, validation_alias="ALPACA_PAPER_SECRET_KEY"
+    )
 
 
 class AppConfig(StrictModel):
@@ -174,7 +180,12 @@ def load_settings(
     alpaca = AlpacaEnvironment(_env_file=env_path, _env_file_encoding="utf-8")
     register_sensitive_values(
         secret.get_secret_value()
-        for secret in (alpaca.api_key, alpaca.secret_key)
+        for secret in (
+            alpaca.api_key,
+            alpaca.secret_key,
+            alpaca.paper_api_key,
+            alpaca.paper_secret_key,
+        )
         if secret is not None
     )
     return AppConfig(research=load_research_config(config_path), alpaca=alpaca)

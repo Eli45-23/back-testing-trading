@@ -10,6 +10,7 @@ import pytest
 from pydantic import SecretStr
 
 from spy_research.data.schemas import RawBarRecord
+from spy_research.config import AlpacaEnvironment
 from spy_research.live import (
     ALPACA_SIP_STREAM_URL,
     AlpacaLiveBarNormalizer,
@@ -393,6 +394,35 @@ def test_transport_uses_only_sip_bar_subscription_and_redacts_errors() -> None:
         hasattr(transport, name)
         for name in ("place_order", "cancel_order", "positions", "buying_power")
     )
+
+
+def test_sip_transport_uses_market_data_credentials_not_paper_credentials(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("ALPACA_API_KEY", "market-transport-key")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "market-transport-secret")
+    monkeypatch.setenv("ALPACA_PAPER_API_KEY", "paper-broker-key")
+    monkeypatch.setenv("ALPACA_PAPER_SECRET_KEY", "paper-broker-secret")
+    bar = bullish_signal_bars()[0]
+    socket = FakeSocket(
+        (
+            '[{"T":"success","msg":"connected"}]',
+            '[{"T":"success","msg":"authenticated"}]',
+            '[{"T":"subscription","bars":["SPY"]}]',
+            json.dumps([live_message(bar)]),
+        )
+    )
+    transport = AlpacaSipWebSocketTransport.from_environment(
+        AlpacaEnvironment(), connector=lambda endpoint, **kwargs: socket
+    )
+
+    next(transport.messages())
+
+    assert socket.sent[0] == {
+        "action": "auth",
+        "key": "market-transport-key",
+        "secret": "market-transport-secret",
+    }
 
 
 def test_transport_reconnect_retains_adapter_state_and_does_not_duplicate_signal() -> None:

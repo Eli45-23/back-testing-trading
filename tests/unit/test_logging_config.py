@@ -50,3 +50,33 @@ def test_logging_redacts_both_credentials_loaded_from_dotenv(tmp_path, monkeypat
     assert api_key not in captured.err
     assert secret_key not in captured.err
     assert "credentials=**********/**********" in captured.err
+
+
+def test_logging_redacts_separate_paper_credentials_from_dotenv(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    paper_key = "dotenv-paper-key-that-must-not-be-logged"
+    paper_secret = "dotenv-paper-secret-that-must-not-be-logged"
+    dotenv_path = tmp_path / ".env"
+    dotenv_path.write_text(
+        f"ALPACA_PAPER_API_KEY={paper_key}\n"
+        f"ALPACA_PAPER_SECRET_KEY={paper_secret}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("ALPACA_PAPER_API_KEY", raising=False)
+    monkeypatch.delenv("ALPACA_PAPER_SECRET_KEY", raising=False)
+
+    settings = load_settings(env_path=dotenv_path)
+    configure_logging()
+    assert settings.alpaca.paper_api_key is not None
+    assert settings.alpaca.paper_secret_key is not None
+    logging.getLogger("spy_research.paper-dotenv-test").info(
+        "credentials=%s/%s",
+        settings.alpaca.paper_api_key.get_secret_value(),
+        settings.alpaca.paper_secret_key.get_secret_value(),
+    )
+
+    captured = capsys.readouterr()
+    assert paper_key not in captured.err
+    assert paper_secret not in captured.err
+    assert "credentials=**********/**********" in captured.err
