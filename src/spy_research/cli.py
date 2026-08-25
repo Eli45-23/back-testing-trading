@@ -7,6 +7,7 @@ import json
 import sys
 from collections import Counter
 from collections.abc import Sequence
+from contextlib import ExitStack
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -109,13 +110,26 @@ from spy_research.live import (
     LiveSignalEngineService,
     live_signal_report_hash,
 )
-from spy_research.market import MarketSessionClassifier, SessionSummary, SessionType
+from spy_research.market import (
+    MarketSessionClassifier,
+    SessionSummary,
+    SessionType,
+    XNYSCalendar,
+)
 from spy_research.outcomes import (
     EmaCrossOutcomeContextResult,
     EmaCrossOutcomeContextService,
     OutcomeInputValidationError,
     OppositeCrossSequenceError,
     OutcomeSequenceError,
+)
+from spy_research.paper import (
+    AlpacaPaperBroker,
+    LivePaperTradingService,
+    PaperCandidate,
+    PaperExecutionEngine,
+    PaperExecutionError,
+    paper_execution_report_hash,
 )
 from spy_research.research_run import ResearchRun
 from spy_research.research_stats import (
@@ -1168,6 +1182,28 @@ def build_parser() -> argparse.ArgumentParser:
     live_shadow.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
     live_shadow.add_argument("--timeout", type=float, default=10.0)
     live_shadow.add_argument("--max-reconnects", type=int, default=3)
+
+    paper_trade = subparsers.add_parser(
+        "paper-trade-live",
+        help="dry-run or explicitly enable one accepted Alpaca paper candidate",
+    )
+    paper_trade.add_argument("--symbol", choices=("SPY",), default="SPY")
+    paper_trade.add_argument(
+        "--candidate",
+        choices=tuple(item.value for item in PaperCandidate),
+        required=True,
+        help="explicitly select ATR_0_75 or ATR_1_00; no automatic selection",
+    )
+    paper_trade.add_argument("--qty", type=int, default=1)
+    paper_trade.add_argument(
+        "--enable-paper-orders",
+        action="store_true",
+        help="allow orders only after fixed-endpoint paper-account reconciliation",
+    )
+    paper_trade.add_argument("--max-bars", type=int)
+    paper_trade.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    paper_trade.add_argument("--timeout", type=float, default=10.0)
+    paper_trade.add_argument("--max-reconnects", type=int, default=3)
 
     return parser
 
@@ -2441,6 +2477,80 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"events={len(result.transition_events)}"
         )
         print(f"Deterministic Stage 14.3 live hash: {live_shadow_report_hash(result)}")
+        return 0
+
+    if args.command == "paper-trade-live":
+        try:
+            settings = load_settings(config_path=args.config)
+            started_at = datetime.now(UTC)
+            session_date = started_at.astimezone(
+                ZoneInfo("America/New_York")
+            ).date()
+            session = XNYSCalendar().session_for_date(session_date)
+            candidate = PaperCandidate(args.candidate)
+            with ExitStack() as stack:
+                data_client = stack.enter_context(
+                    AlpacaDataClient.from_environment(
+                        settings.alpaca,
+                        timeout=args.timeout,
+                    )
+                )
+                broker = (
+                    stack.enter_context(
+                        AlpacaPaperBroker.from_environment(
+                            settings.alpaca,
+                            timeout=args.timeout,
+                        )
+                    )
+                    if args.enable_paper_orders
+                    else None
+                )
+                historical = AlpacaHistoricalBootstrapSource(
+                    HistoricalStockDataService(data_client, settings.research),
+                    settings.research,
+                )
+                execution = PaperExecutionEngine(
+                    session,
+                    candidate=candidate,
+                    qty=args.qty,
+                    enable_paper_orders=args.enable_paper_orders,
+                    broker=broker,
+                )
+                service = LivePaperTradingService(
+                    LiveBootstrapper(historical),
+                    AlpacaSipWebSocketTransport.from_environment(
+                        settings.alpaca,
+                        max_reconnects=args.max_reconnects,
+                    ),
+                    execution,
+                )
+
+                result = service.run(
+                    as_of=started_at,
+                    max_bars=args.max_bars,
+                    on_update=None,
+                )
+        except (
+            AlpacaDataError,
+            LiveDataError,
+            ShadowInputError,
+            PaperExecutionError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to run paper forward test: {exc}", file=sys.stderr)
+            return 1
+        mode = "ENABLED_PAPER" if args.enable_paper_orders else "SAFE_DRY_RUN"
+        print(
+            "PAPER_FORWARD_TEST "
+            f"mode={mode} candidate={result.candidate.value} qty={result.qty} "
+            f"executions={len(result.executions)} actions={len(result.actions)}"
+        )
+        for action in result.actions:
+            print(f"PAPER_ACTION {action}")
+        print(f"Deterministic Stage 14.4 hash: {paper_execution_report_hash(result)}")
         return 0
 
     if args.command in {"fetch-bars", "download-bars"}:

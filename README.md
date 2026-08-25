@@ -1335,6 +1335,47 @@ The command is non-persistent and market-data-only. It has no order submission,
 replacement, cancellation, account-position mutation, buying-power sizing,
 paper-trading, live-trading, or options capability.
 
+## Stage 14.4 isolated Alpaca paper execution
+
+Stage 14.4 adds an execution adapter beneath the unchanged Stage 14.3 shadow
+engine. It can act on exactly one explicitly selected accepted candidate:
+`ATR_0_75` or `ATR_1_00`. The command defaults to a safe simulation that sends
+zero broker orders:
+
+```bash
+spy-research paper-trade-live \
+  --symbol SPY --candidate ATR_0_75 --qty 1
+```
+
+Paper orders require the additional explicit `--enable-paper-orders` flag.
+There is no live-money override or endpoint option: the trading adapter accepts
+only `https://paper-api.alpaca.markets`, verifies the paper account before any
+submission, accepts only SPY, and uses positive whole-share quantities with a
+default of one share. The code contains no options order path, buying-power
+sizing, fractional shares, pyramiding, scaling, or overnight carry.
+
+At the first Stage 14.3 actionable entry minute, enabled mode submits a DAY
+market sell with a deterministic client order ID. The theoretical one-minute
+open remains the intended reference. Once a complete broker fill is confirmed,
+the actual fill and signed slippage (`fill - reference`) are recorded
+separately. The stop is then calculated as actual fill plus confirmation ATR14
+times the explicitly selected 0.75 or 1.00 multiplier. The target remains the
+exact objective chosen by Stage 14.3; it is never recomputed from the fill.
+
+Protection uses Alpaca's paper-account buy-side OCO representation for the
+short position. Target and stop broker IDs are reconciled independently, a
+reported fill cancels its sibling, and any double fill, quantity mismatch,
+unknown transition, foreign SPY order, or position mismatch blocks new
+submissions. At RTH close, remaining protection is canceled and an exact
+whole-share buy-to-cover is submitted. Nothing bridges to another session.
+
+Client order IDs are derived from session date, setup identity, candidate
+identity, order role, and the Stage 14.4 version. Startup first reconstructs
+Stage 14.1–14.3 from completed market data, then queries the paper account's
+orders and SPY position. Existing deterministic identities are adopted rather
+than resubmitted. If broker and reconstructed state cannot be matched exactly,
+the engine fails closed and sends no new entry.
+
 ## Local setup
 
 Python 3.12 or newer is required.
