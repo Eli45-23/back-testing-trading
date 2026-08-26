@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, localcontext
 from hashlib import sha256
+from time import sleep
 
 from spy_research.indicators.atr import ATR_CONTEXT
 from spy_research.market import TradingSession
@@ -32,6 +33,8 @@ from spy_research.shadow import (
 
 CLIENT_ORDER_PREFIX = "s14"
 MAX_ENTRY_SUBMISSIONS_PER_SESSION = 1
+ENTRY_FILL_POLL_INTERVAL_SECONDS = 0.1
+ENTRY_FILL_POLL_ATTEMPTS = 50
 
 
 @dataclass(frozen=True)
@@ -86,6 +89,7 @@ class PaperExecutionEngine:
         qty: int = 1,
         enable_paper_orders: bool = False,
         broker: PaperBrokerSession | None = None,
+        fill_poll_waiter: Callable[[float], None] = sleep,
     ) -> None:
         if not session.is_trading_day or session.market_close is None:
             raise PaperExecutionError("paper execution requires an XNYS session")
@@ -100,6 +104,7 @@ class PaperExecutionEngine:
         self._qty = qty
         self._enabled = enable_paper_orders
         self._broker = broker
+        self._fill_poll_waiter = fill_poll_waiter
         self._executions: dict[tuple[str, str], PaperExecutionRecord] = {}
         self._seen_orders: dict[str, BrokerOrderRecord] = {}
         self._actions: list[str] = []
@@ -341,11 +346,13 @@ class PaperExecutionEngine:
                     "paper entry submission result is uncertain; session is blocked"
                 ) from None
             self._consume_entry_submission(entry.client_order_id)
+            local_submission_timestamp = now
             self._actions.append(
                 f"ENTRY_SUBMITTED setup={position.setup_identity} candidate={position.candidate_id} qty={self._qty}"
             )
         else:
             self._consume_entry_submission(entry.client_order_id)
+            local_submission_timestamp = None
             self._actions.append(
                 f"ENTRY_REUSED setup={position.setup_identity} candidate={position.candidate_id}"
             )
@@ -354,6 +361,7 @@ class PaperExecutionEngine:
         record = _updated(
             record,
             state=PaperExecutionState.ENTRY_SUBMITTED,
+            local_submission_timestamp=local_submission_timestamp,
             submitted_timestamp=entry.submitted_at,
             entry_order=entry,
         )
@@ -365,6 +373,39 @@ class PaperExecutionEngine:
             self._executions[key] = record
         elif entry.status in TERMINAL_BROKER_ORDER_STATUSES:
             self._fail_record(key, "paper entry terminated without a fill")
+        else:
+            record = self._poll_entry_fill_and_protect(record, now=now)
+            self._executions[key] = record
+        return record
+
+    def _poll_entry_fill_and_protect(
+        self, record: PaperExecutionRecord, *, now: datetime
+    ) -> PaperExecutionRecord:
+        """Observe a just-submitted market order without waiting for another bar."""
+
+        assert self._broker is not None
+        assert record.entry_order is not None
+        previous = record.entry_order
+        for _ in range(ENTRY_FILL_POLL_ATTEMPTS):
+            self._fill_poll_waiter(ENTRY_FILL_POLL_INTERVAL_SECONDS)
+            current = self._broker.get_order(
+                previous.broker_order_id, role=BrokerOrderRole.ENTRY
+            )
+            self._validate_order_progress(previous, current)
+            self._remember_order(current)
+            if current != previous:
+                record = _updated(record, entry_order=current)
+                self._executions[(record.setup_identity, record.candidate_id)] = record
+                previous = current
+            if current.status is BrokerOrderStatus.FILLED:
+                record = self._with_entry_fill(record, current)
+                self._executions[(record.setup_identity, record.candidate_id)] = record
+                return self._submit_protection(record, now=now)
+            if current.status in TERMINAL_BROKER_ORDER_STATUSES:
+                self._fail_record(
+                    (record.setup_identity, record.candidate_id),
+                    "paper entry terminated without a fill",
+                )
         return record
 
     def reconcile_broker_state(self, *, now: datetime) -> None:
@@ -598,8 +639,21 @@ class PaperExecutionEngine:
         )
         if protection.oco_client_order_id != client_id:
             raise PaperExecutionError("paper OCO client identity changed")
-        self._remember_order(protection.target)
-        self._remember_order(protection.stop)
+        target = self._broker.get_order(
+            protection.target.broker_order_id, role=BrokerOrderRole.TARGET
+        )
+        stop = self._broker.get_order(
+            protection.stop.broker_order_id, role=BrokerOrderRole.STOP
+        )
+        self._validate_order_progress(protection.target, target)
+        self._validate_order_progress(protection.stop, stop)
+        protection = BrokerProtectiveOrders(
+            oco_client_order_id=client_id,
+            target=target,
+            stop=stop,
+        )
+        self._remember_order(target)
+        self._remember_order(stop)
         self._actions.append(
             f"PROTECTIVE_OCO_SUBMITTED setup={record.setup_identity} qty={self._qty}"
         )
@@ -636,8 +690,10 @@ class PaperExecutionEngine:
         if (
             previous.broker_order_id != current.broker_order_id
             or previous.client_order_id != current.client_order_id
+            or previous.symbol != current.symbol
             or previous.role is not current.role
             or previous.side != current.side
+            or previous.order_type != current.order_type
             or previous.qty != current.qty
         ):
             raise PaperExecutionError("conflicting paper broker order identity")

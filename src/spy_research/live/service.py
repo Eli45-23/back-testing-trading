@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from time import sleep
 
 from spy_research.live.bootstrap import LiveBootstrapper
 from spy_research.live.models import (
@@ -23,10 +24,12 @@ class LiveSignalEngineService:
         transport: LiveMessageTransport,
         *,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+        waiter: Callable[[float], None] = sleep,
     ) -> None:
         self._bootstrapper = bootstrapper
         self._transport = transport
         self._clock = clock
+        self._waiter = waiter
 
     def run(
         self,
@@ -48,7 +51,29 @@ class LiveSignalEngineService:
             received_at = self._clock().astimezone(UTC)
             if until is not None and received_at > until.astimezone(UTC):
                 break
+            preview = adapter.preview(message)
+            if (
+                preview is not None
+                and adapter.last_timestamp is not None
+                and preview.timestamp > adapter.last_timestamp + timedelta(minutes=1)
+            ):
+                bridged = self._bootstrapper.bridge_gap(
+                    adapter, before=preview.timestamp
+                )
+                for bridge_update in bridged:
+                    signals.extend(bridge_update.signal_events)
+                    if on_update is not None:
+                        on_update(bridge_update)
             update = adapter.process_message(message, received_at=received_at)
+            if adapter.pending_known_at is not None:
+                delay = (
+                    adapter.pending_known_at - received_at
+                ).total_seconds()
+                if delay > 0:
+                    self._waiter(delay)
+                update = adapter.release_pending(
+                    received_at=self._clock().astimezone(UTC)
+                )
             duplicates += int(update.duplicate_identical)
             ignored += int(update.ignored_reason is not None)
             if update.normalized_bar is not None:

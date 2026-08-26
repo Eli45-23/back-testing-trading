@@ -98,6 +98,8 @@ class BrokerOrderRecord(BaseModel):
                 raise ValueError("filled broker order requires complete fill details")
             if self.filled_at is None or self.filled_at.utcoffset() is None:
                 raise ValueError("filled broker order requires an aware fill timestamp")
+            if self.filled_at < self.submitted_at:
+                raise ValueError("broker fill cannot precede broker submission")
         elif self.filled_at is not None and self.filled_at.utcoffset() is None:
             raise ValueError("broker fill timestamp must be timezone-aware")
         if self.avg_fill_price is not None and self.avg_fill_price <= 0:
@@ -164,6 +166,9 @@ class PaperExecutionRecord(BaseModel):
     confirmation_atr14: Decimal
     stop_multiplier: Decimal
     objective_price: Decimal
+    local_submission_timestamp: datetime | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     submitted_timestamp: datetime | None = None
     entry_order: BrokerOrderRecord | None = None
     actual_fill_timestamp: datetime | None = None
@@ -207,12 +212,17 @@ class PaperExecutionRecord(BaseModel):
             if self.state is not PaperExecutionState.DRY_RUN_INTENDED:
                 raise ValueError("non-dry paper state requires an entry order")
             return self
+        if (
+            self.local_submission_timestamp is not None
+            and self.local_submission_timestamp.utcoffset() is None
+        ):
+            raise ValueError("local paper submission timestamp must be timezone-aware")
         if self.entry_order.role is not BrokerOrderRole.ENTRY:
             raise ValueError("entry order role changed")
         if self.entry_order.side != "sell" or self.entry_order.qty != self.intended_qty:
             raise ValueError("entry order does not match intended short quantity")
-        if self.submitted_timestamp != self.entry_order.submitted_at:
-            raise ValueError("paper submission timestamp must match broker entry")
+        if self.submitted_timestamp is None or self.submitted_timestamp.utcoffset() is None:
+            raise ValueError("initial broker submission timestamp must be preserved")
         if self.actual_fill_price is None:
             if any(
                 item is not None

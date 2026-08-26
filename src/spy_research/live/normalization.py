@@ -19,6 +19,9 @@ from spy_research.live.models import (
 )
 
 
+MAX_FINAL_BAR_EARLY_ARRIVAL = timedelta(milliseconds=500)
+
+
 def _decimal(value: object, field: str) -> Decimal:
     if isinstance(value, bool):
         raise LiveDataError(f"Alpaca live bar has invalid {field}")
@@ -90,10 +93,41 @@ class LiveMarketDataAdapter:
         self._normalizer = normalizer or AlpacaLiveBarNormalizer()
         self._seen: dict[datetime, RawBarRecord] = {}
         self._last_timestamp: datetime | None = None
+        self._pending: RawBarRecord | None = None
 
     @property
     def engine(self) -> IncrementalSignalStateEngine:
         return self._engine
+
+    @property
+    def last_timestamp(self) -> datetime | None:
+        return self._last_timestamp
+
+    def preview(self, message: Mapping[str, Any]) -> RawBarRecord | None:
+        """Normalize a frame without advancing live or replay state."""
+
+        return self._normalizer.normalize(message)
+
+    @property
+    def pending_known_at(self) -> datetime | None:
+        if self._pending is None:
+            return None
+        return self._pending.timestamp + timedelta(minutes=1)
+
+    def release_pending(self, *, received_at: datetime) -> LiveAdapterUpdate:
+        """Release a retained finalized bar only once its minute is knowable."""
+
+        if received_at.utcoffset() is None:
+            raise LiveDataError("live receive timestamp must be timezone-aware")
+        if self._pending is None:
+            raise LiveDataError("no pending Alpaca minute bar is available")
+        bar = self._pending
+        known_at = bar.timestamp + timedelta(minutes=1)
+        if received_at.astimezone(UTC) < known_at:
+            raise LiveDataError("pending Alpaca minute bar is not yet knowable")
+        update = self._accept(bar, received_at=received_at.astimezone(UTC))
+        self._pending = None
+        return update
 
     def seed(self, bar: RawBarRecord):
         return self._accept(bar, received_at=bar.timestamp + timedelta(minutes=1))
@@ -109,7 +143,23 @@ class LiveMarketDataAdapter:
         bar = self._normalizer.normalize(message)
         if bar is None:
             return LiveAdapterUpdate(ignored_reason="NON_FINAL_OR_NON_SPY_MESSAGE")
-        return self._accept(bar, received_at=received_at.astimezone(UTC))
+        existing = self._seen.get(bar.timestamp)
+        if existing is not None:
+            return self._accept(bar, received_at=received_at.astimezone(UTC))
+        if self._pending is not None:
+            if bar.timestamp == self._pending.timestamp:
+                if bar == self._pending:
+                    return LiveAdapterUpdate(duplicate_identical=True)
+                raise LiveDataError("conflicting Alpaca bar for a pending timestamp")
+            raise LiveDataError("pending Alpaca bar must release before a later bar")
+        received_utc = received_at.astimezone(UTC)
+        known_at = bar.timestamp + timedelta(minutes=1)
+        if received_utc < known_at:
+            if known_at - received_utc > MAX_FINAL_BAR_EARLY_ARRIVAL:
+                raise LiveDataError("Alpaca minute bar arrived before closed-bar knowable time")
+            self._pending = bar
+            return LiveAdapterUpdate(ignored_reason="PENDING_KNOWN_AT")
+        return self._accept(bar, received_at=received_utc)
 
     def _accept(self, bar: RawBarRecord, *, received_at: datetime) -> LiveAdapterUpdate:
         existing = self._seen.get(bar.timestamp)

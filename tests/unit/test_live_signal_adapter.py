@@ -221,6 +221,58 @@ def test_bar_cannot_enter_engine_before_minute_completion() -> None:
         )
 
 
+def test_slightly_early_final_bar_waits_for_exact_known_at() -> None:
+    active = adapter()
+    first = bullish_signal_bars()[0]
+    known_at = first.timestamp + timedelta(minutes=1)
+
+    retained = active.process_message(
+        live_message(first), received_at=known_at - timedelta(milliseconds=88)
+    )
+
+    assert retained.ignored_reason == "PENDING_KNOWN_AT"
+    assert active.pending_known_at == known_at
+    assert active.engine.completed_five_minute_bars == ()
+    with pytest.raises(LiveDataError, match="not yet knowable"):
+        active.release_pending(received_at=known_at - timedelta(microseconds=1))
+
+    released = active.release_pending(received_at=known_at)
+    assert released.normalized_bar == first
+    assert active.pending_known_at is None
+
+
+def test_pending_duplicate_is_idempotent_and_conflict_fails_closed() -> None:
+    active = adapter()
+    first = bullish_signal_bars()[0]
+    received_at = first.timestamp + timedelta(minutes=1, milliseconds=-88)
+    active.process_message(live_message(first), received_at=received_at)
+
+    duplicate = active.process_message(live_message(first), received_at=received_at)
+    assert duplicate.duplicate_identical
+    assert active.pending_known_at == first.timestamp + timedelta(minutes=1)
+
+    conflict = first.model_copy(
+        update={"close": Decimal("99.5"), "vwap": Decimal("99.5")}
+    )
+    with pytest.raises(LiveDataError, match="conflicting Alpaca bar for a pending"):
+        active.process_message(live_message(conflict), received_at=received_at)
+
+
+def test_pending_bar_must_release_before_later_bar() -> None:
+    active = adapter()
+    first, second = bullish_signal_bars()[:2]
+    active.process_message(
+        live_message(first),
+        received_at=first.timestamp + timedelta(minutes=1, milliseconds=-50),
+    )
+
+    with pytest.raises(LiveDataError, match="pending Alpaca bar must release"):
+        active.process_message(
+            live_message(second),
+            received_at=second.timestamp + timedelta(minutes=1),
+        )
+
+
 def test_identical_duplicate_handoff_is_idempotent_but_conflict_fails() -> None:
     active = adapter()
     first = bullish_signal_bars()[0]
@@ -277,6 +329,63 @@ def test_bootstrap_plus_live_continuation_equals_continuous_replay() -> None:
         PRIOR.market_open,
         PRIOR.market_close - timedelta(microseconds=1),
     )
+
+
+def test_live_service_waits_exactly_until_early_final_bar_is_knowable() -> None:
+    bars = bullish_signal_bars()
+    source = MemorySource(prior_bars() + bars[:5])
+    known_at = bars[5].timestamp + timedelta(minutes=1)
+    clock_values = iter((known_at - timedelta(milliseconds=88), known_at))
+    waits: list[float] = []
+    service = LiveSignalEngineService(
+        LiveBootstrapper(source, calendar=CALENDAR),
+        MemoryTransport((live_message(bars[5]),)),
+        clock=lambda: next(clock_values),
+        waiter=waits.append,
+    )
+
+    report = service.run(as_of=OPEN + timedelta(minutes=5), max_bars=1)
+
+    assert waits == [pytest.approx(0.088)]
+    assert report.accepted_live_bar_count == 1
+    assert report.ignored_message_count == 0
+
+
+def test_bootstrap_live_race_backfills_only_missing_closed_minutes() -> None:
+    bars = bullish_signal_bars()
+    source = MemorySource(prior_bars() + bars)
+    received = iter(
+        bar.timestamp + timedelta(minutes=1) for bar in bars[7:]
+    )
+    service = LiveSignalEngineService(
+        LiveBootstrapper(source, calendar=CALENDAR),
+        MemoryTransport(live_message(bar) for bar in bars[7:]),
+        clock=lambda: next(received),
+    )
+    report = service.run(as_of=OPEN + timedelta(minutes=5))
+
+    continuous = IncrementalSignalStateEngine(calendar=CALENDAR)
+    continuous.start_session(SESSION, previous_day_levels=levels())
+    for bar in bars:
+        continuous.process_one_minute_bar(bar)
+    assert report.accepted_live_bar_count == 3
+    assert len(report.signals) == 1
+    assert source.requests[-1] == (
+        OPEN + timedelta(minutes=5),
+        OPEN + timedelta(minutes=7, microseconds=-1),
+    )
+
+
+def test_bootstrap_live_race_fails_closed_when_gap_is_not_complete() -> None:
+    bars = bullish_signal_bars()
+    source = MemorySource(prior_bars() + bars[:6] + bars[7:])
+    service = LiveSignalEngineService(
+        LiveBootstrapper(source, calendar=CALENDAR),
+        MemoryTransport((live_message(bars[7]),)),
+        clock=lambda: bars[7].timestamp + timedelta(minutes=1),
+    )
+    with pytest.raises(LiveDataError, match="gap coverage is incomplete"):
+        service.run(as_of=OPEN + timedelta(minutes=5))
 
 
 def test_bootstrap_rejects_incomplete_prior_session_instead_of_fabricating_levels() -> None:

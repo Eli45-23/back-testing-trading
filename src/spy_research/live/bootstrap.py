@@ -148,6 +148,42 @@ class LiveBootstrapper:
             last_seeded_timestamp=accepted[-1].timestamp if accepted else None,
         )
 
+    def bridge_gap(
+        self,
+        adapter: LiveMarketDataAdapter,
+        *,
+        before: datetime,
+        on_seed_update: Callable | None = None,
+    ) -> tuple:
+        """Seed only closed minutes missing before a newly received live bar."""
+
+        if before.utcoffset() is None:
+            raise LiveBootstrapError("gap boundary must be timezone-aware")
+        previous = adapter.last_timestamp
+        if previous is None:
+            raise LiveBootstrapError("cannot bridge live continuity without seeded state")
+        start = previous + timedelta(minutes=1)
+        end = before.astimezone(UTC)
+        if start >= end:
+            return ()
+        bars = self._source.fetch(
+            start=start,
+            end=end - timedelta(microseconds=1),
+        )
+        expected_count = int((end - start).total_seconds() // 60)
+        if len(bars) != expected_count:
+            raise LiveBootstrapError("live continuity gap coverage is incomplete")
+        for index, bar in enumerate(bars):
+            if bar.timestamp != start + timedelta(minutes=index):
+                raise LiveBootstrapError("live continuity gap minutes are not consecutive")
+        updates = []
+        for bar in bars:
+            update = adapter.seed(bar)
+            updates.append(update)
+            if on_seed_update is not None:
+                on_seed_update(update, adapter.engine.current_levels)
+        return tuple(updates)
+
     @staticmethod
     def _validate_complete_rth(
         bars: Sequence[RawBarRecord],

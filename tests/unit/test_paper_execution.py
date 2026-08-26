@@ -220,13 +220,21 @@ class FakePaperBroker:
         self._store(order)
         return order
 
-    def fill(self, broker_order_id: str, price: str, *, position_qty: str) -> None:
+    def fill(
+        self,
+        broker_order_id: str,
+        price: str,
+        *,
+        position_qty: str,
+        submitted_at: datetime | None = None,
+    ) -> None:
         current = self.orders[broker_order_id]
         self.orders[broker_order_id] = current.model_copy(
             update={
                 "status": BrokerOrderStatus.FILLED,
                 "filled_qty": Decimal(current.qty),
                 "avg_fill_price": Decimal(price),
+                "submitted_at": submitted_at or current.submitted_at,
                 "filled_at": KNOWN + timedelta(minutes=1),
             }
         )
@@ -280,6 +288,7 @@ def enabled_engine(
         qty=qty,
         enable_paper_orders=True,
         broker=broker,
+        fill_poll_waiter=lambda _seconds: None,
     )
     engine.recover((), now=KNOWN)
     return engine
@@ -557,6 +566,158 @@ def test_entry_fill_after_submission_creates_protection_once() -> None:
     assert broker.oco_submissions == 1
     engine.reconcile_broker_state(now=KNOWN + timedelta(minutes=2))
     assert broker.oco_submissions == 1
+
+
+def test_real_accepted_then_filled_sequence_installs_and_confirms_oco_immediately() -> None:
+    class AcceptedThenFilledBroker(FakePaperBroker):
+        def __init__(self) -> None:
+            super().__init__()
+            self.entry_reads = 0
+            self.protective_reads: list[BrokerOrderRole] = []
+
+        def get_order(self, broker_order_id, *, role):
+            if role is BrokerOrderRole.ENTRY:
+                self.entry_reads += 1
+                current = self.orders[broker_order_id]
+                if current.status is BrokerOrderStatus.ACCEPTED:
+                    self.fill(
+                        broker_order_id,
+                        "100.10",
+                        position_qty="-1",
+                        submitted_at=current.submitted_at
+                        + timedelta(microseconds=157),
+                    )
+            else:
+                self.protective_reads.append(role)
+            return super().get_order(broker_order_id, role=role)
+
+    broker = AcceptedThenFilledBroker()
+    waits: list[float] = []
+    engine = PaperExecutionEngine(
+        SESSION,
+        candidate=PaperCandidate.ATR_1_00,
+        enable_paper_orders=True,
+        broker=broker,
+        fill_poll_waiter=waits.append,
+    )
+    engine.recover((), now=KNOWN)
+
+    record = engine.handle_shadow_event(
+        entry_event(PaperCandidate.ATR_1_00), now=KNOWN
+    )
+
+    assert record is not None
+    assert record.state is PaperExecutionState.PROTECTIVE_ACTIVE
+    assert record.local_submission_timestamp == KNOWN
+    assert record.submitted_timestamp == KNOWN
+    assert record.entry_order is not None
+    assert record.entry_order.submitted_at == KNOWN + timedelta(microseconds=157)
+    assert record.actual_fill_price == Decimal("100.10")
+    assert record.protective_stop_price == Decimal("102.10")
+    assert record.protective_target_price == Decimal("98")
+    assert record.protective_orders is not None
+    assert broker.entry_submissions == 1
+    assert broker.entry_reads == 1
+    assert broker.oco_submissions == 1
+    assert broker.protective_reads == [
+        BrokerOrderRole.TARGET,
+        BrokerOrderRole.STOP,
+    ]
+    assert waits == [0.1]
+    assert {item.role for item in broker.list_open_orders()} == {
+        BrokerOrderRole.TARGET,
+        BrokerOrderRole.STOP,
+    }
+
+
+def test_oco_is_not_marked_protected_until_broker_leg_reconciliation_passes() -> None:
+    class ConflictingProtectionBroker(FakePaperBroker):
+        def get_order(self, broker_order_id, *, role):
+            order = super().get_order(broker_order_id, role=role)
+            if role is BrokerOrderRole.TARGET:
+                return order.model_copy(update={"qty": 2})
+            return order
+
+    broker = ConflictingProtectionBroker(auto_fill_entry=True)
+    engine = enabled_engine(broker, PaperCandidate.ATR_1_00)
+
+    with pytest.raises(
+        PaperExecutionError, match="conflicting paper broker order identity"
+    ):
+        engine.handle_shadow_event(
+            entry_event(PaperCandidate.ATR_1_00), now=KNOWN
+        )
+
+    assert broker.entry_submissions == 1
+    assert broker.oco_submissions == 1
+    assert engine.executions[0].state is PaperExecutionState.ENTRY_FILLED_UNPROTECTED
+    assert engine.executions[0].protective_orders is None
+
+
+def test_later_fill_timestamp_representation_may_differ_without_losing_protection() -> None:
+    broker = FakePaperBroker()
+    engine = enabled_engine(broker)
+    record = engine.handle_shadow_event(entry_event(), now=KNOWN)
+    assert record is not None and record.entry_order is not None
+    initial_broker_submitted_at = record.submitted_timestamp
+    local_submitted_at = record.local_submission_timestamp
+    broker.fill(
+        record.entry_order.broker_order_id,
+        "100.10",
+        position_qty="-1",
+        submitted_at=record.entry_order.submitted_at + timedelta(microseconds=157),
+    )
+
+    engine.reconcile_broker_state(now=KNOWN + timedelta(minutes=1))
+
+    reconciled = engine.executions[0]
+    assert reconciled.state is PaperExecutionState.PROTECTIVE_ACTIVE
+    assert reconciled.submitted_timestamp == initial_broker_submitted_at
+    assert reconciled.local_submission_timestamp == local_submitted_at == KNOWN
+    assert reconciled.entry_order is not None
+    assert reconciled.entry_order.submitted_at != initial_broker_submitted_at
+    assert broker.oco_submissions == 1
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    (
+        ("client_order_id", "conflicting-client-id"),
+        ("broker_order_id", "conflicting-broker-id"),
+        ("symbol", "AAPL"),
+        ("side", "buy"),
+        ("qty", 2),
+        ("order_type", "limit"),
+    ),
+)
+def test_filled_entry_reconciliation_rejects_changed_immutable_identity(field, value) -> None:
+    broker = FakePaperBroker()
+    engine = enabled_engine(broker)
+    record = engine.handle_shadow_event(entry_event(), now=KNOWN)
+    assert record is not None and record.entry_order is not None
+    broker.fill(record.entry_order.broker_order_id, "100.10", position_qty="-1")
+    current = broker.orders[record.entry_order.broker_order_id]
+    broker.orders[record.entry_order.broker_order_id] = current.model_copy(
+        update={field: value}
+    )
+    with pytest.raises(PaperExecutionError, match="conflicting paper broker order identity"):
+        engine.reconcile_broker_state(now=KNOWN + timedelta(minutes=1))
+    assert broker.oco_submissions == 0
+
+
+def test_broker_fill_before_submission_is_impossible() -> None:
+    valid = make_order(
+        broker_id="impossible-time",
+        client_id="impossible-time",
+        role=BrokerOrderRole.ENTRY,
+        side="sell",
+        order_type="market",
+        status=BrokerOrderStatus.FILLED,
+        price="100",
+    ).model_dump()
+    valid["filled_at"] = KNOWN - timedelta(seconds=1)
+    with pytest.raises(ValidationError, match="fill cannot precede"):
+        BrokerOrderRecord.model_validate(valid)
 
 
 def test_target_fill_cancels_stop_and_reconciles_flat() -> None:
