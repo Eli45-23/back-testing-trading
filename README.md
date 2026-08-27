@@ -1373,6 +1373,17 @@ separately. The stop is then calculated as actual fill plus confirmation ATR14
 times the explicitly selected 0.75 or 1.00 multiplier. The target remains the
 exact objective chosen by Stage 14.3; it is never recomputed from the fill.
 
+The execution record preserves those exact Decimal values as the theoretical
+stop and target. Only the broker-facing copies are normalized to Alpaca's
+documented US-equity price increment: prices at or above $1 use cents and
+prices below $1 use four decimal places. A SHORT protective buy-stop rounds
+down toward the entry so normalization cannot loosen the loss boundary; the
+corresponding LONG protective sell-stop rounds up. SHORT objective buy-limits
+round down and LONG objective sell-limits round up so normalization does not
+reduce the intended reward. Exact-tick values are unchanged. Broker-facing
+prices and their relationship to the fill are validated locally before POST;
+the theoretical ATR and objective values are never rounded or overwritten.
+
 Protection uses Alpaca's paper-account buy-side OCO representation for the
 short position. Target and stop broker IDs are reconciled independently, a
 reported fill cancels its sibling, and any double fill, quantity mismatch,

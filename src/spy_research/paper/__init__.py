@@ -19,6 +19,13 @@ from spy_research.paper.models import (
     PaperRunReport,
     paper_execution_report_hash,
 )
+from spy_research.paper.price_precision import (
+    alpaca_equity_tick,
+    is_alpaca_equity_price,
+    normalize_objective_limit,
+    normalize_protective_stop,
+    validate_short_protective_prices,
+)
 from spy_research.paper.service import LivePaperTradingService
 
 __all__ = [
@@ -39,4 +46,9 @@ __all__ = [
     "PaperRunReport",
     "deterministic_client_order_id",
     "paper_execution_report_hash",
+    "alpaca_equity_tick",
+    "is_alpaca_equity_price",
+    "normalize_objective_limit",
+    "normalize_protective_stop",
+    "validate_short_protective_prices",
 ]

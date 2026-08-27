@@ -23,6 +23,11 @@ from spy_research.paper.models import (
     PaperExecutionState,
     TERMINAL_BROKER_ORDER_STATUSES,
 )
+from spy_research.paper.price_precision import (
+    normalize_objective_limit,
+    normalize_protective_stop,
+    validate_short_protective_prices,
+)
 from spy_research.shadow import (
     ShadowEventType,
     ShadowPosition,
@@ -604,6 +609,17 @@ class PaperExecutionEngine:
             slippage = entry.avg_fill_price - record.intended_reference_price
         if record.objective_price >= entry.avg_fill_price or stop <= entry.avg_fill_price:
             raise PaperExecutionError("actual paper fill cannot support frozen short exits")
+        broker_stop = normalize_protective_stop(stop, position_side="short")
+        broker_target = normalize_objective_limit(
+            record.objective_price, position_side="short"
+        )
+        validate_short_protective_prices(
+            fill_price=entry.avg_fill_price,
+            theoretical_stop=stop,
+            theoretical_target=record.objective_price,
+            broker_stop=broker_stop,
+            broker_target=broker_target,
+        )
         return _updated(
             record,
             state=PaperExecutionState.ENTRY_FILLED_UNPROTECTED,
@@ -614,6 +630,8 @@ class PaperExecutionEngine:
             fill_slippage=slippage,
             protective_stop_price=stop,
             protective_target_price=record.objective_price,
+            broker_stop_price=broker_stop,
+            broker_target_price=broker_target,
             local_expected_position_qty=-Decimal(self._qty),
         )
 
@@ -628,13 +646,15 @@ class PaperExecutionEngine:
             raise PaperExecutionError("filled paper entry does not reconcile to short position")
         assert record.protective_target_price is not None
         assert record.protective_stop_price is not None
+        assert record.broker_target_price is not None
+        assert record.broker_stop_price is not None
         client_id = self._client_id_from_record(
             record, BrokerOrderRole.PROTECTIVE_OCO
         )
         protection = self._broker.submit_protective_oco(
             qty=self._qty,
-            target_price=record.protective_target_price,
-            stop_price=record.protective_stop_price,
+            target_price=record.broker_target_price,
+            stop_price=record.broker_stop_price,
             client_order_id=client_id,
         )
         if protection.oco_client_order_id != client_id:

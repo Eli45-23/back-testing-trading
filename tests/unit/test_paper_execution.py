@@ -27,7 +27,11 @@ from spy_research.paper import (
     PaperExecutionState,
     PaperRunReport,
     deterministic_client_order_id,
+    is_alpaca_equity_price,
+    normalize_objective_limit,
+    normalize_protective_stop,
     paper_execution_report_hash,
+    validate_short_protective_prices,
 )
 from spy_research.replay import STAGE14_FORWARD_CANDIDATE_IDS
 from spy_research.shadow import ShadowForwardStateMachine, ShadowTransitionEvent
@@ -1068,3 +1072,271 @@ def test_stage14_4_report_hash_is_deterministic() -> None:
     assert paper_execution_report_hash(report) == (
         "3de987672bc6cc73c39c643f6bd656daefdcbe32e0e6ce3c830405ab8eee183b"
     )
+
+
+def test_august_27_exact_stop_has_distinct_safe_broker_price() -> None:
+    exact = Decimal(
+        "770.72133103399998419267812723114832339521925529166"
+    )
+    assert normalize_protective_stop(exact, position_side="short") == Decimal(
+        "770.72"
+    )
+    assert exact == Decimal(
+        "770.72133103399998419267812723114832339521925529166"
+    )
+
+
+@pytest.mark.parametrize(
+    "price,side,expected",
+    (
+        ("100.01", "short", "100.01"),
+        ("100.01", "long", "100.01"),
+        ("100.005", "short", "100.00"),
+        ("100.005", "long", "100.01"),
+        ("100.0101", "short", "100.01"),
+        ("100.0101", "long", "100.02"),
+        ("100.0099", "short", "100.00"),
+        ("100.0099", "long", "100.01"),
+    ),
+)
+def test_stop_normalization_is_directional_and_exact(price, side, expected) -> None:
+    normalized = normalize_protective_stop(
+        Decimal(price), position_side=side
+    )
+    assert normalized == Decimal(expected)
+    assert is_alpaca_equity_price(normalized)
+
+
+def test_objective_normalization_preserves_directional_reward() -> None:
+    assert normalize_objective_limit(
+        Decimal("768.819"), position_side="short"
+    ) == Decimal("768.81")
+    assert normalize_objective_limit(
+        Decimal("768.811"), position_side="long"
+    ) == Decimal("768.82")
+    assert normalize_objective_limit(
+        Decimal("768.81"), position_side="short"
+    ) == Decimal("768.81")
+
+
+def test_short_normalization_fails_if_cent_tick_invalidates_stop() -> None:
+    with pytest.raises(PaperExecutionError, match="do not bracket"):
+        validate_short_protective_prices(
+            fill_price=Decimal("770.72"),
+            theoretical_stop=Decimal("770.721"),
+            theoretical_target=Decimal("768.81"),
+            broker_stop=Decimal("770.72"),
+            broker_target=Decimal("768.81"),
+        )
+
+
+def test_oco_payload_contains_only_normalized_equity_prices() -> None:
+    bodies: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        import json
+
+        body = json.loads(request.content)
+        bodies.append(body)
+        common = {
+            "symbol": "SPY",
+            "qty": "1",
+            "side": "buy",
+            "status": "new",
+            "filled_qty": "0",
+            "filled_avg_price": None,
+            "submitted_at": KNOWN.isoformat(),
+            "filled_at": None,
+            "client_order_id": body["client_order_id"],
+        }
+        return httpx.Response(
+            200,
+            json={
+                **common,
+                "id": "target-normalized",
+                "type": "limit",
+                "limit_price": body["take_profit"]["limit_price"],
+                "stop_price": None,
+                "legs": [
+                    {
+                        **common,
+                        "id": "stop-normalized",
+                        "client_order_id": "stop-child-normalized",
+                        "type": "stop",
+                        "limit_price": None,
+                        "stop_price": body["stop_loss"]["stop_price"],
+                    }
+                ],
+            },
+        )
+
+    client = httpx.Client(
+        base_url=ALPACA_PAPER_BASE_URL, transport=httpx.MockTransport(handler)
+    )
+    broker = AlpacaPaperBroker(
+        api_key=SecretStr("test-key"),
+        secret_key=SecretStr("test-secret"),
+        client=client,
+    )
+    protection = broker.submit_protective_oco(
+        qty=1,
+        target_price=Decimal("768.819"),
+        stop_price=Decimal(
+            "770.72133103399998419267812723114832339521925529166"
+        ),
+        client_order_id="oco-normalized",
+    )
+    assert bodies[0]["take_profit"]["limit_price"] == "768.81"
+    assert bodies[0]["stop_loss"]["stop_price"] == "770.72"
+    assert protection.target.limit_price == Decimal("768.81")
+    assert protection.stop.stop_price == Decimal("770.72")
+    client.close()
+
+
+def test_invalid_oco_relationship_fails_before_post() -> None:
+    requests: list[httpx.Request] = []
+    client = httpx.Client(
+        base_url=ALPACA_PAPER_BASE_URL,
+        transport=httpx.MockTransport(
+            lambda request: requests.append(request) or httpx.Response(500)
+        ),
+    )
+    broker = AlpacaPaperBroker(
+        api_key=SecretStr("test-key"),
+        secret_key=SecretStr("test-secret"),
+        client=client,
+    )
+    with pytest.raises(PaperExecutionError, match="target must remain below"):
+        broker.submit_protective_oco(
+            qty=1,
+            target_price=Decimal("771.00"),
+            stop_price=Decimal("770.72"),
+            client_order_id="invalid-oco",
+        )
+    assert requests == []
+    client.close()
+
+
+def test_sanitized_422_retains_alpaca_code_and_category_only() -> None:
+    key = "paper-key-never-visible"
+    secret = "paper-secret-never-visible"
+    client = httpx.Client(
+        base_url=ALPACA_PAPER_BASE_URL,
+        transport=httpx.MockTransport(
+            lambda _request: httpx.Response(
+                422,
+                json={
+                    "code": 42210000,
+                    "message": (
+                        "invalid stop_price: sub-penny increment "
+                        f"credentials={key}/{secret}"
+                    ),
+                },
+            )
+        ),
+    )
+    broker = AlpacaPaperBroker(
+        api_key=SecretStr(key), secret_key=SecretStr(secret), client=client
+    )
+    with pytest.raises(PaperExecutionError) as error:
+        broker.submit_market_entry(qty=1, client_order_id="diagnostic-entry")
+    rendered = str(error.value)
+    assert "HTTP 422" in rendered
+    assert "code=42210000" in rendered
+    assert "sub-penny increment" in rendered
+    assert key not in rendered and secret not in rendered
+    assert "**********" in rendered
+    client.close()
+
+
+def test_august_27_delayed_fill_normalizes_and_reconciles_both_oco_legs() -> None:
+    atr = Decimal(
+        "0.71133103399998419267812723114832339521925529165537"
+    )
+    setup_id = "august-27-live-short"
+    live_signal = LiveSignalEvent(
+        session_date=SESSION_DATE,
+        signal_identity="august-27-signal",
+        setup_identity=setup_id,
+        direction=SetupDirection.SHORT,
+        triggering_level_type=LevelType.PMH,
+        triggering_level_price=Decimal("770.27"),
+        break_timestamp=KNOWN - timedelta(minutes=10),
+        confirmation_timestamp=KNOWN - timedelta(minutes=5),
+        signal_known_at=KNOWN,
+        confirmation_close=Decimal("769.91"),
+        atr14=atr,
+        base_short_membership=True,
+        stage13_forward_test_candidate_ids=STAGE14_FORWARD_CANDIDATE_IDS,
+    )
+    available = (
+        AvailableLevel(
+            session_date=SESSION_DATE,
+            level_type=LevelType.PMH,
+            level_price=Decimal("770.27"),
+            available_from_timestamp=OPEN,
+        ),
+        AvailableLevel(
+            session_date=SESSION_DATE,
+            level_type=LevelType.ORH5,
+            level_price=Decimal("768.81"),
+            available_from_timestamp=OPEN,
+        ),
+    )
+    machine = ShadowForwardStateMachine(SESSION)
+    machine.register_signal(live_signal, available_levels=available)
+    entry_bar = bar(KNOWN, open="769.93").model_copy(
+        update={
+            "high": Decimal("770.00"),
+            "low": Decimal("769.80"),
+            "close": Decimal("769.90"),
+            "vwap": Decimal("769.90"),
+        }
+    )
+    event = next(
+        item
+        for item in machine.process_bar(entry_bar)
+        if item.candidate_id == PaperCandidate.ATR_1_00.candidate_id
+    )
+
+    class August27Broker(FakePaperBroker):
+        def __init__(self) -> None:
+            super().__init__()
+            self.entry_reads = 0
+            self.protective_reads: list[BrokerOrderRole] = []
+
+        def get_order(self, broker_order_id, *, role):
+            if role is BrokerOrderRole.ENTRY:
+                self.entry_reads += 1
+                current = self.orders[broker_order_id]
+                if current.status is BrokerOrderStatus.ACCEPTED:
+                    self.fill(broker_order_id, "770.01", position_qty="-1")
+            else:
+                self.protective_reads.append(role)
+            return super().get_order(broker_order_id, role=role)
+
+    broker = August27Broker()
+    engine = PaperExecutionEngine(
+        SESSION,
+        candidate=PaperCandidate.ATR_1_00,
+        enable_paper_orders=True,
+        broker=broker,
+        fill_poll_waiter=lambda _seconds: None,
+    )
+    engine.recover((), now=KNOWN)
+    record = engine.handle_shadow_event(event, now=KNOWN)
+
+    assert record is not None
+    assert record.state is PaperExecutionState.PROTECTIVE_ACTIVE
+    assert record.actual_fill_price == Decimal("770.01")
+    assert record.theoretical_stop_price == Decimal(
+        "770.72133103399998419267812723114832339521925529166"
+    )
+    assert record.broker_stop_price == Decimal("770.72")
+    assert record.theoretical_target_price == Decimal("768.81")
+    assert record.broker_target_price == Decimal("768.81")
+    assert record.protective_orders is not None
+    assert record.protective_orders.stop.stop_price == Decimal("770.72")
+    assert record.protective_orders.target.limit_price == Decimal("768.81")
+    assert broker.oco_submissions == 1
+    assert broker.protective_reads == [BrokerOrderRole.TARGET, BrokerOrderRole.STOP]

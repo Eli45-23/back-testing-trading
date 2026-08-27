@@ -177,6 +177,12 @@ class PaperExecutionRecord(BaseModel):
     fill_slippage: Decimal | None = None
     protective_stop_price: Decimal | None = None
     protective_target_price: Decimal | None = None
+    broker_stop_price: Decimal | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    broker_target_price: Decimal | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     protective_orders: BrokerProtectiveOrders | None = None
     flatten_order: BrokerOrderRecord | None = None
     broker_reported_position_qty: Decimal = Decimal("0")
@@ -231,6 +237,8 @@ class PaperExecutionRecord(BaseModel):
                     self.fill_slippage,
                     self.protective_stop_price,
                     self.protective_target_price,
+                    self.broker_stop_price,
+                    self.broker_target_price,
                     self.protective_orders,
                 )
             ) or self.actual_fill_qty:
@@ -251,9 +259,49 @@ class PaperExecutionRecord(BaseModel):
             raise ValueError("paper stop must use actual fill plus frozen ATR risk")
         if self.protective_target_price != self.objective_price:
             raise ValueError("paper target must preserve the frozen objective price")
+        from spy_research.paper.price_precision import (
+            normalize_objective_limit,
+            normalize_protective_stop,
+            validate_short_protective_prices,
+        )
+
+        expected_broker_stop = normalize_protective_stop(
+            expected_stop, position_side="short"
+        )
+        expected_broker_target = normalize_objective_limit(
+            self.objective_price, position_side="short"
+        )
+        if self.broker_stop_price != expected_broker_stop:
+            raise ValueError("paper broker stop does not match frozen normalization")
+        if self.broker_target_price != expected_broker_target:
+            raise ValueError("paper broker target does not match frozen normalization")
+        validate_short_protective_prices(
+            fill_price=self.actual_fill_price,
+            theoretical_stop=expected_stop,
+            theoretical_target=self.objective_price,
+            broker_stop=expected_broker_stop,
+            broker_target=expected_broker_target,
+        )
+        if self.protective_orders is not None:
+            if self.protective_orders.stop.stop_price != expected_broker_stop:
+                raise ValueError("broker stop leg changed its normalized price")
+            if self.protective_orders.target.limit_price != expected_broker_target:
+                raise ValueError("broker target leg changed its normalized price")
         if self.state is PaperExecutionState.PROTECTIVE_ACTIVE and self.protective_orders is None:
             raise ValueError("protected state requires broker OCO records")
         return self
+
+    @property
+    def theoretical_stop_price(self) -> Decimal | None:
+        """Exact fill-plus-ATR stop, retained independently of broker ticks."""
+
+        return self.protective_stop_price
+
+    @property
+    def theoretical_target_price(self) -> Decimal | None:
+        """Exact frozen objective, retained independently of broker ticks."""
+
+        return self.protective_target_price
 
 
 class PaperRunReport(BaseModel):

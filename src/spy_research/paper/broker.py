@@ -11,7 +11,7 @@ import httpx
 from pydantic import SecretStr
 
 from spy_research.config import AlpacaEnvironment
-from spy_research.logging_config import register_sensitive_values
+from spy_research.logging_config import redact_sensitive_text, register_sensitive_values
 from spy_research.paper.models import (
     ALPACA_PAPER_BASE_URL,
     BrokerOrderRecord,
@@ -20,6 +20,11 @@ from spy_research.paper.models import (
     BrokerPositionRecord,
     BrokerProtectiveOrders,
     PaperExecutionError,
+)
+from spy_research.paper.price_precision import (
+    is_alpaca_equity_price,
+    normalize_objective_limit,
+    normalize_protective_stop,
 )
 
 
@@ -219,6 +224,22 @@ class AlpacaPaperBroker:
         stop_price: Decimal,
         client_order_id: str,
     ) -> BrokerProtectiveOrders:
+        if isinstance(qty, bool) or not isinstance(qty, int) or qty <= 0:
+            raise PaperExecutionError("paper OCO quantity must be a positive whole share")
+        if not client_order_id:
+            raise PaperExecutionError("paper OCO client identity is required")
+        normalized_target = normalize_objective_limit(
+            target_price, position_side="short"
+        )
+        normalized_stop = normalize_protective_stop(
+            stop_price, position_side="short"
+        )
+        if not is_alpaca_equity_price(normalized_target) or not is_alpaca_equity_price(
+            normalized_stop
+        ):
+            raise PaperExecutionError("paper OCO price violates Alpaca equity precision")
+        if normalized_target >= normalized_stop:
+            raise PaperExecutionError("paper OCO target must remain below its stop")
         payload = self._request(
             "POST",
             "/v2/orders",
@@ -230,8 +251,8 @@ class AlpacaPaperBroker:
                 "time_in_force": "day",
                 "order_class": "oco",
                 "client_order_id": client_order_id,
-                "take_profit": {"limit_price": str(target_price)},
-                "stop_loss": {"stop_price": str(stop_price)},
+                "take_profit": {"limit_price": str(normalized_target)},
+                "stop_loss": {"stop_price": str(normalized_stop)},
                 "extended_hours": False,
             },
         )
@@ -292,8 +313,30 @@ class AlpacaPaperBroker:
     @staticmethod
     def _validated_response(response: httpx.Response) -> Any:
         if response.status_code >= 400:
+            detail = ""
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = None
+            if isinstance(payload, Mapping):
+                raw_code = payload.get("code")
+                raw_message = payload.get("message")
+                code = str(raw_code) if isinstance(raw_code, (int, str)) else ""
+                message = str(raw_message) if isinstance(raw_message, str) else ""
+                message = " ".join(message.split())[:240]
+                diagnostic = " ".join(
+                    part
+                    for part in (
+                        f"code={code}" if code else "",
+                        f"message={message}" if message else "",
+                    )
+                    if part
+                )
+                if diagnostic:
+                    detail = f" ({redact_sensitive_text(diagnostic)})"
             raise PaperExecutionError(
-                f"Alpaca paper broker rejected request with HTTP {response.status_code}"
+                f"Alpaca paper broker rejected request with HTTP "
+                f"{response.status_code}{detail}"
             )
         try:
             return response.json()
