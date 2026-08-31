@@ -1398,6 +1398,58 @@ orders and SPY position. Existing deterministic identities are adopted rather
 than resubmitted. If broker and reconstructed state cannot be matched exactly,
 the engine fails closed and sends no new entry.
 
+## Stage 15 BASE_SHORT attribution backtest
+
+Stage 15 is an offline, read-only attribution study. It does not start the live
+SIP service, connect to Alpaca, submit PAPER orders, or modify the accepted
+Stage 14 candidate. The complete frozen
+`BASE_SHORT:NEXT_OBJECTIVE_LEVEL:ATR_1_00:NO_FIXED_TARGET` membership is the
+baseline. Ambiguous and unavailable executions remain explicitly counted.
+
+All feature values are either accepted Stage 10/11 annotations or mechanical
+measurements available no later than `signal_known_at`. Dollar room, time,
+ATR regime, gap, candle-quality, and interaction-count buckets are declared in
+source before the study runs. No profitable cut points are searched. Groups
+with fewer than 30 realized trades, fewer than 10 sessions, or concentrated
+month membership are forced to `INSUFFICIENT_EVIDENCE`. Benjamini-Hochberg FDR
+diagnostics are reported separately for single-factor and the six predeclared
+interaction families. A classification is exploratory and never authorizes a
+new live candidate. `RESEARCH_CANDIDATE` additionally requires the
+session-clustered 95% bootstrap interval for subgroup mean R to exclude zero.
+
+Run the frozen historical study locally with:
+
+```bash
+spy-research analyze-base-short-attribution \
+  --start 2026-01-02 --end 2026-08-19 \
+  --output-json reports/stage15_base_short_attribution.json \
+  --output-markdown reports/stage15_base_short_attribution.md
+```
+
+## Stage 15.1 BASE_SHORT negative-condition exclusion validation
+
+Stage 15.1 is an offline, read-only validation of exactly four negative
+conditions frozen from the completed Stage 15 attribution report. It evaluates
+the control, four single exclusions, the union of all four, and only four
+predeclared combinations. It does not search additional combinations or alter
+the Stage 14 candidate, signal rules, execution semantics, or historical data.
+
+The analysis fails closed unless the exact Stage 15 baseline and each frozen
+condition's realized count, mean R, and BH q-value reconcile first. Room-based
+variants receive a separate fixed five-minute MFE/MAE diagnostic normalized by
+confirmation ATR so entry behavior is not confused with next-objective exit
+geometry.
+
+```bash
+spy-research validate-negative-condition-exclusions \
+  --start 2026-01-02 --end 2026-08-19 \
+  --output-json reports/stage15_1_negative_condition_exclusions.json \
+  --output-markdown reports/stage15_1_negative_condition_exclusions.md
+```
+
+Stage 14 remains paused. This command has no Alpaca integration, submits no
+orders, and cannot authorize a forward-test exclusion rule.
+
 ## Local setup
 
 Python 3.12 or newer is required.

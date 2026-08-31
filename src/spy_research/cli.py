@@ -17,6 +17,12 @@ from zoneinfo import ZoneInfo
 import yaml
 from pydantic import ValidationError
 
+from spy_research.attribution import (
+    BaseShortAttributionService,
+    NegativeConditionExclusionService,
+    render_attribution_markdown,
+    render_exclusion_markdown,
+)
 from spy_research.alpaca import AlpacaDataClient, HistoricalStockDataService
 from spy_research.alpaca.errors import AlpacaDataError
 from spy_research.bars import (
@@ -1136,6 +1142,48 @@ def build_parser() -> argparse.ArgumentParser:
     )
     execution_classification.add_argument(
         "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+
+    attribution = subparsers.add_parser(
+        "analyze-base-short-attribution",
+        help="run the frozen Stage 15 BASE_SHORT attribution study",
+    )
+    attribution.add_argument("--start", type=parse_iso_date, required=True)
+    attribution.add_argument("--end", type=parse_iso_date, required=True)
+    attribution.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    attribution.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    attribution.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+    attribution.add_argument(
+        "--output-json", type=Path, help="optional non-secret JSON report path"
+    )
+    attribution.add_argument(
+        "--output-markdown", type=Path, help="optional review-ready Markdown path"
+    )
+
+    exclusion_validation = subparsers.add_parser(
+        "validate-negative-condition-exclusions",
+        help="run the frozen Stage 15.1 BASE_SHORT exclusion validation",
+    )
+    exclusion_validation.add_argument("--start", type=parse_iso_date, required=True)
+    exclusion_validation.add_argument("--end", type=parse_iso_date, required=True)
+    exclusion_validation.add_argument(
+        "--config", type=Path, default=DEFAULT_CONFIG_PATH
+    )
+    exclusion_validation.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_RAW_DATA_ROOT
+    )
+    exclusion_validation.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_PROCESSED_DATA_ROOT
+    )
+    exclusion_validation.add_argument(
+        "--output-json", type=Path, help="optional non-secret JSON report path"
+    )
+    exclusion_validation.add_argument(
+        "--output-markdown", type=Path, help="optional review-ready Markdown path"
     )
 
     signal_replay = subparsers.add_parser(
@@ -2265,6 +2313,104 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Unable to compare exit models: {exc}", file=sys.stderr)
             return 2
         _print_exit_model_comparison(result)
+        return 0
+
+    if args.command == "analyze-base-short-attribution":
+        try:
+            config = load_research_config(args.config)
+            result = BaseShortAttributionService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+            if args.output_json is not None:
+                args.output_json.parent.mkdir(parents=True, exist_ok=True)
+                args.output_json.write_text(
+                    result.model_dump_json(indent=2) + "\n", encoding="utf-8"
+                )
+            if args.output_markdown is not None:
+                args.output_markdown.parent.mkdir(parents=True, exist_ok=True)
+                args.output_markdown.write_text(
+                    render_attribution_markdown(result), encoding="utf-8"
+                )
+        except (
+            ExitComparisonInputError,
+            ExecutionInputError,
+            SetupOutcomeInputError,
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to analyze BASE_SHORT attribution: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "Stage 15 BASE_SHORT attribution complete: "
+            f"population={result.baseline.population_n}, "
+            f"realized={result.baseline.trades}, "
+            f"mean_R={result.baseline.mean_r}, "
+            f"single_groups={len(result.single_factor_groups)}, "
+            f"interaction_groups={len(result.interaction_groups)}"
+        )
+        if args.output_json is not None:
+            print(f"JSON report: {args.output_json}")
+        if args.output_markdown is not None:
+            print(f"Markdown report: {args.output_markdown}")
+        return 0
+
+    if args.command == "validate-negative-condition-exclusions":
+        try:
+            config = load_research_config(args.config)
+            result = NegativeConditionExclusionService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate(start=args.start, end=args.end)
+            if args.output_json is not None:
+                args.output_json.parent.mkdir(parents=True, exist_ok=True)
+                args.output_json.write_text(
+                    result.model_dump_json(indent=2) + "\n", encoding="utf-8"
+                )
+            if args.output_markdown is not None:
+                args.output_markdown.parent.mkdir(parents=True, exist_ok=True)
+                args.output_markdown.write_text(
+                    render_exclusion_markdown(result), encoding="utf-8"
+                )
+        except (
+            ExitComparisonInputError,
+            ExecutionInputError,
+            SetupOutcomeInputError,
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(
+                f"Unable to validate BASE_SHORT exclusions: {exc}", file=sys.stderr
+            )
+            return 1
+        print(
+            "Stage 15.1 BASE_SHORT exclusion validation complete: "
+            f"population={result.baseline.retained_membership}, "
+            f"realized={result.baseline.realized_retained}, "
+            f"variants={len(result.variants)}"
+        )
+        if args.output_json is not None:
+            print(f"JSON report: {args.output_json}")
+        if args.output_markdown is not None:
+            print(f"Markdown report: {args.output_markdown}")
         return 0
 
     if args.command == "classify-execution-variants":
