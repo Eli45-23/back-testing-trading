@@ -16,7 +16,14 @@ NEW_YORK = ZoneInfo("America/New_York")
 
 
 class FiveMinuteBar(BaseModel):
-    """One complete RTH candle derived from five validated one-minute bars."""
+    """One complete RTH candle derived from five validated one-minute bars.
+
+    ``timestamp`` is the inclusive candle START, never its completion or known-at
+    time. The candle covers [timestamp, timestamp + five minutes). Its final
+    OHLC is available only at timestamp + five minutes. For example, 09:30 is
+    stored for the opening 09:30–09:35 candle, which completes at 09:35.
+    Signal consumers must explicitly derive completion before measuring outcomes.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 

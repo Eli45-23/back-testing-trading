@@ -1469,6 +1469,158 @@ candidate search, has no Alpaca PAPER integration, and cannot modify Stage 14.
 The default OOS stores are isolated under `data/oos/`; they cannot add new
 prior-session context to the accepted 2026 historical store.
 
+## SPY opening-range break-and-hold V1
+
+This independent historical study measures SPY underlying price action. It does
+not estimate options profitability or introduce live trading, orders, alerts,
+filters, optimized parameters, or changes to the accepted BASE_SHORT candidate.
+
+The existing opening-range calculation supplies ORH5/ORL5 from the first
+completed RTH candle (09:30–09:35 New York time). The opening candle cannot
+trigger an event. Every subsequent completed 5-minute candle is scanned:
+
+- A **break** trades strictly above ORH5 or below ORL5. The recorded first-break
+  timestamp identifies the earliest underlying one-minute interval. OHLC cannot
+  recover an exact trade timestamp; `break_known_at` records the completed scan.
+- A **first hold** closes strictly outside the relevant boundary. Its reference
+  price is that candle's close, and its timestamp is the candle's completion.
+- A **strong hold** is the next completed outside close without an intervening
+  reclaim. This two-close V1 rule is provisional and isolated in
+  `is_strong_hold`; it does not claim to reproduce discretionary candle quality.
+- A wick break that closes at or back across the boundary is a **failed break**.
+  It remains in the event dataset.
+- A later close at or across the boundary is a **reclaim**. It terminates that
+  direction's sequence. A subsequent break can start another event. Equality
+  rearms the boundary. A close through the entire range also reclaims the old
+  direction, even without a separate inside-range candle.
+
+One uninterrupted sequence creates at most one first and one strong hold.
+Both directions and repeated re-breaks are retained. A candle crossing both
+boundaries may create two events; if the earliest crossings share a minute,
+their order is `AMBIGUOUS_SAME_MINUTE`. No intraminute order is invented.
+
+### Timing, outcomes, and context
+
+`FiveMinuteBar.timestamp` is the **inclusive candle-start timestamp**, assigned
+by `aggregate_rth_1m_to_5m` from `bucket_start`. It is not a signal availability
+timestamp. A bar stored as 09:30 contains minute starts 09:30, 09:31, 09:32,
+09:33, and 09:34 and completes at 09:35. The existing opening-range function
+sets `available_from_timestamp = first.timestamp + 5 minutes`. The opening
+candle supplies levels but cannot itself be a break/hold signal.
+
+The same rule applies to every later candle: a candle stored as 09:35 contains
+09:35–09:39 minute starts and can confirm a first hold only at 09:40. A strong
+confirmation stored as 09:40 becomes available at 09:45. Every new first-hold,
+strong-hold, failed-break, and reclaim fact uses the confirming candle's
+completion. Regression tests separately verify opening availability and later
+first/strong confirmation windows, including extreme constituent minutes that
+must never contaminate post-signal outcomes.
+
+All prices use Decimal. Detection reads only completed candles and their already
+completed minute constituents. Outcomes are a separate stage. Following the
+literal V1 requirement, a raw minute-start timestamp must be **strictly later**
+than the signal close timestamp. Thus a 09:40 confirmation excludes the
+09:40–09:41 minute and starts with 09:41–09:42. A complete 5-minute outcome
+through 09:45 has four eligible minutes. This deliberate one-minute gap can
+change threshold ordering versus an immediately executable entry.
+
+Fixed 5/15/30/60-minute, EOD, and pre-reclaim windows remain separate. Returns
+are direction-adjusted dollar changes, not percent returns or realized trading
+profits. Excursions are nonnegative magnitudes measured against the reference
+close; extrema timestamps identify minute intervals. Pre-reclaim includes price
+movement up to the reclaim candle's completion; absent reclaim, it runs to EOD.
+Fixed windows extending beyond the actual XNYS close retain their partial
+measurements with `complete=false`; summaries of fixed-horizon returns use only
+complete observations. Close-of-session signals with no future data remain
+counted and explicitly unavailable. Early closes follow the exchange calendar.
+
+The nine frozen favorable/adverse dollar pairs are `.25/.25`, `.50/.25`,
+`.75/.25`, `1.00/.25`, `.50/.30`, `.75/.30`, `1.00/.30`, `1.50/.30`, and
+`2.00/.30`. Each result retains both hit timestamps and one of favorable first,
+adverse first, ambiguous same bar, neither, or no future data. Both thresholds
+touching the same earliest minute is `AMBIGUOUS_SAME_BAR` and never a clean win.
+Reported percentages use **all signals** as the denominator.
+
+PDH/PDL, PMH/PML, and ORH5/ORL5 are descriptive context only. Missing context
+stays unavailable. Above/below comparisons are strict; equal-price levels are
+retained in the known-level set, with stable alphabetical tie selection. The
+next-level distance buckets use fixed inclusive upper bounds of $0.25, $0.50,
+$1.00, $1.50, and $2.00, followed by >$2 and unavailable. No future levels are
+used. Time buckets are left-closed/right-open at the supplied boundaries.
+Opposite-boundary tests mean a touch recorded strictly before the event's first
+break minute; the opening reference candle itself is excluded. First/later break
+counts use earlier crossing minutes, with simultaneous attempts not arbitrarily
+ordered. Prior valid holds are counted before the signal candle completes.
+Both-sides-broken-for-the-day is explicitly a post-session fact, never a feature.
+ATR/VWAP are omitted from this baseline to keep the optional context out of scope.
+
+### Data coverage and commands
+
+Activate the installed project environment (`source .venv/bin/activate` and,
+if necessary, `python -m pip install -e '.[test]'`). Inventory validates content
+and expected XNYS minute coverage; file existence alone is insufficient:
+
+```bash
+# Run from the repository root. This also works when macOS marks an editable
+# installation's .pth file hidden and Python skips that file.
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+spy-research data-coverage --start 2026-01-01 --end 2026-09-04
+spy-research fill-missing-data --start 2026-01-01 --end 2026-09-04
+spy-research break-hold --start 2026-08-17 --end 2026-08-19
+spy-research break-hold --start 2026-01-01 --end 2026-09-04
+spy-research break-hold --start 2026-01-01 --end 2026-09-04 \
+  --json --output reports/break_hold_2026_v1.json \
+  --csv reports/break_hold_2026_v1.csv
+spy-research break-hold --start 2026-01-01 --end 2026-09-04 \
+  --output reports/break_hold_2026_v1.md
+```
+
+For a later run, replace `--end` with the latest **completed** XNYS session.
+`fill-missing-data` first inventories and requests only missing/invalid session
+dates. Existing valid sessions are untouched. It reuses the historical SIP
+client and atomic idempotent Parquet store. Conflicting or corrupt existing
+partitions are never silently overwritten: repair fails closed and requires
+separate investigation. It never fabricates missing minutes. Market-data files
+remain ignored by Git. No network or credentials are needed for `break-hold` or
+`data-coverage`.
+
+Raw data is processed session by session through existing classification and
+aggregation. Persisted 5-minute files are inventoried but are not required for
+this command, because it builds reconciled candles directly from validated raw
+minutes. Missing/invalid raw sessions are listed in the report and produce exit
+code 2 even when other sessions can be analyzed. Validation/calculation failures
+produce exit code 1; fully covered runs return 0.
+
+JSON is the canonical typed event-and-outcome export; CSV has one row per entry
+style. No research-event SQLite repository currently exists, so V1 does not add
+a second persistence implementation. The report includes the complete effective
+definition, definition hash, input-content manifest hash, range, versions, and
+Git base. The new strategy config is excluded from legacy configuration hashes
+and explicitly included in its own definition snapshot, preserving earlier run
+identities. The Git base alone does not identify uncommitted changes.
+
+### Interpretation and extension boundaries
+
+Separate first-hold and strong-hold tables report counts, direction, excursions,
+returns, and all threshold results. Every subgroup shows n; fewer than 30 is
+flagged. Matched comparisons also show the first entry on the eventual
+strong-hold subset. That subset is survivor-selected and cannot be used as a
+first-hold entry filter. Repeated signals overlap within sessions; observations
+are not independent. Early entries have longer EOD exposure. Dollar thresholds
+have different relative size across volatility regimes. A large EOD MFE does
+not imply it was reached before an adverse move.
+
+No exit policy, spread, slippage, costs, or position sizing is simulated. MFE/MAE
+ratios are not expectancy; favorable-first percentages are not proof of a
+tradeable edge. Context comparisons and the best observed groups are descriptive
+and require independent validation. Backtest results are research evidence, not
+a guarantee of future profitability.
+
+A future options layer could consume immutable event IDs, entry timestamps, and
+underlying outcomes and attach separately versioned option-market observations.
+It must not change this underlying signal definition or retroactively filter
+this baseline. No such layer is implemented in V1.
+
 ## Local setup
 
 Python 3.12 or newer is required.

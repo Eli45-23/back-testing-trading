@@ -251,6 +251,8 @@ def build_parser() -> argparse.ArgumentParser:
         description="Local foundation utilities for SPY research.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+    from spy_research.break_hold.cli import add_commands
+    add_commands(subparsers, parse_iso_date)
 
     config_check = subparsers.add_parser(
         "config-check",
@@ -1279,6 +1281,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command in {"data-coverage", "fill-missing-data", "break-hold"}:
+        from spy_research.break_hold.cli import handle
+        try:
+            return handle(args)
+        except Exception as exc:
+            # Some third-party errors can include request details; only disclose class.
+            print(f"Historical research failed closed ({type(exc).__name__}). No result was accepted.", file=sys.stderr)
+            return 1
 
     if args.command == "config-check":
         try:

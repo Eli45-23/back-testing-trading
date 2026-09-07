@@ -114,6 +114,19 @@ class DatabaseConfig(StrictModel):
     engine: Literal["sqlite"]
 
 
+class BreakAndHoldConfig(StrictModel):
+    """Frozen research definition; deliberately not an optimization surface."""
+
+    enabled: bool = True
+    opening_range_minutes: Literal[5] = 5
+    require_close_outside_level_for_first_hold: Literal[True] = True
+    strong_hold_confirmation_closes: Literal[2] = 2
+    allow_multiple_same_direction_events: Literal[True] = True
+    allow_opposite_direction_same_day: Literal[True] = True
+    preserve_failed_breaks: Literal[True] = True
+    preserve_reclaims: Literal[True] = True
+
+
 class ResearchConfig(StrictModel):
     research: ResearchMetadata
     symbol: Literal["SPY"]
@@ -125,6 +138,8 @@ class ResearchConfig(StrictModel):
     atr: AtrConfig
     outcomes: OutcomesConfig
     database: DatabaseConfig
+    # A separate strategy snapshot avoids changing accepted legacy run hashes.
+    break_and_hold: BreakAndHoldConfig = Field(default_factory=BreakAndHoldConfig, exclude=True)
 
     @field_validator("symbol", mode="before")
     @classmethod

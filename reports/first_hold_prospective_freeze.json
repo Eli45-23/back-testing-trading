@@ -1,0 +1,493 @@
+{
+  "version": "first_hold_prospective_v1",
+  "declared_on": "2026-09-07",
+  "development_end": "2026-09-04",
+  "candidates": [
+    "USD030_TARGET_1.5R",
+    "ATR050_TARGET_1R",
+    "USD030_TARGET_2R_BE1R"
+  ],
+  "control": "USD030_TARGET_2R",
+  "required_sessions": 60,
+  "minimum_trades_per_candidate": 200,
+  "minimum_contributing_sessions": 40,
+  "sessions": [
+    {
+      "date": "2026-09-08",
+      "close": "2026-09-08T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-09",
+      "close": "2026-09-09T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-10",
+      "close": "2026-09-10T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-11",
+      "close": "2026-09-11T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-14",
+      "close": "2026-09-14T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-15",
+      "close": "2026-09-15T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-16",
+      "close": "2026-09-16T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-17",
+      "close": "2026-09-17T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-18",
+      "close": "2026-09-18T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-21",
+      "close": "2026-09-21T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-22",
+      "close": "2026-09-22T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-23",
+      "close": "2026-09-23T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-24",
+      "close": "2026-09-24T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-25",
+      "close": "2026-09-25T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-28",
+      "close": "2026-09-28T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-29",
+      "close": "2026-09-29T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-09-30",
+      "close": "2026-09-30T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-01",
+      "close": "2026-10-01T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-02",
+      "close": "2026-10-02T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-05",
+      "close": "2026-10-05T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-06",
+      "close": "2026-10-06T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-07",
+      "close": "2026-10-07T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-08",
+      "close": "2026-10-08T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-09",
+      "close": "2026-10-09T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-12",
+      "close": "2026-10-12T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-13",
+      "close": "2026-10-13T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-14",
+      "close": "2026-10-14T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-15",
+      "close": "2026-10-15T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-16",
+      "close": "2026-10-16T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-19",
+      "close": "2026-10-19T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-20",
+      "close": "2026-10-20T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-21",
+      "close": "2026-10-21T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-22",
+      "close": "2026-10-22T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-23",
+      "close": "2026-10-23T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-26",
+      "close": "2026-10-26T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-27",
+      "close": "2026-10-27T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-28",
+      "close": "2026-10-28T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-29",
+      "close": "2026-10-29T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-10-30",
+      "close": "2026-10-30T20:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-02",
+      "close": "2026-11-02T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-03",
+      "close": "2026-11-03T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-04",
+      "close": "2026-11-04T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-05",
+      "close": "2026-11-05T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-06",
+      "close": "2026-11-06T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-09",
+      "close": "2026-11-09T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-10",
+      "close": "2026-11-10T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-11",
+      "close": "2026-11-11T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-12",
+      "close": "2026-11-12T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-13",
+      "close": "2026-11-13T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-16",
+      "close": "2026-11-16T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-17",
+      "close": "2026-11-17T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-18",
+      "close": "2026-11-18T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-19",
+      "close": "2026-11-19T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-20",
+      "close": "2026-11-20T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-23",
+      "close": "2026-11-23T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-24",
+      "close": "2026-11-24T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-25",
+      "close": "2026-11-25T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-11-27",
+      "close": "2026-11-27T18:00:00+00:00",
+      "early_close": true
+    },
+    {
+      "date": "2026-11-30",
+      "close": "2026-11-30T21:00:00+00:00",
+      "early_close": false
+    },
+    {
+      "date": "2026-12-01",
+      "close": "2026-12-01T21:00:00+00:00",
+      "early_close": false
+    }
+  ],
+  "calendar_version": "4.13.2",
+  "frozen_files": {
+    "config/research.yaml": "fe5ab684e55057b94b6f46b42095d1df7ab9aa8ecf07cc9d3b462cd5afc79707",
+    "reports/break_hold_2026_v1.json": "6aaf9980ecd7798420151a8b97436311eca6429e9f31fdb33be1ed86c8c47148",
+    "reports/break_hold_exit_study.json": "5626c79646902bea395fb99713cd1fff71d45bbc0f31634fd82b3c9ecd2c5ff2",
+    "reports/break_hold_exit_study.md": "7c11eaf8a4b485051b23245e8aaf7a52b524d0c1c898981f1d5af9434662bcf3",
+    "reports/break_hold_exit_study_plan.md": "cdd60b36f5c74e87dcb9adb9bc2c2614ef08bb5d96cb3a2af3a2de99c80b8b29",
+    "reports/break_hold_exit_study_tables.md": "9adf9ce4fe5cb8b18e5bb585f70e0ab83ef637a10331930ae7a90e39f4e39959",
+    "reports/break_hold_exit_study_trades.csv": "834821ac8acedf8683a98a74093770e9034e642e55856960839115512c640f40",
+    "reports/break_hold_exit_study_verification.md": "b7fbdc8d1d7c67a657a0c1bd33d276253538fb8aed9d04deeab6e93b5ff8e4f4",
+    "reports/break_hold_first_hold_quality_analysis.json": "8dac1dd6e9a2df3e010df5325c67d31f76a34a15eee2f69908623d3e338780af",
+    "src/spy_research/__init__.py": "92c36a943080997a1282964c9a1361cde42d3ef4d13e9c08474fa9a58c4a67b3",
+    "src/spy_research/__main__.py": "7b2bba6589b6d1a36b29614545c77abd0f77a27869a13cc7a9554bb3b7afe7eb",
+    "src/spy_research/alpaca/__init__.py": "90fd8bb2c976788a3cb7636bdb709094c86aca0b3807e1b7cb6fac6bee091465",
+    "src/spy_research/alpaca/client.py": "3d98ceaa0723553478eebc995f2ae873593529d53260ddd4b553f20a26d14d03",
+    "src/spy_research/alpaca/errors.py": "7372ac60fa32c0d89a00ccc7bc6e8d5adb7bd83a2f5bb54040b49b38063e2158",
+    "src/spy_research/alpaca/historical.py": "c199e918387529885f91ac5c8bb41fc599650666a3da6cde1d3da562c5f5dbc0",
+    "src/spy_research/alpaca/models.py": "c832cbe5fa02ff39a632940916a5b23c05181874f2947d9acd45300f5e77bcda",
+    "src/spy_research/attribution/__init__.py": "b4a307b0bbee90cabf94fe4c3ed17f0f37a7affff7f68e2dc07461ead5eeb912",
+    "src/spy_research/attribution/analysis.py": "b878b63e58dddc580d1971893b26aba98547b98ec2ab64d38f84b86ba2f4d822",
+    "src/spy_research/attribution/exclusion_analysis.py": "1775d2e37f75071ce087c0a33664aeff04105b767de5849b35ed23f9f535324f",
+    "src/spy_research/attribution/exclusion_models.py": "c425c62150b562c53d4fc5f0969473ace9d05179cffaf4342e184a34f2d371c2",
+    "src/spy_research/attribution/exclusion_reporting.py": "439169d4a3be796f11d4a7b346ec83440bcdfdec0ee173c2b516276cb26279a0",
+    "src/spy_research/attribution/exclusion_service.py": "8c37c5c0d6b92fc8cb48844b890784d38c385b7e3faa9fa9592024c6db590575",
+    "src/spy_research/attribution/models.py": "f15020a381f3ffc57123b14996b5d11b5f5a670f1c0687b7ea803ec830918a89",
+    "src/spy_research/attribution/oos_analysis.py": "2a465969e5728e30d62653da843142c31cc56c009510225bf6358c5fca7e5214",
+    "src/spy_research/attribution/oos_models.py": "1f3535a74bf84dbf71e0dccbb797a5a966611eabbd6dd9929f2125731aa26bf2",
+    "src/spy_research/attribution/oos_reporting.py": "6c85f2301ebecbe4c94ed4038824c395bda25b1041f9d763673752da396d7236",
+    "src/spy_research/attribution/oos_service.py": "8b9646b7daa2e2f09c93912b4c4a58fda6b0458769dad8dc2ad506515ff216c8",
+    "src/spy_research/attribution/reporting.py": "7492965545b1bc2d8b28c8beb5e2049ae00b7de17dff37d7f26d0450aaa3f943",
+    "src/spy_research/attribution/service.py": "ff2e42cf5b4bea925f15b2e8a1c6d65ae53afeb9b2dc6a809cc519c03f9700a1",
+    "src/spy_research/bars/__init__.py": "a0715701575d761364f4ca50d44447f1ca62fd13ba5fbc4d15bc1c1e53a3a27a",
+    "src/spy_research/bars/aggregation.py": "a48c93e164f2bd06f096cfb8d5c4acd491084452d95e0c41bca990851e1a1236",
+    "src/spy_research/bars/build.py": "c28952ef8eba94b618348cfc0e0d85652aaf7ba169888d510745158f2a68488a",
+    "src/spy_research/bars/errors.py": "7654303341b17405ff6e3172a7dddcbaa8614b3c0d97d73737557364bf4f58de",
+    "src/spy_research/bars/models.py": "341d3a5835fecd7b6de6e4e1af65c6582772617d345d7b83c0c16dcbe898e622",
+    "src/spy_research/bars/store.py": "582dd5d8e296854a6e70cf290e0819fe74de971809a6ac922723b4e316cca2e6",
+    "src/spy_research/bars/validation.py": "51560b251adf3def41798849fa50905b13be57943b800419d80480c4ee869f76",
+    "src/spy_research/break_hold/__init__.py": "3908d523eb5bfc43fdc86ae1e6796437df73939d7482ec9b87193d10f089b071",
+    "src/spy_research/break_hold/cli.py": "e8eb68510b6defb3f989932ad3e88eb618222b22eaed404ec03703e5666353c1",
+    "src/spy_research/break_hold/entry_timing_analysis.py": "4be760751e45f8a15926b480a07b12097d522ec61601397324938f540f736b49",
+    "src/spy_research/break_hold/entry_timing_reporting.py": "7bafe271dbe861954bb1fa973923751b1d7b7344f144f281ba7f675e83122975",
+    "src/spy_research/break_hold/executable_reference.py": "94e7b1ef8fb7f5d2500d21e8c961508ab8498a283ffb680169ffbe8dcae4f946",
+    "src/spy_research/break_hold/exit_study.py": "5891c84fe76104cf21ef82b008354bd4f08a3bc219dd5b5ca3e2d345b1d8ab34",
+    "src/spy_research/break_hold/exit_study_reporting.py": "fc2a858e6c4f88d2ee1447480a0966ead05cfcce62c0ae3d567eaa2b98f250d9",
+    "src/spy_research/break_hold/first_hold_features.py": "e3541b45b77891584604152dd32862dc66307cf8aab9238d849ba1b289922acd",
+    "src/spy_research/break_hold/first_hold_quality_analysis.py": "73c7dd336baeb179890901a23469fa9ed8658ecd6a3f131437006722f6aaf242",
+    "src/spy_research/break_hold/first_hold_quality_reporting.py": "0a16c92e0142846526b510d43d81f736bd5e45b5676273c6d7ccdcf099130206",
+    "src/spy_research/break_hold/first_hold_quality_service.py": "fd13b8d68e786630cb9f79c8139ef2bf05828401580f971ef9cac623d319c88c",
+    "src/spy_research/break_hold/reporting.py": "a3d168876cdcff9c5cc67848644a73cfac79cd97f64235d5a7943f01116a9e8e",
+    "src/spy_research/break_hold/service.py": "776a3aa05fcaec7f769d4a7e003fcdadff8896beb62034d8e524573728f19300",
+    "src/spy_research/cli.py": "2055dbe12ae7d2aac3ff14d8de4c9d2790580dbd376f7f37c7bc776a8b8716ed",
+    "src/spy_research/config.py": "98864cd8519b4b062a793ddb8d8f57dbf02d3fc29f08f8b7f6375a22509ac32e",
+    "src/spy_research/data/__init__.py": "c691f0aa945197a0012853c4529de6ae0e8f58368fb795026bda46bbe0793e32",
+    "src/spy_research/data/coverage.py": "476d89976728d99e50859b6c914fb1dcaa2c1bb2249472871edeb26657ddf08c",
+    "src/spy_research/data/errors.py": "84f27b11c264f5dc08166de15febc20de27191a2c695654dd43955e6fdeaf13c",
+    "src/spy_research/data/raw_store.py": "353b5b279ed383a0b37e2ad51913859e952c138ceabbe68dbd3e4ba96b7c30e1",
+    "src/spy_research/data/schemas.py": "2930df7906993f5f2fde90cf74db24d8790ee7ff03e905a208dacd92c1c80aec",
+    "src/spy_research/data/validation.py": "975660eac4e2ebab44e4f81ef55074478ffcca832e6b32cf47c43ffdb824a379",
+    "src/spy_research/events/__init__.py": "8d8272eb21bd97c70985069465542311968298c3bdd1e30494d512c8544bd867",
+    "src/spy_research/events/break_and_hold.py": "94d961008ae4738e60cd8aa7a2b433b6d5fb8d467e821c3a8483716d4c24290b",
+    "src/spy_research/events/break_and_hold_models.py": "c45563aab485796646142f9e37da4218008e875adf1d03c2978ccec4dfec5250",
+    "src/spy_research/events/ema_cross.py": "0b97c34f3f92a8a90cb22c7608b28a9a43204db479cd1195d63ae29189fbf7d4",
+    "src/spy_research/events/models.py": "d481b8b07f3ad4604428c9cf9ae658e91088d90d1ad48f4111183dc437038c52",
+    "src/spy_research/execution/__init__.py": "db39558bea729094eaae0e1806c8f55ed6bbef95a7aed7fcc79c7e942a4e6e19",
+    "src/spy_research/execution/classification.py": "13b56ba4aac6cd2596d6978d06698d413a00b54b4a0defe5d1c92d6bbd834388",
+    "src/spy_research/execution/classification_models.py": "74b0ce06fcc265abc5cf9bf18f39ddae06a028d8b7595054fc17497babe1450c",
+    "src/spy_research/execution/classification_service.py": "3f21740065670a58e9765db583bcf6d1153ba7cb0424221aadf1b4b5db1c6cc2",
+    "src/spy_research/execution/exit_models.py": "13f20689c870809b4c16e0443760421a6102774c74515f0d994e51bbc2491400",
+    "src/spy_research/execution/exit_service.py": "d208d99a900bbd8eafd8481dfa6a49cffc0edaae65b6e49b02040616cb8596a1",
+    "src/spy_research/execution/exit_simulator.py": "0123cb6f0063910177c46da4b340490001b81f72b0f8ff484d5286015a4347db",
+    "src/spy_research/execution/exit_statistics.py": "3b16125cfe3e2d26a8570a4c678cd23dd9e8637b51182d846fc1bef8785d4422",
+    "src/spy_research/execution/exit_variants.py": "37a644260437a0413c78f42649e241f751b02129599e44cb9b080bd85b69af37",
+    "src/spy_research/execution/fixed_risk.py": "80653e3641c4184b332a3848c94371651f5de982fa772361b67a5864f81eb667",
+    "src/spy_research/execution/models.py": "70b968c092bcd586e0ca121f33e84d283a7b9aa24ced7659d99a0d11474775ac",
+    "src/spy_research/execution/service.py": "92484d5dccba49777e5a08eeda60cd5c14542012a09ea3e36071cb6db134ef6f",
+    "src/spy_research/execution/simulator.py": "aa46634dad0b684630bfa2a02a425cd9e23c530a3f12c40db96b2ea7b844a8b5",
+    "src/spy_research/execution/statistics.py": "2f84b13b2ab4ebd8d9df24f2f1faa317491057e54475bb38766bb090b05645f5",
+    "src/spy_research/indicators/__init__.py": "351e1dcbf0931dc1ecdd2192c783db0dd85280f86f1d3accd448384edae9b4d1",
+    "src/spy_research/indicators/atr.py": "e209597f0bac9d7d1083176603085646b1a8b56f3e330644ee0f22bb9a5979e6",
+    "src/spy_research/indicators/ema.py": "e18ab67c357f530e43a95348f597c410a4fd57b9e19e751c41b42c6dbab6a82c",
+    "src/spy_research/indicators/models.py": "b2ddf20ff8c7af7544a41df484de30c2b4d3b6cc9acaab0200b2682790d544b3",
+    "src/spy_research/indicators/separation.py": "4d61adfdd9b09c294ae18d902a9dc4439e449067b63108efe441fd59a285a6a6",
+    "src/spy_research/indicators/vwap.py": "21e3e0aabc1f01b25cd355155f93c40d5a42f47e7f4a24000d24b949289cc7d6",
+    "src/spy_research/interactions/__init__.py": "b4cb6231debeec672cd4f7244bb9b956a0a1cf207b8e9c5261bf37ca41191c6c",
+    "src/spy_research/interactions/atr_tolerance.py": "7ea6a714c8f4d3581f730f4a46f9f8af98a617df454ac4d94791ba54f7d1a451",
+    "src/spy_research/interactions/atr_tolerance_service.py": "f9fc8c1ed2443d750f6209dde11d57ca4ccba44a028f3c7ef4fefa562d295450",
+    "src/spy_research/interactions/classifier.py": "b34d8d27e4ce79889872b9f2e4689a840d7174a4d80dc49d8a998191ddde06f8",
+    "src/spy_research/interactions/follow_through.py": "9117ab6522b80cd51fee8243a2f88a72dbb67905adadfdfd7ae9f5deceda655c",
+    "src/spy_research/interactions/follow_through_service.py": "23f9e54d44ec0fd3283a9fd67fa430919491d8e919e6e16e50bebeb0057dc487",
+    "src/spy_research/interactions/models.py": "78964c5611aee6bc10b269187e0bfbc5f512cc6c6f9ebd1dc0bca2c9ef21ad8c",
+    "src/spy_research/interactions/service.py": "3086e67d8938ae02927b49007a39e68f249258a91f1e3fd038b74432c4e23431",
+    "src/spy_research/interactions/sweep_service.py": "147741d7ad87c931ff3d929f4665e1d5d5455c163b0ff0e7026dbd0b09d23ba2",
+    "src/spy_research/interactions/sweeps.py": "1990ca79b938abd23d47aed14174ab11618d80cdd93cc50f0a1e79e4955063ce",
+    "src/spy_research/levels/__init__.py": "eb990eded3eb32a415d19813ce77682669b00dfc563feb1edc25d78226cf044b",
+    "src/spy_research/levels/models.py": "159b77deff805fbf21f08ef9b50f5a981bbafcdac1cfd0cd61f69027210c0454",
+    "src/spy_research/levels/opening_range.py": "f91c2129af877451761a780028e161d9a7035882f27e9a88b15f5283b44b248e",
+    "src/spy_research/levels/premarket.py": "dd314d73c29310fe986d9bc1aa96e8c1bf3ce420215141e658104b2314ee5fb8",
+    "src/spy_research/levels/previous_day.py": "c8c4e339c6741aebbdbf2aa7e353eb1f402a717ee0ea6acfb9543983a7fe41d6",
+    "src/spy_research/live/__init__.py": "66716bafc98d9278d3e80d2a35168fa6b0ccf9048a269fca54b5418b39ae9933",
+    "src/spy_research/live/bootstrap.py": "3ceb513e3c78d949d1a0b8c3bf867bfa6fe19b59ecbd85e01eea59e6253dd880",
+    "src/spy_research/live/models.py": "2b68dace1d8e79e08413cd71f3c100283ac97bc2d3141dc6e18a388ebc4a8981",
+    "src/spy_research/live/normalization.py": "075e1a09d0179b6c7ef3c91af8b0cb34c3e9e3abb88a1ab3e93ea7cd96b70ccf",
+    "src/spy_research/live/service.py": "7ce8cc3d926aee48c776a83039a1142c426dc0280e52939a778eba5a17decafb",
+    "src/spy_research/live/transport.py": "e82816671b6b3f476a569f4e577d752c23e522e312a33fe40ba8ad7ce3fffc11",
+    "src/spy_research/logging_config.py": "4e7735c970619f8082a93cf3907920a1d1cbf2c6c6d9e5076e77ca1a57cc02be",
+    "src/spy_research/market/__init__.py": "189d785b1cb3dd34cc9aab6d0b465a46cb26c54b9daeb8d23f46ae0506b71cda",
+    "src/spy_research/market/sessions.py": "b7325cf7efd1f7b8deda26898cc2738ba3506610b2c52f8df2a59a77da54df0b",
+    "src/spy_research/outcomes/__init__.py": "7547965ac118a3308c7750fdea055bc9d586b49290c27be605ea4df367a21482",
+    "src/spy_research/outcomes/break_hold_models.py": "af70903ec005955c5a1285e0b82e94d337fc726c3109b4a0aabe89680a17908e",
+    "src/spy_research/outcomes/excursions.py": "2d92a445a09ff9f1a49ff9618980112397fe01d13390ce2c0df32d613c1a0eb0",
+    "src/spy_research/outcomes/mfe_mae.py": "3421cfa3c78f86747c64564bd1da15e469269f81882eb4067296797a03de40da",
+    "src/spy_research/outcomes/models.py": "af6170d0607cac0e733dde1dd3e5e486e84fe34976fcb3663d33653e9f39b9e4",
+    "src/spy_research/outcomes/opposite_cross.py": "4bc5cb4c536e93a7f5963328af55bfc8f2d2f01ab71b10f3b977212803197fe4",
+    "src/spy_research/paper/__init__.py": "fd9f44cc99b374f07e7aa9a91b4504df8ff505f3847043e2c8cb4a3c0db00c04",
+    "src/spy_research/paper/broker.py": "3a01fb2895508033ee95c6bd417967e0495e8944213db378bdb17003292be90d",
+    "src/spy_research/paper/engine.py": "53db80fec8491d22605c9a372a1159d883057e750af7dff24dee45bf5f002779",
+    "src/spy_research/paper/models.py": "4c5849fea0f22a38e609aa933a3a067f438339171bfb9d15f2e8942302768071",
+    "src/spy_research/paper/price_precision.py": "600280d6120297097930954f330611365a5d14382cda924e78fe31216611faf3",
+    "src/spy_research/paper/service.py": "7402cd14a35b20b5698707bbb96139de6693b6f68926e624f666f90eb910bddd",
+    "src/spy_research/replay/__init__.py": "3edbc57355bbe4ac2b6594f47ff5c69f190f82f9c059fba7733599ab89153bb0",
+    "src/spy_research/replay/engine.py": "b51a5e6f8d41023aba5ce5aa18832c373698b505b4176d7f4add38371fb070e1",
+    "src/spy_research/replay/models.py": "02cf5f0c2551b46373ffd77c478ffcc4f0002ced7334225fa877603c79550e06",
+    "src/spy_research/replay/service.py": "3f9ac586cbb8d3422e522fd7d15e4cc43f04508215fecedeab4258a830c4bfc1",
+    "src/spy_research/research_run.py": "dfc77926d560711079165fa4be5ddfb22244a961a6b22182d340f8b3471dc352",
+    "src/spy_research/research_stats/__init__.py": "247526b0404849748c1c6cf451b1f9fbf1d21e189247c4a3aa642d81ac88b435",
+    "src/spy_research/research_stats/descriptive.py": "c312a1339f120b12833db93edcfbc44b74ed644ba30c0e1136432db7f4cc870d",
+    "src/spy_research/research_stats/models.py": "c710ab8b24a621f20d33a285954af4247450b27cc50042ca924e6874eea6d27f",
+    "src/spy_research/shadow/__init__.py": "5a8c1ed021aeee8ffa1baf274463e06dbe2ce64f486ae0841a7fb848186fb04c",
+    "src/spy_research/shadow/engine.py": "ee271fb6e150ee2f77eef705d09ac63efccf6bcc55f4439530a8677273fc0f7d",
+    "src/spy_research/shadow/historical.py": "1ec7206c976f35809324fd404c2b4370dadcd11503046807a78e4b3988e44308",
+    "src/spy_research/shadow/models.py": "5f15ff7a46832cc41837566f986b0415c55f2da4f434aecd9e07bb88a92cd97d",
+    "src/spy_research/shadow/service.py": "c44f48bad24b86d2faa8cfa8662449cf46a58d1290195db741d7c0f39bc783a4",
+    "src/spy_research/strategy/__init__.py": "96b463ccd63fee78a5253643e72502c3de08102f3a5ad0a5785981dac1941976",
+    "src/spy_research/strategy/base_price_action.py": "526ad4cbf72d3b50fe33191e9f8674cb7cfd00e8f08beb4cf0496065d28cbfc7",
+    "src/spy_research/strategy/base_price_action_service.py": "78f2ff449c3f3a8f66e9b40d0fd87861f439a1daba938bc7126f5e9dc5837088",
+    "src/spy_research/strategy/base_statistics.py": "7e8739e986be6036b33e1c31a90943ecff3b5f1e04189cf6b017f0e03d341337",
+    "src/spy_research/strategy/base_statistics_service.py": "9974b02bbcdf64b93dc7afe7807a813d6b5593d21d13e14a46dadcbf86f7300e",
+    "src/spy_research/strategy/comparisons/__init__.py": "ee99bbbd85aa618f9d29b199038cb8f70a40e3d629a674532c5704abe41ac0d4",
+    "src/spy_research/strategy/comparisons/combined_context.py": "9abb54f0c5d540eff212471a946afd50376443113a2e2cb36df2850e53dc95e7",
+    "src/spy_research/strategy/comparisons/combined_context_service.py": "0a0d43faa98f9dc9d344cded86957aa189c4cfca5bf7f716eb616f95d70082d7",
+    "src/spy_research/strategy/comparisons/ema20_vwap_alignment.py": "d958b674e2c00a78271e59e0f9cab64c598421a6170b25ce38b6301a49eb992b",
+    "src/spy_research/strategy/comparisons/ema20_vwap_alignment_service.py": "996915f4b7496c1d782a2703fd0407f367a948fefa01a067da3335daea02d2e3",
+    "src/spy_research/strategy/comparisons/ema20_vwap_cross.py": "a74c881221d5e431c4228aca5b3be66f988defe206f01dd48f37829990cd2fa8",
+    "src/spy_research/strategy/comparisons/ema20_vwap_cross_context.py": "13a23bb76093f35982902d2b7b1d38531ec7057adb1c610efc8aa3bc33958701",
+    "src/spy_research/strategy/comparisons/ema20_vwap_cross_models.py": "19289dc489b40a1579a77096d2b18bc6fff7709a9538d94df60b0b391ae02f20",
+    "src/spy_research/strategy/comparisons/ema20_vwap_cross_service.py": "aed8741e2f3621ab05432c87368f1538e5ea78daadf38e5ccdd30d21abdfbfb7",
+    "src/spy_research/strategy/comparisons/ema9_vwap_alignment.py": "64e32d101c29805a26ba4ca6b013d0d4462b9d6048d57801b1b556320f4dcfbc",
+    "src/spy_research/strategy/comparisons/ema9_vwap_alignment_service.py": "f87e1577f3be6a016af6c974c997813c2df6ea7bb788f319c174615bab289259",
+    "src/spy_research/strategy/comparisons/ema9_vwap_cross.py": "9cf393f09f3a855e37192d38a67c7041aa93aa63d2a4c15fa0c910792249f45c",
+    "src/spy_research/strategy/comparisons/ema9_vwap_cross_context.py": "abc1b95935955fcd54571b6cb6ef401950b7fa84a69fd5f8ba8b12efe208374c",
+    "src/spy_research/strategy/comparisons/ema9_vwap_cross_service.py": "9db5d3c35afffdacc7d5e4f7ec0bef7c4f7a73c222045fb06ef4d47cf3b6c115",
+    "src/spy_research/strategy/comparisons/ema_alignment.py": "9af36f2268ddf19f0f7ae287de34b62ec62e920b10fb668b0c21468f2238048d",
+    "src/spy_research/strategy/comparisons/ema_alignment_service.py": "4bd0df91bdcf70dcad18784169e4b5edd8a033722815485ed1e636600da958ed",
+    "src/spy_research/strategy/comparisons/ema_cross_context.py": "4bca78a32978e95a58903d5e6fc2ae6ed3cceb976dca2dc31d2dc757e10a3729",
+    "src/spy_research/strategy/comparisons/ema_cross_context_service.py": "4ee7e4a1323fa805c72ddc2cc86663105ea911a957acd27771895a0e091d42e1",
+    "src/spy_research/strategy/comparisons/market_condition.py": "ad05f746fdbfcf5c7fcb6d76a8eb0f406e94fc1147e4a9374319b84c31c3ea98",
+    "src/spy_research/strategy/comparisons/market_condition_service.py": "566a4d8aee29c4a3feaf49cc942388c7bea8ad13ad13c8c80f77934167251722",
+    "src/spy_research/strategy/comparisons/market_structure.py": "74b756132004baec18bd6ce5935eb5dced4a2c75cf999a9a4c3b3863bdf68abe",
+    "src/spy_research/strategy/comparisons/market_structure_service.py": "eba82def62aa255c0a58b614b82196a90462aba3b429802a1154f14560f37cc5",
+    "src/spy_research/strategy/comparisons/models.py": "d40aa53c9406743644e4787e8a0d0611c60c30f93240475318632abbb29e044e",
+    "src/spy_research/strategy/comparisons/regime_hypotheses.py": "c3f10efaf8f603bd9ca258d4c49d8726a37c55f03e53433cc4fb623d46099ae0",
+    "src/spy_research/strategy/comparisons/regime_hypotheses_service.py": "69172f3d657449f1c21fdcc166c5cb141e8521ce14aefbb84b21bd525d423ac8",
+    "src/spy_research/strategy/comparisons/room_to_level.py": "0fa833c72a3125dc092244389d14eec29b3715071e7a8d15fe7571c589215533",
+    "src/spy_research/strategy/comparisons/room_to_level_service.py": "bf4d16d9f81ee515321f2c293c1686dd63f43187265f18ec748d836ce19c104b",
+    "src/spy_research/strategy/comparisons/vwap_alignment.py": "0f9fdb64e911ed7b86b8e5c8ad9452bd2d1fe83acbc096fe2749332f28f3cbe0",
+    "src/spy_research/strategy/comparisons/vwap_alignment_service.py": "737a8e6263c955be9ba7bef9ff803610650afb0d81fda1d4bc521fad117465f3",
+    "src/spy_research/strategy/entry_reference.py": "5b5643f6716058cb8fe1fc81ad2d2068a7cd4eefe15f20abc532fb0f578b685f",
+    "src/spy_research/strategy/models.py": "9a3299e253baea84cbfa7b9cd34dd4e267b9393e64746239c0184858dc6709ae",
+    "src/spy_research/strategy/setup_outcome_service.py": "486f27e99e41b1b688905f24a8300d12a87d88b4da5c1de25541343ce523a78e",
+    "src/spy_research/strategy/setup_outcomes.py": "410b97e5b7748796477c6a94b0c69e7f6e38b44ee9658243cb6fe0ae9a17afd4",
+    "src/spy_research/strategy/stability.py": "2de4580b679d02b29af91592f1178fb90b0df4d0fe8c805adf79e9465fd591ef",
+    "src/spy_research/strategy/stability_service.py": "b9481e19b1cc3b52e3f0fdc8d037141ebe1d15e8d19f122458cfc9be7999f31e",
+    "src/spy_research/strategy/variant_selection.py": "f08e37222b6477e87e90a5fb5b8173a98b648a2771a68befd00175f2762506ac",
+    "src/spy_research/strategy/variant_selection_service.py": "296403c6e8cae2d1990c10acff2d678e59f58d44da1aaf6cf28334cbd5bfbff1",
+    "src/spy_research/version.py": "03384e95ba6c99372a80e5ca9eeb62ea73997dc4a093362b18d0d636d083a492"
+  }
+}

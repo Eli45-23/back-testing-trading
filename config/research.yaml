@@ -42,3 +42,13 @@ outcomes:
 
 database:
   engine: "sqlite"
+
+break_and_hold:
+  enabled: true
+  opening_range_minutes: 5
+  require_close_outside_level_for_first_hold: true
+  strong_hold_confirmation_closes: 2
+  allow_multiple_same_direction_events: true
+  allow_opposite_direction_same_day: true
+  preserve_failed_breaks: true
+  preserve_reclaims: true
