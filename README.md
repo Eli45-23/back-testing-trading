@@ -1450,6 +1450,25 @@ spy-research validate-negative-condition-exclusions \
 Stage 14 remains paused. This command has no Alpaca integration, submits no
 orders, and cannot authorize a forward-test exclusion rule.
 
+## Stage 15.2 BASE_SHORT out-of-sample exclusion validation
+
+Stage 15.2 validates exactly six frozen candidates on complete, previously
+untouched 2024 and 2025 SPY SIP histories. The command refuses incomplete raw
+or processed coverage, missing prior-session/level context, duplicates, or
+aggregation mismatches before loading outcomes. It reports each year separately
+and prevents the combined result from hiding directional disagreement.
+
+```bash
+spy-research validate-oos-exclusions \
+  --output-json reports/stage15_2_oos_validation.json \
+  --output-markdown reports/stage15_2_oos_validation.md
+```
+
+The candidate set and NEG definitions are code-frozen. This command performs no
+candidate search, has no Alpaca PAPER integration, and cannot modify Stage 14.
+The default OOS stores are isolated under `data/oos/`; they cannot add new
+prior-session context to the accepted 2026 historical store.
+
 ## Local setup
 
 Python 3.12 or newer is required.

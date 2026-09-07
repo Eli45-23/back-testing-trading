@@ -183,6 +183,7 @@ def summarize_exit_variant(
     *,
     population: StrategyPopulation,
     variant: ExitModelVariant,
+    month_labels: tuple[str, ...] | None = None,
 ) -> ExitVariantStatistics:
     selected = tuple(
         item
@@ -199,15 +200,20 @@ def summarize_exit_variant(
     )
     if len(r_values) != len(realized):
         raise ValueError("realized comparison path lacks R multiple")
+    active_months = month_labels or tuple(f"2026-{month:02d}" for month in range(1, 9))
     months = []
-    for month in range(1, 9):
-        scoped = tuple(item for item in realized if item.session_date.month == month)
+    for month_label in active_months:
+        year, month = (int(value) for value in month_label.split("-"))
+        scoped = tuple(
+            item for item in realized
+            if item.session_date.year == year and item.session_date.month == month
+        )
         distribution = summarize_distribution(
             tuple(item.r_multiple for item in scoped if item.r_multiple is not None)
         )
         months.append(
             ExitMonthlyStatistics(
-                month=f"2026-{month:02d}",
+                month=month_label,
                 trade_n=len(scoped),
                 mean_r=distribution.mean,
                 median_r=distribution.median,
@@ -240,14 +246,18 @@ def summarize_exit_variant(
         ),
     )
     leave_one_out = []
-    for month in range(1, 9):
-        scoped = tuple(item for item in realized if item.session_date.month != month)
+    for month_label in active_months:
+        year, month = (int(value) for value in month_label.split("-"))
+        scoped = tuple(
+            item for item in realized
+            if not (item.session_date.year == year and item.session_date.month == month)
+        )
         distribution = summarize_distribution(
             tuple(item.r_multiple for item in scoped if item.r_multiple is not None)
         )
         leave_one_out.append(
             LeaveOneMonthOutR(
-                excluded_month=f"2026-{month:02d}",
+                excluded_month=month_label,
                 trade_n=len(scoped),
                 mean_r=distribution.mean,
                 median_r=distribution.median,

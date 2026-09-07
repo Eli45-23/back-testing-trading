@@ -19,9 +19,13 @@ from pydantic import ValidationError
 
 from spy_research.attribution import (
     BaseShortAttributionService,
+    DEFAULT_OOS_PROCESSED_DATA_ROOT,
+    DEFAULT_OOS_RAW_DATA_ROOT,
     NegativeConditionExclusionService,
+    OOSExclusionValidationService,
     render_attribution_markdown,
     render_exclusion_markdown,
+    render_oos_markdown,
 )
 from spy_research.alpaca import AlpacaDataClient, HistoricalStockDataService
 from spy_research.alpaca.errors import AlpacaDataError
@@ -1185,6 +1189,20 @@ def build_parser() -> argparse.ArgumentParser:
     exclusion_validation.add_argument(
         "--output-markdown", type=Path, help="optional review-ready Markdown path"
     )
+
+    oos_validation = subparsers.add_parser(
+        "validate-oos-exclusions",
+        help="run the frozen Stage 15.2 2024/2025 OOS exclusion validation",
+    )
+    oos_validation.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    oos_validation.add_argument(
+        "--raw-data-root", type=Path, default=DEFAULT_OOS_RAW_DATA_ROOT
+    )
+    oos_validation.add_argument(
+        "--processed-data-root", type=Path, default=DEFAULT_OOS_PROCESSED_DATA_ROOT
+    )
+    oos_validation.add_argument("--output-json", type=Path)
+    oos_validation.add_argument("--output-markdown", type=Path)
 
     signal_replay = subparsers.add_parser(
         "replay-signal-engine",
@@ -2411,6 +2429,49 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"JSON report: {args.output_json}")
         if args.output_markdown is not None:
             print(f"Markdown report: {args.output_markdown}")
+        return 0
+
+    if args.command == "validate-oos-exclusions":
+        try:
+            config = load_research_config(args.config)
+            result = OOSExclusionValidationService(
+                config,
+                ProcessedFiveMinuteStore(root=args.processed_data_root),
+                RawBarStore(config, root=args.raw_data_root),
+            ).calculate()
+            if args.output_json is not None:
+                args.output_json.parent.mkdir(parents=True, exist_ok=True)
+                args.output_json.write_text(
+                    result.model_dump_json(indent=2) + "\n", encoding="utf-8"
+                )
+            if args.output_markdown is not None:
+                args.output_markdown.parent.mkdir(parents=True, exist_ok=True)
+                args.output_markdown.write_text(
+                    render_oos_markdown(result), encoding="utf-8"
+                )
+        except (
+            ExitComparisonInputError,
+            ExecutionInputError,
+            SetupOutcomeInputError,
+            BaseSetupInputError,
+            IndicatorInputValidationError,
+            IndicatorSequenceError,
+            EventContextAlignmentError,
+            RawDataError,
+            ProcessedDataError,
+            OSError,
+            ValueError,
+            yaml.YAMLError,
+            ValidationError,
+        ) as exc:
+            print(f"Unable to validate OOS exclusions: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "Stage 15.2 OOS exclusion validation complete: "
+            f"2025={result.years[0].baseline.realized_retained}, "
+            f"2024={result.years[1].baseline.realized_retained}, "
+            f"combined={result.combined.baseline.realized_retained}"
+        )
         return 0
 
     if args.command == "classify-execution-variants":

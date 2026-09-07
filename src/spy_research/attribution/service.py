@@ -200,11 +200,12 @@ def _normalized_ema_crosses(ema_rows, separation_rows, vwap_rows, atr_rows):
 class BaseShortAttributionService:
     """Build the predeclared attribution matrix without writes or qualification changes."""
 
-    def __init__(self, config: ResearchConfig, processed_store: ProcessedFiveMinuteStore, raw_store: RawBarStore, *, calendar: XNYSCalendar | None = None) -> None:
+    def __init__(self, config: ResearchConfig, processed_store: ProcessedFiveMinuteStore, raw_store: RawBarStore, *, calendar: XNYSCalendar | None = None, allow_oos_execution: bool = False) -> None:
         self._config = config
         self._processed = processed_store
         self._raw = raw_store
         self._calendar = calendar or XNYSCalendar()
+        self._allow_oos_execution = allow_oos_execution
 
     def calculate(self, *, start: date, end: date) -> AttributionReport:
         report, _observations = self.calculate_with_observations(start=start, end=end)
@@ -213,7 +214,7 @@ class BaseShortAttributionService:
     def calculate_with_observations(
         self, *, start: date, end: date
     ) -> tuple[AttributionReport, tuple[AttributionObservation, ...]]:
-        exit_report = ExitModelComparisonService(self._config, self._processed, self._raw, calendar=self._calendar).calculate(start=start, end=end)
+        exit_report = ExitModelComparisonService(self._config, self._processed, self._raw, calendar=self._calendar, allow_oos=self._allow_oos_execution).calculate(start=start, end=end)
         setup_result = BasePriceActionService(self._config, self._processed, self._raw, calendar=self._calendar).calculate(start=start, end=end)
         outcomes = SetupOutcomeService(self._config, self._processed, self._raw, calendar=self._calendar).calculate(start=start, end=end)
         bars = self._processed.load_processed_5m_bars(symbol=self._config.symbol, start=start, end=end, session_mode="RTH_ONLY")

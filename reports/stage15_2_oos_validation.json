@@ -1,0 +1,4664 @@
+{
+  "report_version": "stage15-2-oos-validation-v1",
+  "design": {
+    "report_version": "stage15-2-oos-design-v1",
+    "discovery_cutoff": "2026-08-19",
+    "baseline_candidate": "BASE_SHORT:NEXT_OBJECTIVE_LEVEL:ATR_1_00:NO_FIXED_TARGET",
+    "candidates": [
+      "BASE_SHORT_CONTROL",
+      "EXCLUDE_NEG_1",
+      "EXCLUDE_NEG_4",
+      "EXCLUDE_NEG_1_2",
+      "EXCLUDE_NEG_1_4",
+      "EXCLUDE_NEG_1_2_4"
+    ],
+    "conditions": [
+      {
+        "condition_id": 1,
+        "factor_left": "VWAP_ALIGNMENT",
+        "state_left": "ALL_ALIGNED",
+        "factor_right": "ROOM_ATR",
+        "state_right": "GT_3_0_ATR"
+      },
+      {
+        "condition_id": 2,
+        "factor_left": "MARKET_STRUCTURE",
+        "state_left": "BULLISH_STRUCTURE",
+        "factor_right": "ROOM_ATR",
+        "state_right": "ATR_0_5_TO_1_0"
+      },
+      {
+        "condition_id": 3,
+        "factor_left": "VWAP_ALIGNMENT",
+        "state_left": "NONE_ALIGNED",
+        "factor_right": "ROOM_ATR",
+        "state_right": "ATR_0_5_TO_1_0"
+      },
+      {
+        "condition_id": 4,
+        "factor_left": "EMA_ALIGNMENT",
+        "state_left": "EMA_ALIGNED",
+        "factor_right": "MARKET_STRUCTURE",
+        "state_right": "BULLISH_STRUCTURE"
+      }
+    ],
+    "periods": [
+      {
+        "year": 2025,
+        "start_date": "2025-01-02",
+        "end_date": "2025-12-31",
+        "required": true
+      },
+      {
+        "year": 2024,
+        "start_date": "2024-01-02",
+        "end_date": "2024-12-31",
+        "required": false
+      }
+    ],
+    "minimum_realized_retention": "0.70",
+    "minimum_sessions": 80,
+    "minimum_represented_months": 4,
+    "maximum_single_month_share": "0.50",
+    "minimum_month_retention": "0.50",
+    "minimum_baseline_month_trades_for_retention_gate": 5,
+    "bootstrap_resamples": 10000,
+    "bootstrap_unit": "XNYS_SESSION",
+    "permitted_classifications": [
+      "OOS_REPLICATED_RESEARCH_CANDIDATE",
+      "FAILED_TO_REPLICATE",
+      "DESCRIPTIVELY_REPLICATED",
+      "INSUFFICIENT_OOS_DATA"
+    ],
+    "outcome_accessed_when_frozen": false
+  },
+  "years": [
+    {
+      "period": "2025",
+      "start_date": "2025-01-02",
+      "end_date": "2025-12-31",
+      "baseline": {
+        "original_membership": 1584,
+        "retained_membership": 1584,
+        "retained_percentage": "1",
+        "realized_retained": 934,
+        "unavailable_or_ambiguous_retained": 650,
+        "sessions": 190,
+        "win_rate": "0.4946466809421841541755888651",
+        "mean_r": "0.03635004202440257585563264604",
+        "median_r": "-0.00863751024278605454789112044",
+        "standard_deviation_r": "1.361658941527967155249286955549141688560",
+        "profit_factor": "1.073886769544933693109722578",
+        "target_hit_rate": "0.4635974304068522483940042827",
+        "stop_hit_rate": "0.4892933618843683083511777302",
+        "eod_exit_rate": "0.04710920770877944325481798715",
+        "median_mfe": "1.310000000000",
+        "median_mae": "1.410000000000",
+        "fifth_percentile_r": "-1.00",
+        "positive_months": 8,
+        "negative_months": 4,
+        "worst_month": "2025-05",
+        "worst_month_mean_r": "-0.2842363090014825148353556059",
+        "leave_one_month_out_min_mean_r": "0.01039958260246143576413107830",
+        "bootstrap_mean_r_low": "-0.08352897125836266794544964662",
+        "bootstrap_mean_r_median": "0.03468402986648933794083485968",
+        "bootstrap_mean_r_high": "0.1608774917021693536507684394",
+        "monthly": [
+          {
+            "month": "2025-01",
+            "trades": 87,
+            "mean_r": "-0.2189384966078515886145861361",
+            "median_r": "-1",
+            "total_r": "-19.04764920488308820946899384",
+            "baseline_trades": 87,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-02",
+            "trades": 71,
+            "mean_r": "0.01810643266166879258444622283",
+            "median_r": "0.096746733699982314547519414104265597923623237456948",
+            "total_r": "1.285556718978484273495681821",
+            "baseline_trades": 71,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-03",
+            "trades": 57,
+            "mean_r": "0.2694660063594123296238065849",
+            "median_r": "0.10540317076958668404624938756787746073845204223988",
+            "total_r": "15.35956236248650278855697534",
+            "baseline_trades": 57,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-04",
+            "trades": 83,
+            "mean_r": "0.1662017343385688244033371510",
+            "median_r": "0.055533162076733746020608249569668261335380095891856",
+            "total_r": "13.79474395010121242547698353",
+            "baseline_trades": 83,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-05",
+            "trades": 81,
+            "mean_r": "-0.2842363090014825148353556059",
+            "median_r": "-1",
+            "total_r": "-23.02314102912008370166380408",
+            "baseline_trades": 81,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-06",
+            "trades": 94,
+            "mean_r": "-0.003310189217118507247482733085",
+            "median_r": "0.08780916626020771766923241235",
+            "total_r": "-0.311157786409139681263376910",
+            "baseline_trades": 94,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-07",
+            "trades": 92,
+            "mean_r": "0.02126607355223032641752219861",
+            "median_r": "-1",
+            "total_r": "1.956478766805190030412042272",
+            "baseline_trades": 92,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-08",
+            "trades": 55,
+            "mean_r": "0.1732571760761677952416557207",
+            "median_r": "0.070135674491908345175236768328460987371750512522301",
+            "total_r": "9.52914468418922873829106464",
+            "baseline_trades": 55,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-09",
+            "trades": 77,
+            "mean_r": "0.1313805847846785536107544125",
+            "median_r": "0.091895330247946828333588103373675927349382131295579",
+            "total_r": "10.11630502842024862802808976",
+            "baseline_trades": 77,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-10",
+            "trades": 76,
+            "mean_r": "0.3293170707615801837307424503",
+            "median_r": "0.1591145943490831406964720104",
+            "total_r": "25.02809737788009396353642622",
+            "baseline_trades": 76,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-11",
+            "trades": 58,
+            "mean_r": "0.1476951826415142114756399670",
+            "median_r": "0.01966326278590981548633708172",
+            "total_r": "8.566320593207824265587118084",
+            "baseline_trades": 58,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2025-12",
+            "trades": 103,
+            "mean_r": "-0.09032351661033463759055646056",
+            "median_r": "0E+38",
+            "total_r": "-9.303322210864467671827315438",
+            "baseline_trades": 103,
+            "retained_percentage": "1"
+          }
+        ],
+        "periods": []
+      },
+      "candidates": [
+        {
+          "candidate": "BASE_SHORT_CONTROL",
+          "condition_ids": [],
+          "removal": {
+            "variant_id": "BASE_SHORT_CONTROL",
+            "condition_ids": [],
+            "unique_membership_removed": 0,
+            "realized_removed": 0,
+            "unavailable_or_ambiguous_removed": 0,
+            "sessions_affected": 0,
+            "months_affected": 0
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1584,
+            "retained_percentage": "1",
+            "realized_retained": 934,
+            "unavailable_or_ambiguous_retained": 650,
+            "sessions": 190,
+            "win_rate": "0.4946466809421841541755888651",
+            "mean_r": "0.03635004202440257585563264604",
+            "median_r": "-0.00863751024278605454789112044",
+            "standard_deviation_r": "1.361658941527967155249286955549141688560",
+            "profit_factor": "1.073886769544933693109722578",
+            "target_hit_rate": "0.4635974304068522483940042827",
+            "stop_hit_rate": "0.4892933618843683083511777302",
+            "eod_exit_rate": "0.04710920770877944325481798715",
+            "median_mfe": "1.310000000000",
+            "median_mae": "1.410000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 8,
+            "negative_months": 4,
+            "worst_month": "2025-05",
+            "worst_month_mean_r": "-0.2842363090014825148353556059",
+            "leave_one_month_out_min_mean_r": "0.01039958260246143576413107830",
+            "bootstrap_mean_r_low": "-0.08352897125836266794544964662",
+            "bootstrap_mean_r_median": "0.03468402986648933794083485968",
+            "bootstrap_mean_r_high": "0.1608774917021693536507684394",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 87,
+                "mean_r": "-0.2189384966078515886145861361",
+                "median_r": "-1",
+                "total_r": "-19.04764920488308820946899384",
+                "baseline_trades": 87,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-02",
+                "trades": 71,
+                "mean_r": "0.01810643266166879258444622283",
+                "median_r": "0.096746733699982314547519414104265597923623237456948",
+                "total_r": "1.285556718978484273495681821",
+                "baseline_trades": 71,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-03",
+                "trades": 57,
+                "mean_r": "0.2694660063594123296238065849",
+                "median_r": "0.10540317076958668404624938756787746073845204223988",
+                "total_r": "15.35956236248650278855697534",
+                "baseline_trades": 57,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-04",
+                "trades": 83,
+                "mean_r": "0.1662017343385688244033371510",
+                "median_r": "0.055533162076733746020608249569668261335380095891856",
+                "total_r": "13.79474395010121242547698353",
+                "baseline_trades": 83,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-05",
+                "trades": 81,
+                "mean_r": "-0.2842363090014825148353556059",
+                "median_r": "-1",
+                "total_r": "-23.02314102912008370166380408",
+                "baseline_trades": 81,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-06",
+                "trades": 94,
+                "mean_r": "-0.003310189217118507247482733085",
+                "median_r": "0.08780916626020771766923241235",
+                "total_r": "-0.311157786409139681263376910",
+                "baseline_trades": 94,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-07",
+                "trades": 92,
+                "mean_r": "0.02126607355223032641752219861",
+                "median_r": "-1",
+                "total_r": "1.956478766805190030412042272",
+                "baseline_trades": 92,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-08",
+                "trades": 55,
+                "mean_r": "0.1732571760761677952416557207",
+                "median_r": "0.070135674491908345175236768328460987371750512522301",
+                "total_r": "9.52914468418922873829106464",
+                "baseline_trades": 55,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-09",
+                "trades": 77,
+                "mean_r": "0.1313805847846785536107544125",
+                "median_r": "0.091895330247946828333588103373675927349382131295579",
+                "total_r": "10.11630502842024862802808976",
+                "baseline_trades": 77,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-10",
+                "trades": 76,
+                "mean_r": "0.3293170707615801837307424503",
+                "median_r": "0.1591145943490831406964720104",
+                "total_r": "25.02809737788009396353642622",
+                "baseline_trades": 76,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-11",
+                "trades": 58,
+                "mean_r": "0.1476951826415142114756399670",
+                "median_r": "0.01966326278590981548633708172",
+                "total_r": "8.566320593207824265587118084",
+                "baseline_trades": 58,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-12",
+                "trades": 103,
+                "mean_r": "-0.09032351661033463759055646056",
+                "median_r": "0E+38",
+                "total_r": "-9.303322210864467671827315438",
+                "baseline_trades": 103,
+                "retained_percentage": "1"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0E-29",
+          "profit_factor_delta": "0E-27",
+          "lomo_delta": "0E-29",
+          "bootstrap_delta_low": "0E-32",
+          "bootstrap_delta_median": "0E-31",
+          "bootstrap_delta_high": "0E-32",
+          "stage15_1_mean_r_delta": "0",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": null,
+          "stage15_1_room_classification": null,
+          "room_diagnosis_replicated": null,
+          "claimed_entry_quality_supported": true,
+          "classification": "DESCRIPTIVELY_REPLICATED"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1",
+          "condition_ids": [
+            1
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1",
+            "condition_ids": [
+              1
+            ],
+            "unique_membership_removed": 99,
+            "realized_removed": 99,
+            "unavailable_or_ambiguous_removed": 0,
+            "sessions_affected": 39,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1485,
+            "retained_percentage": "0.9375",
+            "realized_retained": 835,
+            "unavailable_or_ambiguous_retained": 650,
+            "sessions": 189,
+            "win_rate": "0.5185628742514970059880239521",
+            "mean_r": "0.008154639969664314201832988786",
+            "median_r": "0.052087170869463755087352649278753853009522826035901",
+            "standard_deviation_r": "1.165268545150918067397679390390831066269",
+            "profit_factor": "1.017421699414672161366916466",
+            "target_hit_rate": "0.5077844311377245508982035928",
+            "stop_hit_rate": "0.4658682634730538922155688623",
+            "eod_exit_rate": "0.02634730538922155688622754491",
+            "median_mfe": "1.278000000000",
+            "median_mae": "1.440000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 6,
+            "negative_months": 6,
+            "worst_month": "2025-05",
+            "worst_month_mean_r": "-0.2641222763344480298682783339",
+            "leave_one_month_out_min_mean_r": "-0.009825335614285441263844281791",
+            "bootstrap_mean_r_low": "-0.09323239101766046312731504476",
+            "bootstrap_mean_r_median": "0.008702260295321615558412509804",
+            "bootstrap_mean_r_high": "0.1156627433736427217774536903",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 72,
+                "mean_r": "-0.1760377756408706467868602531",
+                "median_r": "-1",
+                "total_r": "-12.67471984614268656865393822",
+                "baseline_trades": 87,
+                "retained_percentage": "0.8275862068965517241379310345"
+              },
+              {
+                "month": "2025-02",
+                "trades": 64,
+                "mean_r": "0.1294618237340388167733700288",
+                "median_r": "0.1735614359441555080932886876",
+                "total_r": "8.28555671897848427349568184",
+                "baseline_trades": 71,
+                "retained_percentage": "0.9014084507042253521126760563"
+              },
+              {
+                "month": "2025-03",
+                "trades": 54,
+                "mean_r": "0.1303449954710886234158850209",
+                "median_r": "0.1062388702796308181225510800",
+                "total_r": "7.03862975543878566445779113",
+                "baseline_trades": 57,
+                "retained_percentage": "0.9473684210526315789473684211"
+              },
+              {
+                "month": "2025-04",
+                "trades": 79,
+                "mean_r": "0.1802161784692341259999597806",
+                "median_r": "0.072860191566806388988728244004170542381177427326084",
+                "total_r": "14.23707809906949595399682267",
+                "baseline_trades": 83,
+                "retained_percentage": "0.9518072289156626506024096386"
+              },
+              {
+                "month": "2025-05",
+                "trades": 75,
+                "mean_r": "-0.2641222763344480298682783339",
+                "median_r": "-1",
+                "total_r": "-19.80917072508360224012087504",
+                "baseline_trades": 81,
+                "retained_percentage": "0.9259259259259259259259259259"
+              },
+              {
+                "month": "2025-06",
+                "trades": 83,
+                "mean_r": "0.1144143919504988171664638758",
+                "median_r": "0.16894713226030924184177824098028875207141577168253",
+                "total_r": "9.49639453189140182481650169",
+                "baseline_trades": 94,
+                "retained_percentage": "0.8829787234042553191489361702"
+              },
+              {
+                "month": "2025-07",
+                "trades": 72,
+                "mean_r": "-0.2408343383688074489159115283",
+                "median_r": "-1",
+                "total_r": "-17.34007236255413632194563004",
+                "baseline_trades": 92,
+                "retained_percentage": "0.7826086956521739130434782609"
+              },
+              {
+                "month": "2025-08",
+                "trades": 48,
+                "mean_r": "-0.05546280126915267326149983029",
+                "median_r": "0.02071125085814131824081796674",
+                "total_r": "-2.662214460919328316551991854",
+                "baseline_trades": 55,
+                "retained_percentage": "0.8727272727272727272727272727"
+              },
+              {
+                "month": "2025-09",
+                "trades": 74,
+                "mean_r": "-0.03935152648747231758762352443",
+                "median_r": "0.09189533024794682833358810335",
+                "total_r": "-2.912012960072951501484140808",
+                "baseline_trades": 77,
+                "retained_percentage": "0.9610389610389610389610389610"
+              },
+              {
+                "month": "2025-10",
+                "trades": 69,
+                "mean_r": "0.1785450571757916325045675238",
+                "median_r": "0.15964347676728428039264470388539656792738468961744",
+                "total_r": "12.31960894512962264281515914",
+                "baseline_trades": 76,
+                "retained_percentage": "0.9078947368421052631578947368"
+              },
+              {
+                "month": "2025-11",
+                "trades": 51,
+                "mean_r": "0.2183013507803742082261270722",
+                "median_r": "0.28321531163976745243553914339985779668054786194678",
+                "total_r": "11.13336888979908461953248068",
+                "baseline_trades": 58,
+                "retained_percentage": "0.8793103448275862068965517241"
+              },
+              {
+                "month": "2025-12",
+                "trades": 94,
+                "mean_r": "-0.003226832030473060338588462064",
+                "median_r": "0.1552983126178447245794365738",
+                "total_r": "-0.3033222108644676718273154340",
+                "baseline_trades": 103,
+                "retained_percentage": "0.9126213592233009708737864078"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.02819540205473826165379965725",
+          "profit_factor_delta": "-0.056465070130261531742806112",
+          "lomo_delta": "-0.02022491821674687702797536009",
+          "bootstrap_delta_low": "-0.1051001967003649452748839256",
+          "bootstrap_delta_median": "-0.02505621501418304870408376739",
+          "bootstrap_delta_high": "0.03855525095289480863402140340",
+          "stage15_1_mean_r_delta": "0.04395443193730639106284599290",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1",
+            "removed_realized_n": 99,
+            "removed_sessions": 39,
+            "removed_median_five_mfe_atr": "0.3683070521160408451754950920",
+            "retained_median_five_mfe_atr": "0.3907057735718148091156716943",
+            "removed_median_five_mae_atr": "0.3802937134923815925786040068",
+            "retained_median_five_mae_atr": "0.3988459693700739788704616510",
+            "favorable_excursion_delta": "-0.0223987214557739639401766023",
+            "adverse_excursion_delta": "-0.0185522558776923862918576442",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "FAILED_TO_REPLICATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_4",
+          "condition_ids": [
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_4",
+            "condition_ids": [
+              4
+            ],
+            "unique_membership_removed": 116,
+            "realized_removed": 86,
+            "unavailable_or_ambiguous_removed": 30,
+            "sessions_affected": 56,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1468,
+            "retained_percentage": "0.9267676767676767676767676768",
+            "realized_retained": 848,
+            "unavailable_or_ambiguous_retained": 620,
+            "sessions": 188,
+            "win_rate": "0.4917452830188679245283018868",
+            "mean_r": "0.02895850087090461340732521077",
+            "median_r": "-0.1775002285586083319054025374",
+            "standard_deviation_r": "1.364006002230660048840233076874461141332",
+            "profit_factor": "1.058282888510851630554895056",
+            "target_hit_rate": "0.4610849056603773584905660377",
+            "stop_hit_rate": "0.4941037735849056603773584906",
+            "eod_exit_rate": "0.04481132075471698113207547170",
+            "median_mfe": "1.274000000000",
+            "median_mae": "1.440000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 7,
+            "negative_months": 5,
+            "worst_month": "2025-01",
+            "worst_month_mean_r": "-0.2620543236138743871100518759",
+            "leave_one_month_out_min_mean_r": "0.001673688124515263920655443856",
+            "bootstrap_mean_r_low": "-0.09323733271472166954881387227",
+            "bootstrap_mean_r_median": "0.02805415312450982509449793938",
+            "bootstrap_mean_r_high": "0.1602613279162483291361417298",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 70,
+                "mean_r": "-0.2620543236138743871100518759",
+                "median_r": "-1",
+                "total_r": "-18.34380265297120709770363131",
+                "baseline_trades": 87,
+                "retained_percentage": "0.8045977011494252873563218391"
+              },
+              {
+                "month": "2025-02",
+                "trades": 71,
+                "mean_r": "0.01810643266166879258444622283",
+                "median_r": "0.096746733699982314547519414104265597923623237456948",
+                "total_r": "1.285556718978484273495681821",
+                "baseline_trades": 71,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2025-03",
+                "trades": 55,
+                "mean_r": "0.2635400667224136730678045284",
+                "median_r": "0.10057137223104166380346269824623069858154870686550",
+                "total_r": "14.49470366973275201872924906",
+                "baseline_trades": 57,
+                "retained_percentage": "0.9649122807017543859649122807"
+              },
+              {
+                "month": "2025-04",
+                "trades": 77,
+                "mean_r": "0.1005874103435333383323793633",
+                "median_r": "-0.0086375102427860545478911204381730521457621725377522",
+                "total_r": "7.745230596452067051593210971",
+                "baseline_trades": 83,
+                "retained_percentage": "0.9277108433734939759036144578"
+              },
+              {
+                "month": "2025-05",
+                "trades": 72,
+                "mean_r": "-0.2569788837142827162496832688",
+                "median_r": "-1",
+                "total_r": "-18.50247962742835556997719535",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8888888888888888888888888889"
+              },
+              {
+                "month": "2025-06",
+                "trades": 81,
+                "mean_r": "-0.04243699033514889605310262026",
+                "median_r": "0.020663931372704245682955720418697530448537670631710",
+                "total_r": "-3.437396217147060580301312241",
+                "baseline_trades": 94,
+                "retained_percentage": "0.8617021276595744680851063830"
+              },
+              {
+                "month": "2025-07",
+                "trades": 84,
+                "mean_r": "-0.08659777306752057896037094925",
+                "median_r": "-1",
+                "total_r": "-7.274212937671728632671159737",
+                "baseline_trades": 92,
+                "retained_percentage": "0.9130434782608695652173913043"
+              },
+              {
+                "month": "2025-08",
+                "trades": 50,
+                "mean_r": "0.2447725891819149904077658154",
+                "median_r": "0.1488322536438565516865523736",
+                "total_r": "12.23862945909574952038829077",
+                "baseline_trades": 55,
+                "retained_percentage": "0.9090909090909090909090909091"
+              },
+              {
+                "month": "2025-09",
+                "trades": 67,
+                "mean_r": "0.1281145359205689410506359757",
+                "median_r": "0.091895330247946828333588103373675927349382131295579",
+                "total_r": "8.583673906678119050392610369",
+                "baseline_trades": 77,
+                "retained_percentage": "0.8701298701298701298701298701"
+              },
+              {
+                "month": "2025-10",
+                "trades": 70,
+                "mean_r": "0.3322097053950605262734549059",
+                "median_r": "0.1585139701710134939286009814",
+                "total_r": "23.25467937765423683914184341",
+                "baseline_trades": 76,
+                "retained_percentage": "0.9210526315789473684210526316"
+              },
+              {
+                "month": "2025-11",
+                "trades": 57,
+                "mean_r": "0.1678301858457513029050371593",
+                "median_r": "0.039326525571819630972674163430628206209818187630014",
+                "total_r": "9.56632059320782426558711808",
+                "baseline_trades": 58,
+                "retained_percentage": "0.9827586206896551724137931034"
+              },
+              {
+                "month": "2025-12",
+                "trades": 94,
+                "mean_r": "-0.05376695902184860605598858538",
+                "median_r": "0.07284818796577467580168220025",
+                "total_r": "-5.054094148053768969262927026",
+                "baseline_trades": 103,
+                "retained_percentage": "0.9126213592233009708737864078"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.00739154115349796244830743527",
+          "profit_factor_delta": "-0.015603881034082062554827522",
+          "lomo_delta": "-0.008725894477946171843475634444",
+          "bootstrap_delta_low": "-0.03932505555856263100955967849",
+          "bootstrap_delta_median": "-0.007200525558050332497834395382",
+          "bootstrap_delta_high": "0.02228714734761759359600231421",
+          "stage15_1_mean_r_delta": "0.02790670000457614027530328881",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": null,
+          "stage15_1_room_classification": null,
+          "room_diagnosis_replicated": null,
+          "claimed_entry_quality_supported": true,
+          "classification": "FAILED_TO_REPLICATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_2",
+          "condition_ids": [
+            1,
+            2
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_2",
+            "condition_ids": [
+              1,
+              2
+            ],
+            "unique_membership_removed": 165,
+            "realized_removed": 163,
+            "unavailable_or_ambiguous_removed": 2,
+            "sessions_affected": 75,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1419,
+            "retained_percentage": "0.8958333333333333333333333333",
+            "realized_retained": 771,
+            "unavailable_or_ambiguous_retained": 648,
+            "sessions": 184,
+            "win_rate": "0.5084306095979247730220492866",
+            "mean_r": "-0.001004880072961291376532873507",
+            "median_r": "0.039326525571819630972674163430628206209818187630014",
+            "standard_deviation_r": "1.187470071850598676793668543560801679765",
+            "profit_factor": "0.9978937602581795151463488110",
+            "target_hit_rate": "0.4967574578469520103761348898",
+            "stop_hit_rate": "0.4747081712062256809338521401",
+            "eod_exit_rate": "0.02853437094682230869001297017",
+            "median_mfe": "1.220000000000",
+            "median_mae": "1.440000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 6,
+            "negative_months": 6,
+            "worst_month": "2025-05",
+            "worst_month_mean_r": "-0.2971595006277496436443024252",
+            "leave_one_month_out_min_mean_r": "-0.02440680294692558572388384966",
+            "bootstrap_mean_r_low": "-0.1121649822581426196542225427",
+            "bootstrap_mean_r_median": "-0.001443076710956092134000186075",
+            "bootstrap_mean_r_high": "0.1176285948848956116594134837",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 62,
+                "mean_r": "-0.1499261184591352606453605382",
+                "median_r": "-1",
+                "total_r": "-9.295419344466386160012353368",
+                "baseline_trades": 87,
+                "retained_percentage": "0.7126436781609195402298850575"
+              },
+              {
+                "month": "2025-02",
+                "trades": 61,
+                "mean_r": "0.1033582719326266449206014498",
+                "median_r": "0.14381483211828853891418184846489783125581549638324",
+                "total_r": "6.30485458789022534015668844",
+                "baseline_trades": 71,
+                "retained_percentage": "0.8591549295774647887323943662"
+              },
+              {
+                "month": "2025-03",
+                "trades": 50,
+                "mean_r": "0.1123523660600182883624101507",
+                "median_r": "0.1029872715003141739248560429",
+                "total_r": "5.617618303000914418120507533",
+                "baseline_trades": 57,
+                "retained_percentage": "0.8771929824561403508771929825"
+              },
+              {
+                "month": "2025-04",
+                "trades": 73,
+                "mean_r": "0.2227559715164507285474531725",
+                "median_r": "0.17298318885430805028636590580124406064454125475131",
+                "total_r": "16.26118592070090318396408159",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8795180722891566265060240964"
+              },
+              {
+                "month": "2025-05",
+                "trades": 66,
+                "mean_r": "-0.2971595006277496436443024252",
+                "median_r": "-1",
+                "total_r": "-19.61252704143147648052396006",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8148148148148148148148148148"
+              },
+              {
+                "month": "2025-06",
+                "trades": 71,
+                "mean_r": "0.07072166184591980914795437689",
+                "median_r": "0.092539907295354104021475445449705479776524831364870",
+                "total_r": "5.021237991060306449504760759",
+                "baseline_trades": 94,
+                "retained_percentage": "0.7553191489361702127659574468"
+              },
+              {
+                "month": "2025-07",
+                "trades": 70,
+                "mean_r": "-0.268380056397706076274747456",
+                "median_r": "-1",
+                "total_r": "-18.78660394783942533923232192",
+                "baseline_trades": 92,
+                "retained_percentage": "0.7608695652173913043478260870"
+              },
+              {
+                "month": "2025-08",
+                "trades": 45,
+                "mean_r": "-0.0747226262748624756346802778",
+                "median_r": "0E+38",
+                "total_r": "-3.362518182368811403560612501",
+                "baseline_trades": 55,
+                "retained_percentage": "0.8181818181818181818181818182"
+              },
+              {
+                "month": "2025-09",
+                "trades": 72,
+                "mean_r": "-0.03442196022241509934108138067",
+                "median_r": "0.09189533024794682833358810335",
+                "total_r": "-2.478381136013887152557859408",
+                "baseline_trades": 77,
+                "retained_percentage": "0.9350649350649350649350649351"
+              },
+              {
+                "month": "2025-10",
+                "trades": 65,
+                "mean_r": "0.1338162084970606651192835357",
+                "median_r": "0.15844222841114498685690264599615858879047183090522",
+                "total_r": "8.698053552308943232753429818",
+                "baseline_trades": 76,
+                "retained_percentage": "0.8552631578947368421052631579"
+              },
+              {
+                "month": "2025-11",
+                "trades": 43,
+                "mean_r": "0.2726547275709768628318718126",
+                "median_r": "0.28321531163976745243553914339985779668054786194678",
+                "total_r": "11.72415328555200510177048794",
+                "baseline_trades": 58,
+                "retained_percentage": "0.7413793103448275862068965517"
+              },
+              {
+                "month": "2025-12",
+                "trades": 93,
+                "mean_r": "-0.009316306716628675717093486817",
+                "median_r": "0.14301041318748688339178337231402892316882861791976",
+                "total_r": "-0.8664165246464668416896942740",
+                "baseline_trades": 103,
+                "retained_percentage": "0.9029126213592233009708737864"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.03735492209736386723216551955",
+          "profit_factor_delta": "-0.0759930092867541779633737670",
+          "lomo_delta": "-0.03480638554938702148801492796",
+          "bootstrap_delta_low": "-0.1200102609051982448025186023",
+          "bootstrap_delta_median": "-0.03573698560443172174280938733",
+          "bootstrap_delta_high": "0.03440013314478555307995001682",
+          "stage15_1_mean_r_delta": "0.08404647574057197604171729020",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_2",
+            "removed_realized_n": 163,
+            "removed_sessions": 75,
+            "removed_median_five_mfe_atr": "0.3795750031813960865249478392",
+            "retained_median_five_mfe_atr": "0.3902903355537240490349649824",
+            "removed_median_five_mae_atr": "0.3835836694819674388636140407",
+            "retained_median_five_mae_atr": "0.3988459693700739788704616510",
+            "favorable_excursion_delta": "-0.0107153323723279625100171432",
+            "adverse_excursion_delta": "-0.0152622998881065400068476103",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "FAILED_TO_REPLICATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_4",
+          "condition_ids": [
+            1,
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_4",
+            "condition_ids": [
+              1,
+              4
+            ],
+            "unique_membership_removed": 206,
+            "realized_removed": 176,
+            "unavailable_or_ambiguous_removed": 30,
+            "sessions_affected": 80,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1378,
+            "retained_percentage": "0.8699494949494949494949494949",
+            "realized_retained": 758,
+            "unavailable_or_ambiguous_retained": 620,
+            "sessions": 187,
+            "win_rate": "0.5171503957783641160949868074",
+            "mean_r": "0.005878023999042921660244916855",
+            "median_r": "0.04349664064194960103847536471",
+            "standard_deviation_r": "1.165428934552958070164511983590158039473",
+            "profit_factor": "1.012486051371549948150498129",
+            "target_hit_rate": "0.5052770448548812664907651715",
+            "stop_hit_rate": "0.4683377308707124010554089710",
+            "eod_exit_rate": "0.02638522427440633245382585752",
+            "median_mfe": "1.255000000000",
+            "median_mae": "1.470000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 8,
+            "negative_months": 4,
+            "worst_month": "2025-07",
+            "worst_month_mean_r": "-0.2546506681488948174088483693",
+            "leave_one_month_out_min_mean_r": "-0.01084438799226631356082886116",
+            "bootstrap_mean_r_low": "-0.1010777119535041467042409774",
+            "bootstrap_mean_r_median": "0.005372898481561132891562697790",
+            "bootstrap_mean_r_high": "0.1188087943185239665705012168",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 55,
+                "mean_r": "-0.2176522417132873719434286491",
+                "median_r": "-1",
+                "total_r": "-11.97087329423080545688857570",
+                "baseline_trades": 87,
+                "retained_percentage": "0.6321839080459770114942528736"
+              },
+              {
+                "month": "2025-02",
+                "trades": 64,
+                "mean_r": "0.1294618237340388167733700288",
+                "median_r": "0.1735614359441555080932886876",
+                "total_r": "8.28555671897848427349568184",
+                "baseline_trades": 71,
+                "retained_percentage": "0.9014084507042253521126760563"
+              },
+              {
+                "month": "2025-03",
+                "trades": 52,
+                "mean_r": "0.1187263665900968248967320161",
+                "median_r": "0.1029872715003141739248560429",
+                "total_r": "6.173771062685034894630064839",
+                "baseline_trades": 57,
+                "retained_percentage": "0.9122807017543859649122807018"
+              },
+              {
+                "month": "2025-04",
+                "trades": 73,
+                "mean_r": "0.1121584211701417887686719193",
+                "median_r": "-0.0086375102427860545478911204381730521457621725377522",
+                "total_r": "8.187564745420350580113050110",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8795180722891566265060240964"
+              },
+              {
+                "month": "2025-05",
+                "trades": 67,
+                "mean_r": "-0.2015295466780351577608536619",
+                "median_r": "-1",
+                "total_r": "-13.50247962742835556997719535",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8271604938271604938271604938"
+              },
+              {
+                "month": "2025-06",
+                "trades": 71,
+                "mean_r": "0.07563600142469691444758544139",
+                "median_r": "0.22997014668555367087287104865970754207307521845634",
+                "total_r": "5.370156101153480925778566339",
+                "baseline_trades": 94,
+                "retained_percentage": "0.7553191489361702127659574468"
+              },
+              {
+                "month": "2025-07",
+                "trades": 68,
+                "mean_r": "-0.2546506681488948174088483693",
+                "median_r": "-1",
+                "total_r": "-17.31624543412484758380168911",
+                "baseline_trades": 92,
+                "retained_percentage": "0.7391304347826086956521739130"
+              },
+              {
+                "month": "2025-08",
+                "trades": 43,
+                "mean_r": "0.001099309627609127105703122721",
+                "median_r": "0.041422501716282636481635933485421068771170421866712",
+                "total_r": "0.047270313987192465545234277",
+                "baseline_trades": 55,
+                "retained_percentage": "0.7818181818181818181818181818"
+              },
+              {
+                "month": "2025-09",
+                "trades": 64,
+                "mean_r": "-0.06944756377836064186124406539",
+                "median_r": "0.09189533024794682833358810335",
+                "total_r": "-4.444644081815081079119620185",
+                "baseline_trades": 77,
+                "retained_percentage": "0.8311688311688311688311688312"
+              },
+              {
+                "month": "2025-10",
+                "trades": 63,
+                "mean_r": "0.1673998562683137383876281957",
+                "median_r": "0.15858571193088200100029931680528317549683149150162",
+                "total_r": "10.54619094490376551842057633",
+                "baseline_trades": 76,
+                "retained_percentage": "0.8289473684210526315789473684"
+              },
+              {
+                "month": "2025-11",
+                "trades": 50,
+                "mean_r": "0.2426673777959816923906496136",
+                "median_r": "0.2832153116397674524355391434",
+                "total_r": "12.13336888979908461953248068",
+                "baseline_trades": 58,
+                "retained_percentage": "0.8620689655172413793103448276"
+              },
+              {
+                "month": "2025-12",
+                "trades": 88,
+                "mean_r": "0.01074893013575262534928492007",
+                "median_r": "0.1577221722357717494309483969",
+                "total_r": "0.9459058519462310307370729660",
+                "baseline_trades": 103,
+                "retained_percentage": "0.8543689320388349514563106796"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.03047201802535965419538772918",
+          "profit_factor_delta": "-0.061400718173383744959224449",
+          "lomo_delta": "-0.02124397059472774932495993946",
+          "bootstrap_delta_low": "-0.1138778800298449231830317499",
+          "bootstrap_delta_median": "-0.02826685944226492813793491357",
+          "bootstrap_delta_high": "0.04714676224597725871128486281",
+          "stage15_1_mean_r_delta": "0.06410529459618821524353090223",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_4",
+            "removed_realized_n": 176,
+            "removed_sessions": 70,
+            "removed_median_five_mfe_atr": "0.4493916397441704967097377731",
+            "retained_median_five_mfe_atr": "0.3639023095065320544964256840",
+            "removed_median_five_mae_atr": "0.4375862203480844772807344132",
+            "retained_median_five_mae_atr": "0.3969367184836571325397519904",
+            "favorable_excursion_delta": "0.0854893302376384422133120891",
+            "adverse_excursion_delta": "0.0406495018644273447409824228",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "ENTRY_BEHAVIOR_SUPPORTED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": false,
+          "classification": "FAILED_TO_REPLICATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_2_4",
+          "condition_ids": [
+            1,
+            2,
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_2_4",
+            "condition_ids": [
+              1,
+              2,
+              4
+            ],
+            "unique_membership_removed": 252,
+            "realized_removed": 222,
+            "unavailable_or_ambiguous_removed": 30,
+            "sessions_affected": 97,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1584,
+            "retained_membership": 1332,
+            "retained_percentage": "0.8409090909090909090909090909",
+            "realized_retained": 712,
+            "unavailable_or_ambiguous_retained": 620,
+            "sessions": 182,
+            "win_rate": "0.5056179775280898876404494382",
+            "mean_r": "-0.007054039290021551218683375458",
+            "median_r": "0.02268912811541463046033691572",
+            "standard_deviation_r": "1.183746255770464575677870729986305165005",
+            "profit_factor": "0.9853504464034422214350023730",
+            "target_hit_rate": "0.4929775280898876404494382022",
+            "stop_hit_rate": "0.4789325842696629213483146067",
+            "eod_exit_rate": "0.02808988764044943820224719101",
+            "median_mfe": "1.195000000000",
+            "median_mae": "1.485000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 7,
+            "negative_months": 5,
+            "worst_month": "2025-07",
+            "worst_month_mean_r": "-0.2842845002940929788043694089",
+            "leave_one_month_out_min_mean_r": "-0.02676522662506328934341463986",
+            "bootstrap_mean_r_low": "-0.1208674505274054574737239015",
+            "bootstrap_mean_r_median": "-0.008074339030694262948592258864",
+            "bootstrap_mean_r_high": "0.1115707726900340029637099584",
+            "monthly": [
+              {
+                "month": "2025-01",
+                "trades": 50,
+                "mean_r": "-0.2369509617975854212892281092",
+                "median_r": "-1",
+                "total_r": "-11.84754808987927106446140546",
+                "baseline_trades": 87,
+                "retained_percentage": "0.5747126436781609195402298851"
+              },
+              {
+                "month": "2025-02",
+                "trades": 61,
+                "mean_r": "0.1033582719326266449206014498",
+                "median_r": "0.14381483211828853891418184846489783125581549638324",
+                "total_r": "6.30485458789022534015668844",
+                "baseline_trades": 71,
+                "retained_percentage": "0.8591549295774647887323943662"
+              },
+              {
+                "month": "2025-03",
+                "trades": 49,
+                "mean_r": "0.1117675756483762920854956974",
+                "median_r": "0.10057137223104166380346269824623069858154870686550",
+                "total_r": "5.476611206770438312189289172",
+                "baseline_trades": 57,
+                "retained_percentage": "0.8596491228070175438596491228"
+              },
+              {
+                "month": "2025-04",
+                "trades": 69,
+                "mean_r": "0.1766313731220340663784500014",
+                "median_r": "0.072860191566806388988728244004170542381177427326084",
+                "total_r": "12.18756474542035058011305010",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8313253012048192771084337349"
+              },
+              {
+                "month": "2025-05",
+                "trades": 63,
+                "mean_r": "-0.2636909054195472457226025405",
+                "median_r": "-1",
+                "total_r": "-16.61252704143147648052396005",
+                "baseline_trades": 81,
+                "retained_percentage": "0.7777777777777777777777777778"
+              },
+              {
+                "month": "2025-06",
+                "trades": 63,
+                "mean_r": "0.06133001469148428137404526365",
+                "median_r": "0.042540261318748100881191127316924946824673351564875",
+                "total_r": "3.863790925563509726564851610",
+                "baseline_trades": 94,
+                "retained_percentage": "0.6702127659574468085106382979"
+              },
+              {
+                "month": "2025-07",
+                "trades": 66,
+                "mean_r": "-0.2842845002940929788043694089",
+                "median_r": "-1",
+                "total_r": "-18.76277701941013660108838099",
+                "baseline_trades": 92,
+                "retained_percentage": "0.7173913043478260869565217391"
+              },
+              {
+                "month": "2025-08",
+                "trades": 40,
+                "mean_r": "-0.01632583518655726553658465928",
+                "median_r": "0.04142250171628263648163593348",
+                "total_r": "-0.653033407462290621463386371",
+                "baseline_trades": 55,
+                "retained_percentage": "0.7272727272727272727272727273"
+              },
+              {
+                "month": "2025-09",
+                "trades": 62,
+                "mean_r": "-0.06469374609283897951924740008",
+                "median_r": "0.09189533024794682833358810335",
+                "total_r": "-4.011012257756016730193338805",
+                "baseline_trades": 77,
+                "retained_percentage": "0.8051948051948051948051948052"
+              },
+              {
+                "month": "2025-10",
+                "trades": 59,
+                "mean_r": "0.1173667042725946798026923221",
+                "median_r": "0.040831978828723209962388091119320547848212979922232",
+                "total_r": "6.924635552083086108358847005",
+                "baseline_trades": 76,
+                "retained_percentage": "0.7763157894736842105263157895"
+              },
+              {
+                "month": "2025-11",
+                "trades": 43,
+                "mean_r": "0.2726547275709768628318718126",
+                "median_r": "0.28321531163976745243553914339985779668054786194678",
+                "total_r": "11.72415328555200510177048794",
+                "baseline_trades": 58,
+                "retained_percentage": "0.7413793103448275862068965517"
+              },
+              {
+                "month": "2025-12",
+                "trades": 87,
+                "mean_r": "0.004400132622577377711203380885",
+                "median_r": "0.14301041318748688339178337231402892316882861791976",
+                "total_r": "0.3828115381642318608746941370",
+                "baseline_trades": 103,
+                "retained_percentage": "0.8446601941747572815533980583"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.04340408131442412707431602150",
+          "profit_factor_delta": "-0.0885363231414914716747202050",
+          "lomo_delta": "-0.03716480922752472510754571816",
+          "bootstrap_delta_low": "-0.1312342913291608137281395027",
+          "bootstrap_delta_median": "-0.04194977786958641791828854730",
+          "bootstrap_delta_high": "0.03765697410457619269579049888",
+          "stage15_1_mean_r_delta": "0.09428528867399297109317302773",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_2_4",
+            "removed_realized_n": 222,
+            "removed_sessions": 89,
+            "removed_median_five_mfe_atr": "0.4182702523321836877394764278",
+            "retained_median_five_mfe_atr": "0.3672187981662985767263941873",
+            "removed_median_five_mae_atr": "0.4316442772903892441716329334",
+            "retained_median_five_mae_atr": "0.3955063684684099235550668456",
+            "favorable_excursion_delta": "0.0510514541658851110130822405",
+            "adverse_excursion_delta": "0.0361379088219793206165660878",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "FAILED_TO_REPLICATE"
+        }
+      ],
+      "observation_hash": "fe28e62bd26e1f639ef8e260ad812be70c5055d0b1c207e25e1f412bdcee614a"
+    },
+    {
+      "period": "2024",
+      "start_date": "2024-01-02",
+      "end_date": "2024-12-31",
+      "baseline": {
+        "original_membership": 1791,
+        "retained_membership": 1791,
+        "retained_percentage": "1",
+        "realized_retained": 1110,
+        "unavailable_or_ambiguous_retained": 681,
+        "sessions": 192,
+        "win_rate": "0.4918918918918918918918918919",
+        "mean_r": "-0.07495811979355506216490577180",
+        "median_r": "-0.02885531797288543887605317094",
+        "standard_deviation_r": "1.135145240876892747141600772994211417382",
+        "profit_factor": "0.8495639509929930058329189296",
+        "target_hit_rate": "0.4810810810810810810810810811",
+        "stop_hit_rate": "0.4972972972972972972972972973",
+        "eod_exit_rate": "0.02162162162162162162162162162",
+        "median_mfe": "1.075450000000",
+        "median_mae": "0.940000000000",
+        "fifth_percentile_r": "-1.00",
+        "positive_months": 4,
+        "negative_months": 8,
+        "worst_month": "2024-02",
+        "worst_month_mean_r": "-0.2662498499846929986752615405",
+        "leave_one_month_out_min_mean_r": "-0.1123184228487675947319818027",
+        "bootstrap_mean_r_low": "-0.1618248115758622688656818234",
+        "bootstrap_mean_r_median": "-0.07530817089890091579600588601",
+        "bootstrap_mean_r_high": "0.01872097680515621384073177567",
+        "monthly": [
+          {
+            "month": "2024-01",
+            "trades": 110,
+            "mean_r": "-0.1528297341808446712571526697",
+            "median_r": "-1",
+            "total_r": "-16.81127075989291383828679367",
+            "baseline_trades": 110,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-02",
+            "trades": 77,
+            "mean_r": "-0.2662498499846929986752615405",
+            "median_r": "-1",
+            "total_r": "-20.50123844882136089799513862",
+            "baseline_trades": 77,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-03",
+            "trades": 107,
+            "mean_r": "-0.1874908263805460621889002011",
+            "median_r": "-1",
+            "total_r": "-20.06151842271842865421232152",
+            "baseline_trades": 107,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-04",
+            "trades": 95,
+            "mean_r": "0.1694567391358885413963423357",
+            "median_r": "0.036117994783711364099117001963898706140168920266587",
+            "total_r": "16.09839021790941143265252189",
+            "baseline_trades": 95,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-05",
+            "trades": 100,
+            "mean_r": "-0.1284255123347214895743690433",
+            "median_r": "-1",
+            "total_r": "-12.84255123347214895743690433",
+            "baseline_trades": 100,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-06",
+            "trades": 113,
+            "mean_r": "-0.1659568868360939766362029988",
+            "median_r": "-1",
+            "total_r": "-18.75312821247861935989093887",
+            "baseline_trades": 113,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-07",
+            "trades": 94,
+            "mean_r": "-0.1086919616233015146640831057",
+            "median_r": "0.1239727247707280758209582822",
+            "total_r": "-10.21704439259034237842381194",
+            "baseline_trades": 94,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-08",
+            "trades": 87,
+            "mean_r": "0.03526893463879939857234493951",
+            "median_r": "0.074464240240509197254307970178535278110033228256323",
+            "total_r": "3.068397313575547675794009737",
+            "baseline_trades": 87,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-09",
+            "trades": 113,
+            "mean_r": "-0.2068082388662925087878082574",
+            "median_r": "-0.028855317972885438876053170933232890091149815256144",
+            "total_r": "-23.36933099189105349302233309",
+            "baseline_trades": 113,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-10",
+            "trades": 83,
+            "mean_r": "0.3873193649980506118879506596",
+            "median_r": "0.23062480982401182203917745004852329672248941212528",
+            "total_r": "32.14750729483820078669990475",
+            "baseline_trades": 83,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-11",
+            "trades": 50,
+            "mean_r": "-0.2528822152273313977155899782",
+            "median_r": "-1",
+            "total_r": "-12.64411076136656988577949891",
+            "baseline_trades": 50,
+            "retained_percentage": "1"
+          },
+          {
+            "month": "2024-12",
+            "trades": 81,
+            "mean_r": "0.008424511432866155146369112443",
+            "median_r": "-1",
+            "total_r": "0.6823854260621585668558981079",
+            "baseline_trades": 81,
+            "retained_percentage": "1"
+          }
+        ],
+        "periods": []
+      },
+      "candidates": [
+        {
+          "candidate": "BASE_SHORT_CONTROL",
+          "condition_ids": [],
+          "removal": {
+            "variant_id": "BASE_SHORT_CONTROL",
+            "condition_ids": [],
+            "unique_membership_removed": 0,
+            "realized_removed": 0,
+            "unavailable_or_ambiguous_removed": 0,
+            "sessions_affected": 0,
+            "months_affected": 0
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1791,
+            "retained_percentage": "1",
+            "realized_retained": 1110,
+            "unavailable_or_ambiguous_retained": 681,
+            "sessions": 192,
+            "win_rate": "0.4918918918918918918918918919",
+            "mean_r": "-0.07495811979355506216490577180",
+            "median_r": "-0.02885531797288543887605317094",
+            "standard_deviation_r": "1.135145240876892747141600772994211417382",
+            "profit_factor": "0.8495639509929930058329189296",
+            "target_hit_rate": "0.4810810810810810810810810811",
+            "stop_hit_rate": "0.4972972972972972972972972973",
+            "eod_exit_rate": "0.02162162162162162162162162162",
+            "median_mfe": "1.075450000000",
+            "median_mae": "0.940000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 4,
+            "negative_months": 8,
+            "worst_month": "2024-02",
+            "worst_month_mean_r": "-0.2662498499846929986752615405",
+            "leave_one_month_out_min_mean_r": "-0.1123184228487675947319818027",
+            "bootstrap_mean_r_low": "-0.1618248115758622688656818234",
+            "bootstrap_mean_r_median": "-0.07530817089890091579600588601",
+            "bootstrap_mean_r_high": "0.01872097680515621384073177567",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 110,
+                "mean_r": "-0.1528297341808446712571526697",
+                "median_r": "-1",
+                "total_r": "-16.81127075989291383828679367",
+                "baseline_trades": 110,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-02",
+                "trades": 77,
+                "mean_r": "-0.2662498499846929986752615405",
+                "median_r": "-1",
+                "total_r": "-20.50123844882136089799513862",
+                "baseline_trades": 77,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-03",
+                "trades": 107,
+                "mean_r": "-0.1874908263805460621889002011",
+                "median_r": "-1",
+                "total_r": "-20.06151842271842865421232152",
+                "baseline_trades": 107,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-04",
+                "trades": 95,
+                "mean_r": "0.1694567391358885413963423357",
+                "median_r": "0.036117994783711364099117001963898706140168920266587",
+                "total_r": "16.09839021790941143265252189",
+                "baseline_trades": 95,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-05",
+                "trades": 100,
+                "mean_r": "-0.1284255123347214895743690433",
+                "median_r": "-1",
+                "total_r": "-12.84255123347214895743690433",
+                "baseline_trades": 100,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-06",
+                "trades": 113,
+                "mean_r": "-0.1659568868360939766362029988",
+                "median_r": "-1",
+                "total_r": "-18.75312821247861935989093887",
+                "baseline_trades": 113,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-07",
+                "trades": 94,
+                "mean_r": "-0.1086919616233015146640831057",
+                "median_r": "0.1239727247707280758209582822",
+                "total_r": "-10.21704439259034237842381194",
+                "baseline_trades": 94,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-08",
+                "trades": 87,
+                "mean_r": "0.03526893463879939857234493951",
+                "median_r": "0.074464240240509197254307970178535278110033228256323",
+                "total_r": "3.068397313575547675794009737",
+                "baseline_trades": 87,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-09",
+                "trades": 113,
+                "mean_r": "-0.2068082388662925087878082574",
+                "median_r": "-0.028855317972885438876053170933232890091149815256144",
+                "total_r": "-23.36933099189105349302233309",
+                "baseline_trades": 113,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-10",
+                "trades": 83,
+                "mean_r": "0.3873193649980506118879506596",
+                "median_r": "0.23062480982401182203917745004852329672248941212528",
+                "total_r": "32.14750729483820078669990475",
+                "baseline_trades": 83,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-11",
+                "trades": 50,
+                "mean_r": "-0.2528822152273313977155899782",
+                "median_r": "-1",
+                "total_r": "-12.64411076136656988577949891",
+                "baseline_trades": 50,
+                "retained_percentage": "1"
+              },
+              {
+                "month": "2024-12",
+                "trades": 81,
+                "mean_r": "0.008424511432866155146369112443",
+                "median_r": "-1",
+                "total_r": "0.6823854260621585668558981079",
+                "baseline_trades": 81,
+                "retained_percentage": "1"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0E-29",
+          "profit_factor_delta": "0E-28",
+          "lomo_delta": "0E-28",
+          "bootstrap_delta_low": "0E-32",
+          "bootstrap_delta_median": "0E-30",
+          "bootstrap_delta_high": "0E-32",
+          "stage15_1_mean_r_delta": "0",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": null,
+          "stage15_1_room_classification": null,
+          "room_diagnosis_replicated": null,
+          "claimed_entry_quality_supported": true,
+          "classification": "DESCRIPTIVELY_REPLICATED"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1",
+          "condition_ids": [
+            1
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1",
+            "condition_ids": [
+              1
+            ],
+            "unique_membership_removed": 79,
+            "realized_removed": 79,
+            "unavailable_or_ambiguous_removed": 0,
+            "sessions_affected": 34,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1712,
+            "retained_percentage": "0.9558905639307649357900614182",
+            "realized_retained": 1031,
+            "unavailable_or_ambiguous_retained": 681,
+            "sessions": 192,
+            "win_rate": "0.5189136760426770126091173618",
+            "mean_r": "-0.04785593071322720857367310354",
+            "median_r": "0.045997939492031089870324210099348353144510730055706",
+            "standard_deviation_r": "1.097693927367958041696502687913163520050",
+            "profit_factor": "0.8984300648671352279945721667",
+            "target_hit_rate": "0.5121241513094083414161008729",
+            "stop_hit_rate": "0.4704170708050436469447138700",
+            "eod_exit_rate": "0.01745877788554801163918525703",
+            "median_mfe": "1.100000000000",
+            "median_mae": "0.925000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 3,
+            "negative_months": 9,
+            "worst_month": "2024-02",
+            "worst_month_mean_r": "-0.2565952427476494854999360346",
+            "leave_one_month_out_min_mean_r": "-0.08356365975349706304675692046",
+            "bootstrap_mean_r_low": "-0.1335793454011986899053181616",
+            "bootstrap_mean_r_median": "-0.04751275329289304530613929448",
+            "bootstrap_mean_r_high": "0.04347956100652566864840266443",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 100,
+                "mean_r": "-0.06811270759892913838286793664",
+                "median_r": "-0.5",
+                "total_r": "-6.811270759892913838286793664",
+                "baseline_trades": 110,
+                "retained_percentage": "0.9090909090909090909090909091"
+              },
+              {
+                "month": "2024-02",
+                "trades": 76,
+                "mean_r": "-0.2565952427476494854999360346",
+                "median_r": "-1",
+                "total_r": "-19.50123844882136089799513863",
+                "baseline_trades": 77,
+                "retained_percentage": "0.9870129870129870129870129870"
+              },
+              {
+                "month": "2024-03",
+                "trades": 103,
+                "mean_r": "-0.1559370720652274626622555486",
+                "median_r": "-1",
+                "total_r": "-16.06151842271842865421232151",
+                "baseline_trades": 107,
+                "retained_percentage": "0.9626168224299065420560747664"
+              },
+              {
+                "month": "2024-04",
+                "trades": 91,
+                "mean_r": "0.1206324283285442719542786779",
+                "median_r": "0.036117994783711364099117001963898706140168920266587",
+                "total_r": "10.97755097789752874783935969",
+                "baseline_trades": 95,
+                "retained_percentage": "0.9578947368421052631578947368"
+              },
+              {
+                "month": "2024-05",
+                "trades": 82,
+                "mean_r": "-0.007306875682551851536096463055",
+                "median_r": "0.02853472466174051297076099807",
+                "total_r": "-0.5991638059692518259599099705",
+                "baseline_trades": 100,
+                "retained_percentage": "0.82"
+              },
+              {
+                "month": "2024-06",
+                "trades": 105,
+                "mean_r": "-0.1509060557099803817713416630",
+                "median_r": "-1",
+                "total_r": "-15.84513584954794008599087461",
+                "baseline_trades": 113,
+                "retained_percentage": "0.9292035398230088495575221239"
+              },
+              {
+                "month": "2024-07",
+                "trades": 90,
+                "mean_r": "-0.06907827102878158198248679923",
+                "median_r": "0.1245992642857685314106599366",
+                "total_r": "-6.217044392590342378423811931",
+                "baseline_trades": 94,
+                "retained_percentage": "0.9574468085106382978723404255"
+              },
+              {
+                "month": "2024-08",
+                "trades": 78,
+                "mean_r": "-0.003746132917548606388497757249",
+                "median_r": "0.2789291250464367120910304187",
+                "total_r": "-0.2921983675687912983028250654",
+                "baseline_trades": 87,
+                "retained_percentage": "0.8965517241379310344827586207"
+              },
+              {
+                "month": "2024-09",
+                "trades": 107,
+                "mean_r": "-0.1623301961858976961964704026",
+                "median_r": "0E+38",
+                "total_r": "-17.36933099189105349302233308",
+                "baseline_trades": 113,
+                "retained_percentage": "0.9469026548672566371681415929"
+              },
+              {
+                "month": "2024-10",
+                "trades": 74,
+                "mean_r": "0.4139318624156680715714784207",
+                "median_r": "0.2387014597258704414267103758",
+                "total_r": "30.63095781875943729628940313",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8915662650602409638554216867"
+              },
+              {
+                "month": "2024-11",
+                "trades": 46,
+                "mean_r": "-0.1879154513340558670821630198",
+                "median_r": "-1",
+                "total_r": "-8.644110761366569885779498910",
+                "baseline_trades": 50,
+                "retained_percentage": "0.92"
+              },
+              {
+                "month": "2024-12",
+                "trades": 79,
+                "mean_r": "0.004975170105980180688452844862",
+                "median_r": "-1",
+                "total_r": "0.3930384383724342743877747441",
+                "baseline_trades": 81,
+                "retained_percentage": "0.9753086419753086419753086420"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0.02710218908032785359123266826",
+          "profit_factor_delta": "0.0488661138741422221616532371",
+          "lomo_delta": "0.02875476309527053168522488224",
+          "bootstrap_delta_low": "-0.01003065466621772044691224891",
+          "bootstrap_delta_median": "0.02772024433322699156627259834",
+          "bootstrap_delta_high": "0.06222648586089123134942078025",
+          "stage15_1_mean_r_delta": "0.04395443193730639106284599290",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": true,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1",
+            "removed_realized_n": 79,
+            "removed_sessions": 34,
+            "removed_median_five_mfe_atr": "0.2834984892001700502906274923",
+            "retained_median_five_mfe_atr": "0.3984517323912333066531513002",
+            "removed_median_five_mae_atr": "0.5243203911756740398841704500",
+            "retained_median_five_mae_atr": "0.3988432230677390256686120193",
+            "favorable_excursion_delta": "-0.1149532431910632563625238079",
+            "adverse_excursion_delta": "0.1254771681079350142155584307",
+            "classification": "ENTRY_BEHAVIOR_SUPPORTED"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "OOS_REPLICATED_RESEARCH_CANDIDATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_4",
+          "condition_ids": [
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_4",
+            "condition_ids": [
+              4
+            ],
+            "unique_membership_removed": 138,
+            "realized_removed": 115,
+            "unavailable_or_ambiguous_removed": 23,
+            "sessions_affected": 66,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1653,
+            "retained_percentage": "0.9229480737018425460636515913",
+            "realized_retained": 995,
+            "unavailable_or_ambiguous_retained": 658,
+            "sessions": 192,
+            "win_rate": "0.4934673366834170854271356784",
+            "mean_r": "-0.07697069591222462719401973055",
+            "median_r": "-0.012610986924628832181557331533014148601783690859157",
+            "standard_deviation_r": "1.125452935340193250192564618690496127333",
+            "profit_factor": "0.8456946317446355926411413132",
+            "target_hit_rate": "0.4814070351758793969849246231",
+            "stop_hit_rate": "0.4984924623115577889447236181",
+            "eod_exit_rate": "0.02010050251256281407035175879",
+            "median_mfe": "1.080000000000",
+            "median_mae": "0.940000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 4,
+            "negative_months": 8,
+            "worst_month": "2024-11",
+            "worst_month_mean_r": "-0.3963214237875242644746189124",
+            "leave_one_month_out_min_mean_r": "-0.1143887575050476241955461099",
+            "bootstrap_mean_r_low": "-0.1696895498869450460156075299",
+            "bootstrap_mean_r_median": "-0.07627485819653892594470815116",
+            "bootstrap_mean_r_high": "0.02208620728260987982744100053",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 99,
+                "mean_r": "-0.1963563491814350352685732095",
+                "median_r": "-1",
+                "total_r": "-19.43927856896206849158874774",
+                "baseline_trades": 110,
+                "retained_percentage": "0.9"
+              },
+              {
+                "month": "2024-02",
+                "trades": 70,
+                "mean_r": "-0.1928748349831622985427876946",
+                "median_r": "0.0625497402077587299881997899",
+                "total_r": "-13.50123844882136089799513862",
+                "baseline_trades": 77,
+                "retained_percentage": "0.9090909090909090909090909091"
+              },
+              {
+                "month": "2024-03",
+                "trades": 103,
+                "mean_r": "-0.1930202605113758774752390223",
+                "median_r": "-1",
+                "total_r": "-19.88108683267171537994961930",
+                "baseline_trades": 107,
+                "retained_percentage": "0.9626168224299065420560747664"
+              },
+              {
+                "month": "2024-04",
+                "trades": 85,
+                "mean_r": "0.05631095109746802265622692735",
+                "median_r": "0.034898032273189254675823933968890597538799435303257",
+                "total_r": "4.786430843284781925779288825",
+                "baseline_trades": 95,
+                "retained_percentage": "0.8947368421052631578947368421"
+              },
+              {
+                "month": "2024-05",
+                "trades": 90,
+                "mean_r": "-0.1223778243823657531014861596",
+                "median_r": "-1",
+                "total_r": "-11.01400419441291777913375436",
+                "baseline_trades": 100,
+                "retained_percentage": "0.9"
+              },
+              {
+                "month": "2024-06",
+                "trades": 95,
+                "mean_r": "-0.1586526511436758392554801881",
+                "median_r": "-1",
+                "total_r": "-15.07200185864920472927061787",
+                "baseline_trades": 113,
+                "retained_percentage": "0.8407079646017699115044247788"
+              },
+              {
+                "month": "2024-07",
+                "trades": 81,
+                "mean_r": "-0.03947224767222334112004723798",
+                "median_r": "0.12514097923789840639596946296364284681240863152097",
+                "total_r": "-3.197252061450090630723826276",
+                "baseline_trades": 94,
+                "retained_percentage": "0.8617021276595744680851063830"
+              },
+              {
+                "month": "2024-08",
+                "trades": 80,
+                "mean_r": "0.06492479687831827566098041619",
+                "median_r": "0.0958511147391004336111236291",
+                "total_r": "5.193983750265462052878433295",
+                "baseline_trades": 87,
+                "retained_percentage": "0.9195402298850574712643678161"
+              },
+              {
+                "month": "2024-09",
+                "trades": 98,
+                "mean_r": "-0.2519646952060474417554914126",
+                "median_r": "-1",
+                "total_r": "-24.69254013019264929203815843",
+                "baseline_trades": 113,
+                "retained_percentage": "0.8672566371681415929203539823"
+              },
+              {
+                "month": "2024-10",
+                "trades": 79,
+                "mean_r": "0.3568893600248116418363367692",
+                "median_r": "0.23062480982401182203917745004852329672248941212528",
+                "total_r": "28.19425944196011970507060477",
+                "baseline_trades": 83,
+                "retained_percentage": "0.9518072289156626506024096386"
+              },
+              {
+                "month": "2024-11",
+                "trades": 42,
+                "mean_r": "-0.3963214237875242644746189124",
+                "median_r": "-1",
+                "total_r": "-16.64549979907601910793399432",
+                "baseline_trades": 50,
+                "retained_percentage": "0.84"
+              },
+              {
+                "month": "2024-12",
+                "trades": 73,
+                "mean_r": "0.1189367866583857337925465498",
+                "median_r": "0.23520340157996310922538189235314689694709911719634",
+                "total_r": "8.682385426062158566855898137",
+                "baseline_trades": 81,
+                "retained_percentage": "0.9012345679012345679012345679"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "-0.00201257611866956502911395875",
+          "profit_factor_delta": "-0.0038693192483574131917776164",
+          "lomo_delta": "-0.0020703346562800294635643072",
+          "bootstrap_delta_low": "-0.03856603528893367920152800448",
+          "bootstrap_delta_median": "-0.001409977860043054710887249215",
+          "bootstrap_delta_high": "0.03168722706688989940898918691",
+          "stage15_1_mean_r_delta": "0.02790670000457614027530328881",
+          "direction_agrees_with_stage15_1": false,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": false,
+          "lomo_not_materially_deteriorated": false,
+          "bootstrap_shift_favorable": false,
+          "room_diagnostic": null,
+          "stage15_1_room_classification": null,
+          "room_diagnosis_replicated": null,
+          "claimed_entry_quality_supported": true,
+          "classification": "FAILED_TO_REPLICATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_2",
+          "condition_ids": [
+            1,
+            2
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_2",
+            "condition_ids": [
+              1,
+              2
+            ],
+            "unique_membership_removed": 151,
+            "realized_removed": 151,
+            "unavailable_or_ambiguous_removed": 0,
+            "sessions_affected": 71,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1640,
+            "retained_percentage": "0.9156895589056393076493579006",
+            "realized_retained": 959,
+            "unavailable_or_ambiguous_retained": 681,
+            "sessions": 192,
+            "win_rate": "0.5099061522419186652763295099",
+            "mean_r": "-0.05780362749778553503230122188",
+            "median_r": "0.031309324302351481829548648476287733017694558116035",
+            "standard_deviation_r": "1.115062559788849445158784029653203189176",
+            "profit_factor": "0.8794312981469739334941537326",
+            "target_hit_rate": "0.5026068821689259645464025026",
+            "stop_hit_rate": "0.4786235662148070907194994786",
+            "eod_exit_rate": "0.01876955161626694473409801877",
+            "median_mfe": "1.090000000000",
+            "median_mae": "0.940000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 3,
+            "negative_months": 9,
+            "worst_month": "2024-02",
+            "worst_month_mean_r": "-0.2497275651075621123485622286",
+            "leave_one_month_out_min_mean_r": "-0.09826708418638348238404771435",
+            "bootstrap_mean_r_low": "-0.1531467521250442662618082703",
+            "bootstrap_mean_r_median": "-0.06011395723408769667944209410",
+            "bootstrap_mean_r_high": "0.03790268987280471493823151998",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 93,
+                "mean_r": "-0.06799381728340133361084949133",
+                "median_r": "-1",
+                "total_r": "-6.323425007356324025809002694",
+                "baseline_trades": 110,
+                "retained_percentage": "0.8454545454545454545454545455"
+              },
+              {
+                "month": "2024-02",
+                "trades": 71,
+                "mean_r": "-0.2497275651075621123485622286",
+                "median_r": "-1",
+                "total_r": "-17.73065712263690997674791823",
+                "baseline_trades": 77,
+                "retained_percentage": "0.9220779220779220779220779221"
+              },
+              {
+                "month": "2024-03",
+                "trades": 98,
+                "mean_r": "-0.1846475984580499593734699293",
+                "median_r": "-1",
+                "total_r": "-18.09546464888889601860005307",
+                "baseline_trades": 107,
+                "retained_percentage": "0.9158878504672897196261682243"
+              },
+              {
+                "month": "2024-04",
+                "trades": 86,
+                "mean_r": "0.1080600885442543662405011006",
+                "median_r": "-0.4825509838634053726620880330",
+                "total_r": "9.293167614805875496683094649",
+                "baseline_trades": 95,
+                "retained_percentage": "0.9052631578947368421052631579"
+              },
+              {
+                "month": "2024-05",
+                "trades": 78,
+                "mean_r": "-0.002898037809658886218512410647",
+                "median_r": "0.02853472466174051297076099807",
+                "total_r": "-0.2260469491533931250439680305",
+                "baseline_trades": 100,
+                "retained_percentage": "0.78"
+              },
+              {
+                "month": "2024-06",
+                "trades": 95,
+                "mean_r": "-0.2063948978930210104795108602",
+                "median_r": "-1",
+                "total_r": "-19.60751529983699599555353172",
+                "baseline_trades": 113,
+                "retained_percentage": "0.8407079646017699115044247788"
+              },
+              {
+                "month": "2024-07",
+                "trades": 83,
+                "mean_r": "-0.09548792821159432019678905661",
+                "median_r": "0.12405754933363865642535041017373956313790977614891",
+                "total_r": "-7.925498041562328576333491699",
+                "baseline_trades": 94,
+                "retained_percentage": "0.8829787234042553191489361702"
+              },
+              {
+                "month": "2024-08",
+                "trades": 70,
+                "mean_r": "-0.07548529320001342609138686249",
+                "median_r": "0.0516358355905341164039371143",
+                "total_r": "-5.283970524000939826397080374",
+                "baseline_trades": 87,
+                "retained_percentage": "0.8045977011494252873563218391"
+              },
+              {
+                "month": "2024-09",
+                "trades": 98,
+                "mean_r": "-0.1542212227859080905523247820",
+                "median_r": "0.01051507572864396773398561596",
+                "total_r": "-15.11367983301899287412782864",
+                "baseline_trades": 113,
+                "retained_percentage": "0.8672566371681415929203539823"
+              },
+              {
+                "month": "2024-10",
+                "trades": 73,
+                "mean_r": "0.4333007920378005109080740155",
+                "median_r": "0.24677810962772906081424330170075794965380198791915",
+                "total_r": "31.63095781875943729628940313",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8795180722891566265060240964"
+              },
+              {
+                "month": "2024-11",
+                "trades": 44,
+                "mean_r": "-0.2369090079915662579343357743",
+                "median_r": "-1",
+                "total_r": "-10.42399635162891534911077407",
+                "baseline_trades": 50,
+                "retained_percentage": "0.88"
+              },
+              {
+                "month": "2024-12",
+                "trades": 70,
+                "mean_r": "0.06246356534488649826820398454",
+                "median_r": "0.09029204757781512249958152995",
+                "total_r": "4.372449574142054878774278918",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8641975308641975308641975309"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0.01715449229576952713260454992",
+          "profit_factor_delta": "0.0298673471539809276612348030",
+          "lomo_delta": "0.01405133866238411234793408835",
+          "bootstrap_delta_low": "-0.02374750947840716355819846208",
+          "bootstrap_delta_median": "0.01772600177350380368243678358",
+          "bootstrap_delta_high": "0.05768907991175587382342963561",
+          "stage15_1_mean_r_delta": "0.08404647574057197604171729020",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": true,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_2",
+            "removed_realized_n": 151,
+            "removed_sessions": 71,
+            "removed_median_five_mfe_atr": "0.3329623052646348239703808145",
+            "retained_median_five_mfe_atr": "0.3983405065747575315733829332",
+            "removed_median_five_mae_atr": "0.4539594195776256097532493451",
+            "retained_median_five_mae_atr": "0.4065533257498678382510042749",
+            "favorable_excursion_delta": "-0.0653782013101227076030021187",
+            "adverse_excursion_delta": "0.0474060938277577715022450702",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "OOS_REPLICATED_RESEARCH_CANDIDATE"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_4",
+          "condition_ids": [
+            1,
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_4",
+            "condition_ids": [
+              1,
+              4
+            ],
+            "unique_membership_removed": 209,
+            "realized_removed": 186,
+            "unavailable_or_ambiguous_removed": 23,
+            "sessions_affected": 85,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1582,
+            "retained_percentage": "0.8833054159687325516471245114",
+            "realized_retained": 924,
+            "unavailable_or_ambiguous_retained": 658,
+            "sessions": 192,
+            "win_rate": "0.5194805194805194805194805195",
+            "mean_r": "-0.05489371647960458560006622859",
+            "median_r": "0.05083689761998973201056178055",
+            "standard_deviation_r": "1.080884906679169580528249724380589605120",
+            "profit_factor": "0.8839351708578674682341741194",
+            "target_hit_rate": "0.5119047619047619047619047619",
+            "stop_hit_rate": "0.4729437229437229437229437229",
+            "eod_exit_rate": "0.01515151515151515151515151515",
+            "median_mfe": "1.100000000000",
+            "median_mae": "0.935000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 3,
+            "negative_months": 9,
+            "worst_month": "2024-11",
+            "worst_month_mean_r": "-0.3327763105020005028403682713",
+            "leave_one_month_out_min_mean_r": "-0.09063173769676345820740198872",
+            "bootstrap_mean_r_low": "-0.1473583993103547208472047995",
+            "bootstrap_mean_r_median": "-0.05550237785197904794000688150",
+            "bootstrap_mean_r_high": "0.04228790616241908119456059302",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 90,
+                "mean_r": "-0.1159919840995785387954305302",
+                "median_r": "-1",
+                "total_r": "-10.43927856896206849158874772",
+                "baseline_trades": 110,
+                "retained_percentage": "0.8181818181818181818181818182"
+              },
+              {
+                "month": "2024-02",
+                "trades": 69,
+                "mean_r": "-0.1811773688234979840289150525",
+                "median_r": "0.071832206331005661532270347699563925368025913150125",
+                "total_r": "-12.50123844882136089799513862",
+                "baseline_trades": 77,
+                "retained_percentage": "0.8961038961038961038961038961"
+              },
+              {
+                "month": "2024-03",
+                "trades": 99,
+                "mean_r": "-0.1604150185118355088883799929",
+                "median_r": "-1",
+                "total_r": "-15.88108683267171537994961930",
+                "baseline_trades": 107,
+                "retained_percentage": "0.9252336448598130841121495327"
+              },
+              {
+                "month": "2024-04",
+                "trades": 81,
+                "mean_r": "-0.004128498725025935296714486142",
+                "median_r": "0.034898032273189254675823933968890597538799435303257",
+                "total_r": "-0.3344083967271007590338733775",
+                "baseline_trades": 95,
+                "retained_percentage": "0.8526315789473684210526315789"
+              },
+              {
+                "month": "2024-05",
+                "trades": 72,
+                "mean_r": "0.01707476712624971322698944428",
+                "median_r": "0.03003360999510587287999815340",
+                "total_r": "1.229383233089979352343239988",
+                "baseline_trades": 100,
+                "retained_percentage": "0.72"
+              },
+              {
+                "month": "2024-06",
+                "trades": 90,
+                "mean_r": "-0.1684889943968725050596728178",
+                "median_r": "-1",
+                "total_r": "-15.16400949571852545537055360",
+                "baseline_trades": 113,
+                "retained_percentage": "0.7964601769911504424778761062"
+              },
+              {
+                "month": "2024-07",
+                "trades": 78,
+                "mean_r": "-0.002528872582693469624664439440",
+                "median_r": "0.1669917894744822437160525773",
+                "total_r": "-0.1972520614500906307238262763",
+                "baseline_trades": 94,
+                "retained_percentage": "0.8297872340425531914893617021"
+              },
+              {
+                "month": "2024-08",
+                "trades": 73,
+                "mean_r": "-0.002282355217518861934498650827",
+                "median_r": "0.23403358699979459282751875218724407140706183838649",
+                "total_r": "-0.1666119308788769212184015104",
+                "baseline_trades": 87,
+                "retained_percentage": "0.8390804597701149425287356322"
+              },
+              {
+                "month": "2024-09",
+                "trades": 93,
+                "mean_r": "-0.2117477433354048310971844991",
+                "median_r": "0E+38",
+                "total_r": "-19.69254013019264929203815842",
+                "baseline_trades": 113,
+                "retained_percentage": "0.8230088495575221238938053097"
+              },
+              {
+                "month": "2024-10",
+                "trades": 70,
+                "mean_r": "0.381110142369733660209430045",
+                "median_r": "0.2306248098240118220391774500",
+                "total_r": "26.67770996588135621466010315",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8433734939759036144578313253"
+              },
+              {
+                "month": "2024-11",
+                "trades": 38,
+                "mean_r": "-0.3327763105020005028403682713",
+                "median_r": "-1",
+                "total_r": "-12.64549979907601910793399431",
+                "baseline_trades": 50,
+                "retained_percentage": "0.76"
+              },
+              {
+                "month": "2024-12",
+                "trades": 71,
+                "mean_r": "0.1182118089911610461181376729",
+                "median_r": "0.23520340157996310922538189235314689694709911719634",
+                "total_r": "8.393038438372434274387774773",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8765432098765432098765432099"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0.02006440331395047656483954321",
+          "profit_factor_delta": "0.0343712198648744624012551898",
+          "lomo_delta": "0.02168668515200413652457981398",
+          "bootstrap_delta_low": "-0.03008728930147374708063899281",
+          "bootstrap_delta_median": "0.02045711466209960514416644973",
+          "bootstrap_delta_high": "0.06837247691234901018631346276",
+          "stage15_1_mean_r_delta": "0.06410529459618821524353090223",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": true,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_4",
+            "removed_realized_n": 186,
+            "removed_sessions": 77,
+            "removed_median_five_mfe_atr": "0.3383199715550362825811396438",
+            "retained_median_five_mfe_atr": "0.3983405065747575315733829332",
+            "removed_median_five_mae_atr": "0.4675208404759557065338954073",
+            "retained_median_five_mae_atr": "0.3988432230677390256686120193",
+            "favorable_excursion_delta": "-0.0600205350197212489922432894",
+            "adverse_excursion_delta": "0.0686776174082166808652833880",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "ENTRY_BEHAVIOR_SUPPORTED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": false,
+          "classification": "DESCRIPTIVELY_REPLICATED"
+        },
+        {
+          "candidate": "EXCLUDE_NEG_1_2_4",
+          "condition_ids": [
+            1,
+            2,
+            4
+          ],
+          "removal": {
+            "variant_id": "EXCLUDE_NEG_1_2_4",
+            "condition_ids": [
+              1,
+              2,
+              4
+            ],
+            "unique_membership_removed": 258,
+            "realized_removed": 235,
+            "unavailable_or_ambiguous_removed": 23,
+            "sessions_affected": 105,
+            "months_affected": 12
+          },
+          "metrics": {
+            "original_membership": 1791,
+            "retained_membership": 1533,
+            "retained_percentage": "0.8559463986599664991624790620",
+            "realized_retained": 875,
+            "unavailable_or_ambiguous_retained": 658,
+            "sessions": 192,
+            "win_rate": "0.512",
+            "mean_r": "-0.06414925115729308658313610008",
+            "median_r": "0.036117994783711364099117001963898706140168920266587",
+            "standard_deviation_r": "1.093097626919689408852012903403080872225",
+            "profit_factor": "0.8663597394593972161236453213",
+            "target_hit_rate": "0.504",
+            "stop_hit_rate": "0.48",
+            "eod_exit_rate": "0.016",
+            "median_mfe": "1.100000000000",
+            "median_mae": "0.940000000000",
+            "fifth_percentile_r": "-1.00",
+            "positive_months": 3,
+            "negative_months": 9,
+            "worst_month": "2024-11",
+            "worst_month_mean_r": "-0.4007051497038434603129241522",
+            "leave_one_month_out_min_mean_r": "-0.1039805269584526141127843557",
+            "bootstrap_mean_r_low": "-0.1584429502972216305711281333",
+            "bootstrap_mean_r_median": "-0.06407739327315603194912285348",
+            "bootstrap_mean_r_high": "0.03706855978428114195409181583",
+            "monthly": [
+              {
+                "month": "2024-01",
+                "trades": 88,
+                "mean_r": "-0.1326855989007385100431059951",
+                "median_r": "-1",
+                "total_r": "-11.67633270326498888379332757",
+                "baseline_trades": 110,
+                "retained_percentage": "0.8"
+              },
+              {
+                "month": "2024-02",
+                "trades": 65,
+                "mean_r": "-0.1804716480405678457961218188",
+                "median_r": "0.071832206331005661532270347699563925368025913150125",
+                "total_r": "-11.73065712263690997674791822",
+                "baseline_trades": 77,
+                "retained_percentage": "0.8441558441558441558441558442"
+              },
+              {
+                "month": "2024-03",
+                "trades": 94,
+                "mean_r": "-0.1905854580727891781312484133",
+                "median_r": "-1",
+                "total_r": "-17.91503305884218274433735085",
+                "baseline_trades": 107,
+                "retained_percentage": "0.8785046728971962616822429907"
+              },
+              {
+                "month": "2024-04",
+                "trades": 78,
+                "mean_r": "-0.01054772105940876875016384509",
+                "median_r": "-0.4825509838634053726620880330",
+                "total_r": "-0.8227222426338839625127799172",
+                "baseline_trades": 95,
+                "retained_percentage": "0.8210526315789473684210526316"
+              },
+              {
+                "month": "2024-05",
+                "trades": 70,
+                "mean_r": "0.01994994034364645084247652426",
+                "median_r": "0.03003360999510587287999815340",
+                "total_r": "1.396495824055251558973356698",
+                "baseline_trades": 100,
+                "retained_percentage": "0.7"
+              },
+              {
+                "month": "2024-06",
+                "trades": 84,
+                "mean_r": "-0.1927375030075179017345741799",
+                "median_r": "-1",
+                "total_r": "-16.18995025263150374570423111",
+                "baseline_trades": 113,
+                "retained_percentage": "0.7433628318584070796460176991"
+              },
+              {
+                "month": "2024-07",
+                "trades": 74,
+                "mean_r": "-0.01636705656434322973981694177",
+                "median_r": "0.1423513654770687310843867200",
+                "total_r": "-1.211162185761399000746453691",
+                "baseline_trades": 94,
+                "retained_percentage": "0.7872340425531914893617021277"
+              },
+              {
+                "month": "2024-08",
+                "trades": 66,
+                "mean_r": "-0.07001181562003359813887355871",
+                "median_r": "0.0516358355905341164039371143",
+                "total_r": "-4.620779830922217477165654875",
+                "baseline_trades": 87,
+                "retained_percentage": "0.7586206896551724137931034483"
+              },
+              {
+                "month": "2024-09",
+                "trades": 86,
+                "mean_r": "-0.1858747365195193377951027981",
+                "median_r": "0.01051507572864396773398561596",
+                "total_r": "-15.98522734067866305037884064",
+                "baseline_trades": 113,
+                "retained_percentage": "0.7610619469026548672566371681"
+              },
+              {
+                "month": "2024-10",
+                "trades": 69,
+                "mean_r": "0.4011262313895848726762333790",
+                "median_r": "0.23062480982401182203917745004852329672248941212528",
+                "total_r": "27.67770996588135621466010315",
+                "baseline_trades": 83,
+                "retained_percentage": "0.8313253012048192771084337349"
+              },
+              {
+                "month": "2024-11",
+                "trades": 36,
+                "mean_r": "-0.4007051497038434603129241522",
+                "median_r": "-1",
+                "total_r": "-14.42538538933836457126526948",
+                "baseline_trades": 50,
+                "retained_percentage": "0.72"
+              },
+              {
+                "month": "2024-12",
+                "trades": 65,
+                "mean_r": "0.1441915319098777673657581374",
+                "median_r": "0.23520340157996310922538189235314689694709911719634",
+                "total_r": "9.372449574142054878774278933",
+                "baseline_trades": 81,
+                "retained_percentage": "0.8024691358024691358024691358"
+              }
+            ],
+            "periods": []
+          },
+          "mean_r_delta": "0.01080886863626197558176967172",
+          "profit_factor_delta": "0.0167957884664042102907263917",
+          "lomo_delta": "0.0083378958903149806191974470",
+          "bootstrap_delta_low": "-0.04337032558858074150370394421",
+          "bootstrap_delta_median": "0.01127867904630086809278891422",
+          "bootstrap_delta_high": "0.06337069154783246441737894837",
+          "stage15_1_mean_r_delta": "0.09428528867399297109317302773",
+          "direction_agrees_with_stage15_1": true,
+          "retains_70_percent_realized": true,
+          "represents_80_sessions": true,
+          "month_concentration_pass": true,
+          "no_heavily_reduced_month": true,
+          "profit_factor_not_deteriorated": true,
+          "lomo_not_materially_deteriorated": true,
+          "bootstrap_shift_favorable": true,
+          "room_diagnostic": {
+            "variant_id": "EXCLUDE_NEG_1_2_4",
+            "removed_realized_n": 235,
+            "removed_sessions": 99,
+            "removed_median_five_mfe_atr": "0.3509477513040550954357177564",
+            "retained_median_five_mfe_atr": "0.3953354069510200345304971959",
+            "removed_median_five_mae_atr": "0.4479856438118253843625329074",
+            "retained_median_five_mae_atr": "0.4065533257498678382510042749",
+            "favorable_excursion_delta": "-0.0443876556469649390947794395",
+            "adverse_excursion_delta": "0.0414323180619575461115286325",
+            "classification": "EXIT_GEOMETRY_DEPENDENT"
+          },
+          "stage15_1_room_classification": "MIXED",
+          "room_diagnosis_replicated": false,
+          "claimed_entry_quality_supported": true,
+          "classification": "OOS_REPLICATED_RESEARCH_CANDIDATE"
+        }
+      ],
+      "observation_hash": "bbf7816aa99dd608f800e26b2f05661d066d8c33dff32b20ce2936d5cca39f4f"
+    }
+  ],
+  "combined": {
+    "period": "COMBINED_2024_2025",
+    "start_date": "2024-01-02",
+    "end_date": "2025-12-31",
+    "baseline": {
+      "original_membership": 3375,
+      "retained_membership": 3375,
+      "retained_percentage": "1",
+      "realized_retained": 2044,
+      "unavailable_or_ambiguous_retained": 1331,
+      "sessions": 382,
+      "win_rate": "0.4931506849315068493150684932",
+      "mean_r": "-0.02409617109591688510464017392",
+      "median_r": "-0.01910318054875366141929452348",
+      "standard_deviation_r": "1.244701082598938613055759599459377251629",
+      "profit_factor": "0.9513594150945004345351921660",
+      "target_hit_rate": "0.4730919765166340508806262231",
+      "stop_hit_rate": "0.4936399217221135029354207436",
+      "eod_exit_rate": "0.03326810176125244618395303327",
+      "median_mfe": "1.140000000000",
+      "median_mae": "1.095000000000",
+      "fifth_percentile_r": "-1.00",
+      "positive_months": 12,
+      "negative_months": 12,
+      "worst_month": "2025-05",
+      "worst_month_mean_r": "-0.2842363090014825148353556059",
+      "leave_one_month_out_min_mean_r": "-0.04150947527531479548219501287",
+      "bootstrap_mean_r_low": "-0.09771708603191701389816790663",
+      "bootstrap_mean_r_median": "-0.02504882845985374824083140633",
+      "bootstrap_mean_r_high": "0.05281052620254160708806549687",
+      "monthly": [
+        {
+          "month": "2024-01",
+          "trades": 110,
+          "mean_r": "-0.1528297341808446712571526697",
+          "median_r": "-1",
+          "total_r": "-16.81127075989291383828679367",
+          "baseline_trades": 110,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-02",
+          "trades": 77,
+          "mean_r": "-0.2662498499846929986752615405",
+          "median_r": "-1",
+          "total_r": "-20.50123844882136089799513862",
+          "baseline_trades": 77,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-03",
+          "trades": 107,
+          "mean_r": "-0.1874908263805460621889002011",
+          "median_r": "-1",
+          "total_r": "-20.06151842271842865421232152",
+          "baseline_trades": 107,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-04",
+          "trades": 95,
+          "mean_r": "0.1694567391358885413963423357",
+          "median_r": "0.036117994783711364099117001963898706140168920266587",
+          "total_r": "16.09839021790941143265252189",
+          "baseline_trades": 95,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-05",
+          "trades": 100,
+          "mean_r": "-0.1284255123347214895743690433",
+          "median_r": "-1",
+          "total_r": "-12.84255123347214895743690433",
+          "baseline_trades": 100,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-06",
+          "trades": 113,
+          "mean_r": "-0.1659568868360939766362029988",
+          "median_r": "-1",
+          "total_r": "-18.75312821247861935989093887",
+          "baseline_trades": 113,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-07",
+          "trades": 94,
+          "mean_r": "-0.1086919616233015146640831057",
+          "median_r": "0.1239727247707280758209582822",
+          "total_r": "-10.21704439259034237842381194",
+          "baseline_trades": 94,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-08",
+          "trades": 87,
+          "mean_r": "0.03526893463879939857234493951",
+          "median_r": "0.074464240240509197254307970178535278110033228256323",
+          "total_r": "3.068397313575547675794009737",
+          "baseline_trades": 87,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-09",
+          "trades": 113,
+          "mean_r": "-0.2068082388662925087878082574",
+          "median_r": "-0.028855317972885438876053170933232890091149815256144",
+          "total_r": "-23.36933099189105349302233309",
+          "baseline_trades": 113,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-10",
+          "trades": 83,
+          "mean_r": "0.3873193649980506118879506596",
+          "median_r": "0.23062480982401182203917745004852329672248941212528",
+          "total_r": "32.14750729483820078669990475",
+          "baseline_trades": 83,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-11",
+          "trades": 50,
+          "mean_r": "-0.2528822152273313977155899782",
+          "median_r": "-1",
+          "total_r": "-12.64411076136656988577949891",
+          "baseline_trades": 50,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2024-12",
+          "trades": 81,
+          "mean_r": "0.008424511432866155146369112443",
+          "median_r": "-1",
+          "total_r": "0.6823854260621585668558981079",
+          "baseline_trades": 81,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-01",
+          "trades": 87,
+          "mean_r": "-0.2189384966078515886145861361",
+          "median_r": "-1",
+          "total_r": "-19.04764920488308820946899384",
+          "baseline_trades": 87,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-02",
+          "trades": 71,
+          "mean_r": "0.01810643266166879258444622283",
+          "median_r": "0.096746733699982314547519414104265597923623237456948",
+          "total_r": "1.285556718978484273495681821",
+          "baseline_trades": 71,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-03",
+          "trades": 57,
+          "mean_r": "0.2694660063594123296238065849",
+          "median_r": "0.10540317076958668404624938756787746073845204223988",
+          "total_r": "15.35956236248650278855697534",
+          "baseline_trades": 57,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-04",
+          "trades": 83,
+          "mean_r": "0.1662017343385688244033371510",
+          "median_r": "0.055533162076733746020608249569668261335380095891856",
+          "total_r": "13.79474395010121242547698353",
+          "baseline_trades": 83,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-05",
+          "trades": 81,
+          "mean_r": "-0.2842363090014825148353556059",
+          "median_r": "-1",
+          "total_r": "-23.02314102912008370166380408",
+          "baseline_trades": 81,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-06",
+          "trades": 94,
+          "mean_r": "-0.003310189217118507247482733085",
+          "median_r": "0.08780916626020771766923241235",
+          "total_r": "-0.311157786409139681263376910",
+          "baseline_trades": 94,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-07",
+          "trades": 92,
+          "mean_r": "0.02126607355223032641752219861",
+          "median_r": "-1",
+          "total_r": "1.956478766805190030412042272",
+          "baseline_trades": 92,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-08",
+          "trades": 55,
+          "mean_r": "0.1732571760761677952416557207",
+          "median_r": "0.070135674491908345175236768328460987371750512522301",
+          "total_r": "9.52914468418922873829106464",
+          "baseline_trades": 55,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-09",
+          "trades": 77,
+          "mean_r": "0.1313805847846785536107544125",
+          "median_r": "0.091895330247946828333588103373675927349382131295579",
+          "total_r": "10.11630502842024862802808976",
+          "baseline_trades": 77,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-10",
+          "trades": 76,
+          "mean_r": "0.3293170707615801837307424503",
+          "median_r": "0.1591145943490831406964720104",
+          "total_r": "25.02809737788009396353642622",
+          "baseline_trades": 76,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-11",
+          "trades": 58,
+          "mean_r": "0.1476951826415142114756399670",
+          "median_r": "0.01966326278590981548633708172",
+          "total_r": "8.566320593207824265587118084",
+          "baseline_trades": 58,
+          "retained_percentage": "1"
+        },
+        {
+          "month": "2025-12",
+          "trades": 103,
+          "mean_r": "-0.09032351661033463759055646056",
+          "median_r": "0E+38",
+          "total_r": "-9.303322210864467671827315438",
+          "baseline_trades": 103,
+          "retained_percentage": "1"
+        }
+      ],
+      "periods": []
+    },
+    "candidates": [
+      {
+        "candidate": "BASE_SHORT_CONTROL",
+        "condition_ids": [],
+        "removal": {
+          "variant_id": "BASE_SHORT_CONTROL",
+          "condition_ids": [],
+          "unique_membership_removed": 0,
+          "realized_removed": 0,
+          "unavailable_or_ambiguous_removed": 0,
+          "sessions_affected": 0,
+          "months_affected": 0
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 3375,
+          "retained_percentage": "1",
+          "realized_retained": 2044,
+          "unavailable_or_ambiguous_retained": 1331,
+          "sessions": 382,
+          "win_rate": "0.4931506849315068493150684932",
+          "mean_r": "-0.02409617109591688510464017392",
+          "median_r": "-0.01910318054875366141929452348",
+          "standard_deviation_r": "1.244701082598938613055759599459377251629",
+          "profit_factor": "0.9513594150945004345351921660",
+          "target_hit_rate": "0.4730919765166340508806262231",
+          "stop_hit_rate": "0.4936399217221135029354207436",
+          "eod_exit_rate": "0.03326810176125244618395303327",
+          "median_mfe": "1.140000000000",
+          "median_mae": "1.095000000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 12,
+          "negative_months": 12,
+          "worst_month": "2025-05",
+          "worst_month_mean_r": "-0.2842363090014825148353556059",
+          "leave_one_month_out_min_mean_r": "-0.04150947527531479548219501287",
+          "bootstrap_mean_r_low": "-0.09771708603191701389816790663",
+          "bootstrap_mean_r_median": "-0.02504882845985374824083140633",
+          "bootstrap_mean_r_high": "0.05281052620254160708806549687",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 110,
+              "mean_r": "-0.1528297341808446712571526697",
+              "median_r": "-1",
+              "total_r": "-16.81127075989291383828679367",
+              "baseline_trades": 110,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-02",
+              "trades": 77,
+              "mean_r": "-0.2662498499846929986752615405",
+              "median_r": "-1",
+              "total_r": "-20.50123844882136089799513862",
+              "baseline_trades": 77,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-03",
+              "trades": 107,
+              "mean_r": "-0.1874908263805460621889002011",
+              "median_r": "-1",
+              "total_r": "-20.06151842271842865421232152",
+              "baseline_trades": 107,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-04",
+              "trades": 95,
+              "mean_r": "0.1694567391358885413963423357",
+              "median_r": "0.036117994783711364099117001963898706140168920266587",
+              "total_r": "16.09839021790941143265252189",
+              "baseline_trades": 95,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-05",
+              "trades": 100,
+              "mean_r": "-0.1284255123347214895743690433",
+              "median_r": "-1",
+              "total_r": "-12.84255123347214895743690433",
+              "baseline_trades": 100,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-06",
+              "trades": 113,
+              "mean_r": "-0.1659568868360939766362029988",
+              "median_r": "-1",
+              "total_r": "-18.75312821247861935989093887",
+              "baseline_trades": 113,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-07",
+              "trades": 94,
+              "mean_r": "-0.1086919616233015146640831057",
+              "median_r": "0.1239727247707280758209582822",
+              "total_r": "-10.21704439259034237842381194",
+              "baseline_trades": 94,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-08",
+              "trades": 87,
+              "mean_r": "0.03526893463879939857234493951",
+              "median_r": "0.074464240240509197254307970178535278110033228256323",
+              "total_r": "3.068397313575547675794009737",
+              "baseline_trades": 87,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-09",
+              "trades": 113,
+              "mean_r": "-0.2068082388662925087878082574",
+              "median_r": "-0.028855317972885438876053170933232890091149815256144",
+              "total_r": "-23.36933099189105349302233309",
+              "baseline_trades": 113,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-10",
+              "trades": 83,
+              "mean_r": "0.3873193649980506118879506596",
+              "median_r": "0.23062480982401182203917745004852329672248941212528",
+              "total_r": "32.14750729483820078669990475",
+              "baseline_trades": 83,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-11",
+              "trades": 50,
+              "mean_r": "-0.2528822152273313977155899782",
+              "median_r": "-1",
+              "total_r": "-12.64411076136656988577949891",
+              "baseline_trades": 50,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2024-12",
+              "trades": 81,
+              "mean_r": "0.008424511432866155146369112443",
+              "median_r": "-1",
+              "total_r": "0.6823854260621585668558981079",
+              "baseline_trades": 81,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-01",
+              "trades": 87,
+              "mean_r": "-0.2189384966078515886145861361",
+              "median_r": "-1",
+              "total_r": "-19.04764920488308820946899384",
+              "baseline_trades": 87,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-02",
+              "trades": 71,
+              "mean_r": "0.01810643266166879258444622283",
+              "median_r": "0.096746733699982314547519414104265597923623237456948",
+              "total_r": "1.285556718978484273495681821",
+              "baseline_trades": 71,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-03",
+              "trades": 57,
+              "mean_r": "0.2694660063594123296238065849",
+              "median_r": "0.10540317076958668404624938756787746073845204223988",
+              "total_r": "15.35956236248650278855697534",
+              "baseline_trades": 57,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-04",
+              "trades": 83,
+              "mean_r": "0.1662017343385688244033371510",
+              "median_r": "0.055533162076733746020608249569668261335380095891856",
+              "total_r": "13.79474395010121242547698353",
+              "baseline_trades": 83,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-05",
+              "trades": 81,
+              "mean_r": "-0.2842363090014825148353556059",
+              "median_r": "-1",
+              "total_r": "-23.02314102912008370166380408",
+              "baseline_trades": 81,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-06",
+              "trades": 94,
+              "mean_r": "-0.003310189217118507247482733085",
+              "median_r": "0.08780916626020771766923241235",
+              "total_r": "-0.311157786409139681263376910",
+              "baseline_trades": 94,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-07",
+              "trades": 92,
+              "mean_r": "0.02126607355223032641752219861",
+              "median_r": "-1",
+              "total_r": "1.956478766805190030412042272",
+              "baseline_trades": 92,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-08",
+              "trades": 55,
+              "mean_r": "0.1732571760761677952416557207",
+              "median_r": "0.070135674491908345175236768328460987371750512522301",
+              "total_r": "9.52914468418922873829106464",
+              "baseline_trades": 55,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-09",
+              "trades": 77,
+              "mean_r": "0.1313805847846785536107544125",
+              "median_r": "0.091895330247946828333588103373675927349382131295579",
+              "total_r": "10.11630502842024862802808976",
+              "baseline_trades": 77,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-10",
+              "trades": 76,
+              "mean_r": "0.3293170707615801837307424503",
+              "median_r": "0.1591145943490831406964720104",
+              "total_r": "25.02809737788009396353642622",
+              "baseline_trades": 76,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-11",
+              "trades": 58,
+              "mean_r": "0.1476951826415142114756399670",
+              "median_r": "0.01966326278590981548633708172",
+              "total_r": "8.566320593207824265587118084",
+              "baseline_trades": 58,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-12",
+              "trades": 103,
+              "mean_r": "-0.09032351661033463759055646056",
+              "median_r": "0E+38",
+              "total_r": "-9.303322210864467671827315438",
+              "baseline_trades": 103,
+              "retained_percentage": "1"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "0E-29",
+        "profit_factor_delta": "0E-28",
+        "lomo_delta": "0E-29",
+        "bootstrap_delta_low": "0E-33",
+        "bootstrap_delta_median": "0E-31",
+        "bootstrap_delta_high": "0E-32",
+        "stage15_1_mean_r_delta": "0",
+        "direction_agrees_with_stage15_1": true,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": true,
+        "lomo_not_materially_deteriorated": true,
+        "bootstrap_shift_favorable": false,
+        "room_diagnostic": null,
+        "stage15_1_room_classification": null,
+        "room_diagnosis_replicated": null,
+        "claimed_entry_quality_supported": true,
+        "classification": "DESCRIPTIVELY_REPLICATED"
+      },
+      {
+        "candidate": "EXCLUDE_NEG_1",
+        "condition_ids": [
+          1
+        ],
+        "removal": {
+          "variant_id": "EXCLUDE_NEG_1",
+          "condition_ids": [
+            1
+          ],
+          "unique_membership_removed": 178,
+          "realized_removed": 178,
+          "unavailable_or_ambiguous_removed": 0,
+          "sessions_affected": 73,
+          "months_affected": 24
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 3197,
+          "retained_percentage": "0.9472592592592592592592592593",
+          "realized_retained": 1866,
+          "unavailable_or_ambiguous_retained": 1331,
+          "sessions": 381,
+          "win_rate": "0.5187566988210075026795284030",
+          "mean_r": "-0.02279225090603834388045360346",
+          "median_r": "0.04776090399483966907760798202",
+          "standard_deviation_r": "1.128470178269649730333804198342869002779",
+          "profit_factor": "0.9514831661397388201288478174",
+          "target_hit_rate": "0.5101822079314040728831725616",
+          "stop_hit_rate": "0.4683815648445873526259378349",
+          "eod_exit_rate": "0.02143622722400857449088960343",
+          "median_mfe": "1.167500000000",
+          "median_mae": "1.110000000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 9,
+          "negative_months": 15,
+          "worst_month": "2025-05",
+          "worst_month_mean_r": "-0.2641222763344480298682783339",
+          "leave_one_month_out_min_mean_r": "-0.04082661719276059541139276071",
+          "bootstrap_mean_r_low": "-0.08982049491641937524255564043",
+          "bootstrap_mean_r_median": "-0.02253899318208345052258767862",
+          "bootstrap_mean_r_high": "0.04591181960307343568994705502",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 100,
+              "mean_r": "-0.06811270759892913838286793664",
+              "median_r": "-0.5",
+              "total_r": "-6.811270759892913838286793664",
+              "baseline_trades": 110,
+              "retained_percentage": "0.9090909090909090909090909091"
+            },
+            {
+              "month": "2024-02",
+              "trades": 76,
+              "mean_r": "-0.2565952427476494854999360346",
+              "median_r": "-1",
+              "total_r": "-19.50123844882136089799513863",
+              "baseline_trades": 77,
+              "retained_percentage": "0.9870129870129870129870129870"
+            },
+            {
+              "month": "2024-03",
+              "trades": 103,
+              "mean_r": "-0.1559370720652274626622555486",
+              "median_r": "-1",
+              "total_r": "-16.06151842271842865421232151",
+              "baseline_trades": 107,
+              "retained_percentage": "0.9626168224299065420560747664"
+            },
+            {
+              "month": "2024-04",
+              "trades": 91,
+              "mean_r": "0.1206324283285442719542786779",
+              "median_r": "0.036117994783711364099117001963898706140168920266587",
+              "total_r": "10.97755097789752874783935969",
+              "baseline_trades": 95,
+              "retained_percentage": "0.9578947368421052631578947368"
+            },
+            {
+              "month": "2024-05",
+              "trades": 82,
+              "mean_r": "-0.007306875682551851536096463055",
+              "median_r": "0.02853472466174051297076099807",
+              "total_r": "-0.5991638059692518259599099705",
+              "baseline_trades": 100,
+              "retained_percentage": "0.82"
+            },
+            {
+              "month": "2024-06",
+              "trades": 105,
+              "mean_r": "-0.1509060557099803817713416630",
+              "median_r": "-1",
+              "total_r": "-15.84513584954794008599087461",
+              "baseline_trades": 113,
+              "retained_percentage": "0.9292035398230088495575221239"
+            },
+            {
+              "month": "2024-07",
+              "trades": 90,
+              "mean_r": "-0.06907827102878158198248679923",
+              "median_r": "0.1245992642857685314106599366",
+              "total_r": "-6.217044392590342378423811931",
+              "baseline_trades": 94,
+              "retained_percentage": "0.9574468085106382978723404255"
+            },
+            {
+              "month": "2024-08",
+              "trades": 78,
+              "mean_r": "-0.003746132917548606388497757249",
+              "median_r": "0.2789291250464367120910304187",
+              "total_r": "-0.2921983675687912983028250654",
+              "baseline_trades": 87,
+              "retained_percentage": "0.8965517241379310344827586207"
+            },
+            {
+              "month": "2024-09",
+              "trades": 107,
+              "mean_r": "-0.1623301961858976961964704026",
+              "median_r": "0E+38",
+              "total_r": "-17.36933099189105349302233308",
+              "baseline_trades": 113,
+              "retained_percentage": "0.9469026548672566371681415929"
+            },
+            {
+              "month": "2024-10",
+              "trades": 74,
+              "mean_r": "0.4139318624156680715714784207",
+              "median_r": "0.2387014597258704414267103758",
+              "total_r": "30.63095781875943729628940313",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8915662650602409638554216867"
+            },
+            {
+              "month": "2024-11",
+              "trades": 46,
+              "mean_r": "-0.1879154513340558670821630198",
+              "median_r": "-1",
+              "total_r": "-8.644110761366569885779498910",
+              "baseline_trades": 50,
+              "retained_percentage": "0.92"
+            },
+            {
+              "month": "2024-12",
+              "trades": 79,
+              "mean_r": "0.004975170105980180688452844862",
+              "median_r": "-1",
+              "total_r": "0.3930384383724342743877747441",
+              "baseline_trades": 81,
+              "retained_percentage": "0.9753086419753086419753086420"
+            },
+            {
+              "month": "2025-01",
+              "trades": 72,
+              "mean_r": "-0.1760377756408706467868602531",
+              "median_r": "-1",
+              "total_r": "-12.67471984614268656865393822",
+              "baseline_trades": 87,
+              "retained_percentage": "0.8275862068965517241379310345"
+            },
+            {
+              "month": "2025-02",
+              "trades": 64,
+              "mean_r": "0.1294618237340388167733700288",
+              "median_r": "0.1735614359441555080932886876",
+              "total_r": "8.28555671897848427349568184",
+              "baseline_trades": 71,
+              "retained_percentage": "0.9014084507042253521126760563"
+            },
+            {
+              "month": "2025-03",
+              "trades": 54,
+              "mean_r": "0.1303449954710886234158850209",
+              "median_r": "0.1062388702796308181225510800",
+              "total_r": "7.03862975543878566445779113",
+              "baseline_trades": 57,
+              "retained_percentage": "0.9473684210526315789473684211"
+            },
+            {
+              "month": "2025-04",
+              "trades": 79,
+              "mean_r": "0.1802161784692341259999597806",
+              "median_r": "0.072860191566806388988728244004170542381177427326084",
+              "total_r": "14.23707809906949595399682267",
+              "baseline_trades": 83,
+              "retained_percentage": "0.9518072289156626506024096386"
+            },
+            {
+              "month": "2025-05",
+              "trades": 75,
+              "mean_r": "-0.2641222763344480298682783339",
+              "median_r": "-1",
+              "total_r": "-19.80917072508360224012087504",
+              "baseline_trades": 81,
+              "retained_percentage": "0.9259259259259259259259259259"
+            },
+            {
+              "month": "2025-06",
+              "trades": 83,
+              "mean_r": "0.1144143919504988171664638758",
+              "median_r": "0.16894713226030924184177824098028875207141577168253",
+              "total_r": "9.49639453189140182481650169",
+              "baseline_trades": 94,
+              "retained_percentage": "0.8829787234042553191489361702"
+            },
+            {
+              "month": "2025-07",
+              "trades": 72,
+              "mean_r": "-0.2408343383688074489159115283",
+              "median_r": "-1",
+              "total_r": "-17.34007236255413632194563004",
+              "baseline_trades": 92,
+              "retained_percentage": "0.7826086956521739130434782609"
+            },
+            {
+              "month": "2025-08",
+              "trades": 48,
+              "mean_r": "-0.05546280126915267326149983029",
+              "median_r": "0.02071125085814131824081796674",
+              "total_r": "-2.662214460919328316551991854",
+              "baseline_trades": 55,
+              "retained_percentage": "0.8727272727272727272727272727"
+            },
+            {
+              "month": "2025-09",
+              "trades": 74,
+              "mean_r": "-0.03935152648747231758762352443",
+              "median_r": "0.09189533024794682833358810335",
+              "total_r": "-2.912012960072951501484140808",
+              "baseline_trades": 77,
+              "retained_percentage": "0.9610389610389610389610389610"
+            },
+            {
+              "month": "2025-10",
+              "trades": 69,
+              "mean_r": "0.1785450571757916325045675238",
+              "median_r": "0.15964347676728428039264470388539656792738468961744",
+              "total_r": "12.31960894512962264281515914",
+              "baseline_trades": 76,
+              "retained_percentage": "0.9078947368421052631578947368"
+            },
+            {
+              "month": "2025-11",
+              "trades": 51,
+              "mean_r": "0.2183013507803742082261270722",
+              "median_r": "0.28321531163976745243553914339985779668054786194678",
+              "total_r": "11.13336888979908461953248068",
+              "baseline_trades": 58,
+              "retained_percentage": "0.8793103448275862068965517241"
+            },
+            {
+              "month": "2025-12",
+              "trades": 94,
+              "mean_r": "-0.003226832030473060338588462064",
+              "median_r": "0.1552983126178447245794365738",
+              "total_r": "-0.3033222108644676718273154340",
+              "baseline_trades": 103,
+              "retained_percentage": "0.9126213592233009708737864078"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "0.00130392018987854122418657046",
+        "profit_factor_delta": "0.0001237510452383855936556514",
+        "lomo_delta": "0.00068285808255420007080225216",
+        "bootstrap_delta_low": "-0.03963462759603283704652250111",
+        "bootstrap_delta_median": "0.002344087243138935741868475634",
+        "bootstrap_delta_high": "0.03828045945937391472116224523",
+        "stage15_1_mean_r_delta": "0.04395443193730639106284599290",
+        "direction_agrees_with_stage15_1": true,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": true,
+        "lomo_not_materially_deteriorated": true,
+        "bootstrap_shift_favorable": true,
+        "room_diagnostic": {
+          "variant_id": "EXCLUDE_NEG_1",
+          "removed_realized_n": 178,
+          "removed_sessions": 73,
+          "removed_median_five_mfe_atr": "0.3445881790515473364466369304",
+          "retained_median_five_mfe_atr": "0.3976099283093009856710110878",
+          "removed_median_five_mae_atr": "0.4479856438118253843625329074",
+          "retained_median_five_mae_atr": "0.3988445962189065022695368352",
+          "favorable_excursion_delta": "-0.0530217492577536492243741574",
+          "adverse_excursion_delta": "0.0491410475929188820929960722",
+          "classification": "EXIT_GEOMETRY_DEPENDENT"
+        },
+        "stage15_1_room_classification": "MIXED",
+        "room_diagnosis_replicated": false,
+        "claimed_entry_quality_supported": true,
+        "classification": "OOS_REPLICATED_RESEARCH_CANDIDATE"
+      },
+      {
+        "candidate": "EXCLUDE_NEG_4",
+        "condition_ids": [
+          4
+        ],
+        "removal": {
+          "variant_id": "EXCLUDE_NEG_4",
+          "condition_ids": [
+            4
+          ],
+          "unique_membership_removed": 254,
+          "realized_removed": 201,
+          "unavailable_or_ambiguous_removed": 53,
+          "sessions_affected": 122,
+          "months_affected": 24
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 3121,
+          "retained_percentage": "0.9247407407407407407407407407",
+          "realized_retained": 1843,
+          "unavailable_or_ambiguous_retained": 1278,
+          "sessions": 380,
+          "win_rate": "0.4926749864351600651112316875",
+          "mean_r": "-0.02823062056111578507251104371",
+          "median_r": "-0.12137830007467371964145278100963538140333323018318",
+          "standard_deviation_r": "1.241701139237525568126623113978160383241",
+          "profit_factor": "0.9433027851354527249088011335",
+          "target_hit_rate": "0.4720564297341291372761801411",
+          "stop_hit_rate": "0.4964731416169289202387411829",
+          "eod_exit_rate": "0.03147042864894194248507867607",
+          "median_mfe": "1.140000000000",
+          "median_mae": "1.125000000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 11,
+          "negative_months": 13,
+          "worst_month": "2024-11",
+          "worst_month_mean_r": "-0.3963214237875242644746189124",
+          "leave_one_month_out_min_mean_r": "-0.04547805733338804512114991968",
+          "bootstrap_mean_r_low": "-0.1044069951944778699207159805",
+          "bootstrap_mean_r_median": "-0.02908947099886615317530381819",
+          "bootstrap_mean_r_high": "0.05028163246479595251818690370",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 99,
+              "mean_r": "-0.1963563491814350352685732095",
+              "median_r": "-1",
+              "total_r": "-19.43927856896206849158874774",
+              "baseline_trades": 110,
+              "retained_percentage": "0.9"
+            },
+            {
+              "month": "2024-02",
+              "trades": 70,
+              "mean_r": "-0.1928748349831622985427876946",
+              "median_r": "0.0625497402077587299881997899",
+              "total_r": "-13.50123844882136089799513862",
+              "baseline_trades": 77,
+              "retained_percentage": "0.9090909090909090909090909091"
+            },
+            {
+              "month": "2024-03",
+              "trades": 103,
+              "mean_r": "-0.1930202605113758774752390223",
+              "median_r": "-1",
+              "total_r": "-19.88108683267171537994961930",
+              "baseline_trades": 107,
+              "retained_percentage": "0.9626168224299065420560747664"
+            },
+            {
+              "month": "2024-04",
+              "trades": 85,
+              "mean_r": "0.05631095109746802265622692735",
+              "median_r": "0.034898032273189254675823933968890597538799435303257",
+              "total_r": "4.786430843284781925779288825",
+              "baseline_trades": 95,
+              "retained_percentage": "0.8947368421052631578947368421"
+            },
+            {
+              "month": "2024-05",
+              "trades": 90,
+              "mean_r": "-0.1223778243823657531014861596",
+              "median_r": "-1",
+              "total_r": "-11.01400419441291777913375436",
+              "baseline_trades": 100,
+              "retained_percentage": "0.9"
+            },
+            {
+              "month": "2024-06",
+              "trades": 95,
+              "mean_r": "-0.1586526511436758392554801881",
+              "median_r": "-1",
+              "total_r": "-15.07200185864920472927061787",
+              "baseline_trades": 113,
+              "retained_percentage": "0.8407079646017699115044247788"
+            },
+            {
+              "month": "2024-07",
+              "trades": 81,
+              "mean_r": "-0.03947224767222334112004723798",
+              "median_r": "0.12514097923789840639596946296364284681240863152097",
+              "total_r": "-3.197252061450090630723826276",
+              "baseline_trades": 94,
+              "retained_percentage": "0.8617021276595744680851063830"
+            },
+            {
+              "month": "2024-08",
+              "trades": 80,
+              "mean_r": "0.06492479687831827566098041619",
+              "median_r": "0.0958511147391004336111236291",
+              "total_r": "5.193983750265462052878433295",
+              "baseline_trades": 87,
+              "retained_percentage": "0.9195402298850574712643678161"
+            },
+            {
+              "month": "2024-09",
+              "trades": 98,
+              "mean_r": "-0.2519646952060474417554914126",
+              "median_r": "-1",
+              "total_r": "-24.69254013019264929203815843",
+              "baseline_trades": 113,
+              "retained_percentage": "0.8672566371681415929203539823"
+            },
+            {
+              "month": "2024-10",
+              "trades": 79,
+              "mean_r": "0.3568893600248116418363367692",
+              "median_r": "0.23062480982401182203917745004852329672248941212528",
+              "total_r": "28.19425944196011970507060477",
+              "baseline_trades": 83,
+              "retained_percentage": "0.9518072289156626506024096386"
+            },
+            {
+              "month": "2024-11",
+              "trades": 42,
+              "mean_r": "-0.3963214237875242644746189124",
+              "median_r": "-1",
+              "total_r": "-16.64549979907601910793399432",
+              "baseline_trades": 50,
+              "retained_percentage": "0.84"
+            },
+            {
+              "month": "2024-12",
+              "trades": 73,
+              "mean_r": "0.1189367866583857337925465498",
+              "median_r": "0.23520340157996310922538189235314689694709911719634",
+              "total_r": "8.682385426062158566855898137",
+              "baseline_trades": 81,
+              "retained_percentage": "0.9012345679012345679012345679"
+            },
+            {
+              "month": "2025-01",
+              "trades": 70,
+              "mean_r": "-0.2620543236138743871100518759",
+              "median_r": "-1",
+              "total_r": "-18.34380265297120709770363131",
+              "baseline_trades": 87,
+              "retained_percentage": "0.8045977011494252873563218391"
+            },
+            {
+              "month": "2025-02",
+              "trades": 71,
+              "mean_r": "0.01810643266166879258444622283",
+              "median_r": "0.096746733699982314547519414104265597923623237456948",
+              "total_r": "1.285556718978484273495681821",
+              "baseline_trades": 71,
+              "retained_percentage": "1"
+            },
+            {
+              "month": "2025-03",
+              "trades": 55,
+              "mean_r": "0.2635400667224136730678045284",
+              "median_r": "0.10057137223104166380346269824623069858154870686550",
+              "total_r": "14.49470366973275201872924906",
+              "baseline_trades": 57,
+              "retained_percentage": "0.9649122807017543859649122807"
+            },
+            {
+              "month": "2025-04",
+              "trades": 77,
+              "mean_r": "0.1005874103435333383323793633",
+              "median_r": "-0.0086375102427860545478911204381730521457621725377522",
+              "total_r": "7.745230596452067051593210971",
+              "baseline_trades": 83,
+              "retained_percentage": "0.9277108433734939759036144578"
+            },
+            {
+              "month": "2025-05",
+              "trades": 72,
+              "mean_r": "-0.2569788837142827162496832688",
+              "median_r": "-1",
+              "total_r": "-18.50247962742835556997719535",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8888888888888888888888888889"
+            },
+            {
+              "month": "2025-06",
+              "trades": 81,
+              "mean_r": "-0.04243699033514889605310262026",
+              "median_r": "0.020663931372704245682955720418697530448537670631710",
+              "total_r": "-3.437396217147060580301312241",
+              "baseline_trades": 94,
+              "retained_percentage": "0.8617021276595744680851063830"
+            },
+            {
+              "month": "2025-07",
+              "trades": 84,
+              "mean_r": "-0.08659777306752057896037094925",
+              "median_r": "-1",
+              "total_r": "-7.274212937671728632671159737",
+              "baseline_trades": 92,
+              "retained_percentage": "0.9130434782608695652173913043"
+            },
+            {
+              "month": "2025-08",
+              "trades": 50,
+              "mean_r": "0.2447725891819149904077658154",
+              "median_r": "0.1488322536438565516865523736",
+              "total_r": "12.23862945909574952038829077",
+              "baseline_trades": 55,
+              "retained_percentage": "0.9090909090909090909090909091"
+            },
+            {
+              "month": "2025-09",
+              "trades": 67,
+              "mean_r": "0.1281145359205689410506359757",
+              "median_r": "0.091895330247946828333588103373675927349382131295579",
+              "total_r": "8.583673906678119050392610369",
+              "baseline_trades": 77,
+              "retained_percentage": "0.8701298701298701298701298701"
+            },
+            {
+              "month": "2025-10",
+              "trades": 70,
+              "mean_r": "0.3322097053950605262734549059",
+              "median_r": "0.1585139701710134939286009814",
+              "total_r": "23.25467937765423683914184341",
+              "baseline_trades": 76,
+              "retained_percentage": "0.9210526315789473684210526316"
+            },
+            {
+              "month": "2025-11",
+              "trades": 57,
+              "mean_r": "0.1678301858457513029050371593",
+              "median_r": "0.039326525571819630972674163430628206209818187630014",
+              "total_r": "9.56632059320782426558711808",
+              "baseline_trades": 58,
+              "retained_percentage": "0.9827586206896551724137931034"
+            },
+            {
+              "month": "2025-12",
+              "trades": 94,
+              "mean_r": "-0.05376695902184860605598858538",
+              "median_r": "0.07284818796577467580168220025",
+              "total_r": "-5.054094148053768969262927026",
+              "baseline_trades": 103,
+              "retained_percentage": "0.9126213592233009708737864078"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "-0.00413444946519889996787086979",
+        "profit_factor_delta": "-0.0080566299590477096263910325",
+        "lomo_delta": "-0.00396858205807324963895490681",
+        "bootstrap_delta_low": "-0.02911779800113704183368315233",
+        "bootstrap_delta_median": "-0.003753688009346835785504241050",
+        "bootstrap_delta_high": "0.01868105886080371971764474161",
+        "stage15_1_mean_r_delta": "0.02790670000457614027530328881",
+        "direction_agrees_with_stage15_1": false,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": false,
+        "lomo_not_materially_deteriorated": false,
+        "bootstrap_shift_favorable": false,
+        "room_diagnostic": null,
+        "stage15_1_room_classification": null,
+        "room_diagnosis_replicated": null,
+        "claimed_entry_quality_supported": true,
+        "classification": "FAILED_TO_REPLICATE"
+      },
+      {
+        "candidate": "EXCLUDE_NEG_1_2",
+        "condition_ids": [
+          1,
+          2
+        ],
+        "removal": {
+          "variant_id": "EXCLUDE_NEG_1_2",
+          "condition_ids": [
+            1,
+            2
+          ],
+          "unique_membership_removed": 316,
+          "realized_removed": 314,
+          "unavailable_or_ambiguous_removed": 2,
+          "sessions_affected": 146,
+          "months_affected": 24
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 3059,
+          "retained_percentage": "0.9063703703703703703703703704",
+          "realized_retained": 1730,
+          "unavailable_or_ambiguous_retained": 1329,
+          "sessions": 376,
+          "win_rate": "0.5092485549132947976878612717",
+          "mean_r": "-0.03249042850094189811981717760",
+          "median_r": "0.03137867851427663300487185930",
+          "standard_deviation_r": "1.147907189872419463388189204310953608211",
+          "profit_factor": "0.9320834167520761454676207627",
+          "target_hit_rate": "0.5",
+          "stop_hit_rate": "0.4768786127167630057803468208",
+          "eod_exit_rate": "0.02312138728323699421965317919",
+          "median_mfe": "1.120000000000",
+          "median_mae": "1.115500000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 9,
+          "negative_months": 15,
+          "worst_month": "2025-05",
+          "worst_month_mean_r": "-0.2971595006277496436443024252",
+          "leave_one_month_out_min_mean_r": "-0.05301110387772415271187273409",
+          "bootstrap_mean_r_low": "-0.1028800269514760619808279559",
+          "bootstrap_mean_r_median": "-0.03302246603900521528856770896",
+          "bootstrap_mean_r_high": "0.04093391956109692628138345007",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 93,
+              "mean_r": "-0.06799381728340133361084949133",
+              "median_r": "-1",
+              "total_r": "-6.323425007356324025809002694",
+              "baseline_trades": 110,
+              "retained_percentage": "0.8454545454545454545454545455"
+            },
+            {
+              "month": "2024-02",
+              "trades": 71,
+              "mean_r": "-0.2497275651075621123485622286",
+              "median_r": "-1",
+              "total_r": "-17.73065712263690997674791823",
+              "baseline_trades": 77,
+              "retained_percentage": "0.9220779220779220779220779221"
+            },
+            {
+              "month": "2024-03",
+              "trades": 98,
+              "mean_r": "-0.1846475984580499593734699293",
+              "median_r": "-1",
+              "total_r": "-18.09546464888889601860005307",
+              "baseline_trades": 107,
+              "retained_percentage": "0.9158878504672897196261682243"
+            },
+            {
+              "month": "2024-04",
+              "trades": 86,
+              "mean_r": "0.1080600885442543662405011006",
+              "median_r": "-0.4825509838634053726620880330",
+              "total_r": "9.293167614805875496683094649",
+              "baseline_trades": 95,
+              "retained_percentage": "0.9052631578947368421052631579"
+            },
+            {
+              "month": "2024-05",
+              "trades": 78,
+              "mean_r": "-0.002898037809658886218512410647",
+              "median_r": "0.02853472466174051297076099807",
+              "total_r": "-0.2260469491533931250439680305",
+              "baseline_trades": 100,
+              "retained_percentage": "0.78"
+            },
+            {
+              "month": "2024-06",
+              "trades": 95,
+              "mean_r": "-0.2063948978930210104795108602",
+              "median_r": "-1",
+              "total_r": "-19.60751529983699599555353172",
+              "baseline_trades": 113,
+              "retained_percentage": "0.8407079646017699115044247788"
+            },
+            {
+              "month": "2024-07",
+              "trades": 83,
+              "mean_r": "-0.09548792821159432019678905661",
+              "median_r": "0.12405754933363865642535041017373956313790977614891",
+              "total_r": "-7.925498041562328576333491699",
+              "baseline_trades": 94,
+              "retained_percentage": "0.8829787234042553191489361702"
+            },
+            {
+              "month": "2024-08",
+              "trades": 70,
+              "mean_r": "-0.07548529320001342609138686249",
+              "median_r": "0.0516358355905341164039371143",
+              "total_r": "-5.283970524000939826397080374",
+              "baseline_trades": 87,
+              "retained_percentage": "0.8045977011494252873563218391"
+            },
+            {
+              "month": "2024-09",
+              "trades": 98,
+              "mean_r": "-0.1542212227859080905523247820",
+              "median_r": "0.01051507572864396773398561596",
+              "total_r": "-15.11367983301899287412782864",
+              "baseline_trades": 113,
+              "retained_percentage": "0.8672566371681415929203539823"
+            },
+            {
+              "month": "2024-10",
+              "trades": 73,
+              "mean_r": "0.4333007920378005109080740155",
+              "median_r": "0.24677810962772906081424330170075794965380198791915",
+              "total_r": "31.63095781875943729628940313",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8795180722891566265060240964"
+            },
+            {
+              "month": "2024-11",
+              "trades": 44,
+              "mean_r": "-0.2369090079915662579343357743",
+              "median_r": "-1",
+              "total_r": "-10.42399635162891534911077407",
+              "baseline_trades": 50,
+              "retained_percentage": "0.88"
+            },
+            {
+              "month": "2024-12",
+              "trades": 70,
+              "mean_r": "0.06246356534488649826820398454",
+              "median_r": "0.09029204757781512249958152995",
+              "total_r": "4.372449574142054878774278918",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8641975308641975308641975309"
+            },
+            {
+              "month": "2025-01",
+              "trades": 62,
+              "mean_r": "-0.1499261184591352606453605382",
+              "median_r": "-1",
+              "total_r": "-9.295419344466386160012353368",
+              "baseline_trades": 87,
+              "retained_percentage": "0.7126436781609195402298850575"
+            },
+            {
+              "month": "2025-02",
+              "trades": 61,
+              "mean_r": "0.1033582719326266449206014498",
+              "median_r": "0.14381483211828853891418184846489783125581549638324",
+              "total_r": "6.30485458789022534015668844",
+              "baseline_trades": 71,
+              "retained_percentage": "0.8591549295774647887323943662"
+            },
+            {
+              "month": "2025-03",
+              "trades": 50,
+              "mean_r": "0.1123523660600182883624101507",
+              "median_r": "0.1029872715003141739248560429",
+              "total_r": "5.617618303000914418120507533",
+              "baseline_trades": 57,
+              "retained_percentage": "0.8771929824561403508771929825"
+            },
+            {
+              "month": "2025-04",
+              "trades": 73,
+              "mean_r": "0.2227559715164507285474531725",
+              "median_r": "0.17298318885430805028636590580124406064454125475131",
+              "total_r": "16.26118592070090318396408159",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8795180722891566265060240964"
+            },
+            {
+              "month": "2025-05",
+              "trades": 66,
+              "mean_r": "-0.2971595006277496436443024252",
+              "median_r": "-1",
+              "total_r": "-19.61252704143147648052396006",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8148148148148148148148148148"
+            },
+            {
+              "month": "2025-06",
+              "trades": 71,
+              "mean_r": "0.07072166184591980914795437689",
+              "median_r": "0.092539907295354104021475445449705479776524831364870",
+              "total_r": "5.021237991060306449504760759",
+              "baseline_trades": 94,
+              "retained_percentage": "0.7553191489361702127659574468"
+            },
+            {
+              "month": "2025-07",
+              "trades": 70,
+              "mean_r": "-0.268380056397706076274747456",
+              "median_r": "-1",
+              "total_r": "-18.78660394783942533923232192",
+              "baseline_trades": 92,
+              "retained_percentage": "0.7608695652173913043478260870"
+            },
+            {
+              "month": "2025-08",
+              "trades": 45,
+              "mean_r": "-0.0747226262748624756346802778",
+              "median_r": "0E+38",
+              "total_r": "-3.362518182368811403560612501",
+              "baseline_trades": 55,
+              "retained_percentage": "0.8181818181818181818181818182"
+            },
+            {
+              "month": "2025-09",
+              "trades": 72,
+              "mean_r": "-0.03442196022241509934108138067",
+              "median_r": "0.09189533024794682833358810335",
+              "total_r": "-2.478381136013887152557859408",
+              "baseline_trades": 77,
+              "retained_percentage": "0.9350649350649350649350649351"
+            },
+            {
+              "month": "2025-10",
+              "trades": 65,
+              "mean_r": "0.1338162084970606651192835357",
+              "median_r": "0.15844222841114498685690264599615858879047183090522",
+              "total_r": "8.698053552308943232753429818",
+              "baseline_trades": 76,
+              "retained_percentage": "0.8552631578947368421052631579"
+            },
+            {
+              "month": "2025-11",
+              "trades": 43,
+              "mean_r": "0.2726547275709768628318718126",
+              "median_r": "0.28321531163976745243553914339985779668054786194678",
+              "total_r": "11.72415328555200510177048794",
+              "baseline_trades": 58,
+              "retained_percentage": "0.7413793103448275862068965517"
+            },
+            {
+              "month": "2025-12",
+              "trades": 93,
+              "mean_r": "-0.009316306716628675717093486817",
+              "median_r": "0.14301041318748688339178337231402892316882861791976",
+              "total_r": "-0.8664165246464668416896942740",
+              "baseline_trades": 103,
+              "retained_percentage": "0.9029126213592233009708737864"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "-0.00839425740502501301517700368",
+        "profit_factor_delta": "-0.0192759983424242890675714033",
+        "lomo_delta": "-0.01150162860240935722967772122",
+        "bootstrap_delta_low": "-0.05220205423164273881542524836",
+        "bootstrap_delta_median": "-0.007077916423395140556498270172",
+        "bootstrap_delta_high": "0.03149603083138203908142135738",
+        "stage15_1_mean_r_delta": "0.08404647574057197604171729020",
+        "direction_agrees_with_stage15_1": false,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": false,
+        "lomo_not_materially_deteriorated": false,
+        "bootstrap_shift_favorable": false,
+        "room_diagnostic": {
+          "variant_id": "EXCLUDE_NEG_1_2",
+          "removed_realized_n": 314,
+          "removed_sessions": 146,
+          "removed_median_five_mfe_atr": "0.3535394842248210085740365342",
+          "retained_median_five_mfe_atr": "0.3936708067275946909736017496",
+          "removed_median_five_mae_atr": "0.4342853087955927210239153568",
+          "retained_median_five_mae_atr": "0.3996797449411988357337678969",
+          "favorable_excursion_delta": "-0.0401313225027736823995652154",
+          "adverse_excursion_delta": "0.0346055638543938852901474599",
+          "classification": "EXIT_GEOMETRY_DEPENDENT"
+        },
+        "stage15_1_room_classification": "MIXED",
+        "room_diagnosis_replicated": false,
+        "claimed_entry_quality_supported": true,
+        "classification": "FAILED_TO_REPLICATE"
+      },
+      {
+        "candidate": "EXCLUDE_NEG_1_4",
+        "condition_ids": [
+          1,
+          4
+        ],
+        "removal": {
+          "variant_id": "EXCLUDE_NEG_1_4",
+          "condition_ids": [
+            1,
+            4
+          ],
+          "unique_membership_removed": 415,
+          "realized_removed": 362,
+          "unavailable_or_ambiguous_removed": 53,
+          "sessions_affected": 165,
+          "months_affected": 24
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 2960,
+          "retained_percentage": "0.8770370370370370370370370370",
+          "realized_retained": 1682,
+          "unavailable_or_ambiguous_retained": 1278,
+          "sessions": 379,
+          "win_rate": "0.5184304399524375743162901308",
+          "mean_r": "-0.02750668955759815842805918445",
+          "median_r": "0.04599793949203108987032421010",
+          "standard_deviation_r": "1.119845859459104660113436544002372240476",
+          "profit_factor": "0.9417194582257179260173507476",
+          "target_hit_rate": "0.5089179548156956004756242568",
+          "stop_hit_rate": "0.4708680142687277051129607610",
+          "eod_exit_rate": "0.02021403091557669441141498216",
+          "median_mfe": "1.167500000000",
+          "median_mae": "1.140000000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 11,
+          "negative_months": 13,
+          "worst_month": "2024-11",
+          "worst_month_mean_r": "-0.3327763105020005028403682713",
+          "leave_one_month_out_min_mean_r": "-0.04525059665121678578824792270",
+          "bootstrap_mean_r_low": "-0.09784837896878441324366173925",
+          "bootstrap_mean_r_median": "-0.02782200938868098426895179992",
+          "bootstrap_mean_r_high": "0.04598088376062170765295005167",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 90,
+              "mean_r": "-0.1159919840995785387954305302",
+              "median_r": "-1",
+              "total_r": "-10.43927856896206849158874772",
+              "baseline_trades": 110,
+              "retained_percentage": "0.8181818181818181818181818182"
+            },
+            {
+              "month": "2024-02",
+              "trades": 69,
+              "mean_r": "-0.1811773688234979840289150525",
+              "median_r": "0.071832206331005661532270347699563925368025913150125",
+              "total_r": "-12.50123844882136089799513862",
+              "baseline_trades": 77,
+              "retained_percentage": "0.8961038961038961038961038961"
+            },
+            {
+              "month": "2024-03",
+              "trades": 99,
+              "mean_r": "-0.1604150185118355088883799929",
+              "median_r": "-1",
+              "total_r": "-15.88108683267171537994961930",
+              "baseline_trades": 107,
+              "retained_percentage": "0.9252336448598130841121495327"
+            },
+            {
+              "month": "2024-04",
+              "trades": 81,
+              "mean_r": "-0.004128498725025935296714486142",
+              "median_r": "0.034898032273189254675823933968890597538799435303257",
+              "total_r": "-0.3344083967271007590338733775",
+              "baseline_trades": 95,
+              "retained_percentage": "0.8526315789473684210526315789"
+            },
+            {
+              "month": "2024-05",
+              "trades": 72,
+              "mean_r": "0.01707476712624971322698944428",
+              "median_r": "0.03003360999510587287999815340",
+              "total_r": "1.229383233089979352343239988",
+              "baseline_trades": 100,
+              "retained_percentage": "0.72"
+            },
+            {
+              "month": "2024-06",
+              "trades": 90,
+              "mean_r": "-0.1684889943968725050596728178",
+              "median_r": "-1",
+              "total_r": "-15.16400949571852545537055360",
+              "baseline_trades": 113,
+              "retained_percentage": "0.7964601769911504424778761062"
+            },
+            {
+              "month": "2024-07",
+              "trades": 78,
+              "mean_r": "-0.002528872582693469624664439440",
+              "median_r": "0.1669917894744822437160525773",
+              "total_r": "-0.1972520614500906307238262763",
+              "baseline_trades": 94,
+              "retained_percentage": "0.8297872340425531914893617021"
+            },
+            {
+              "month": "2024-08",
+              "trades": 73,
+              "mean_r": "-0.002282355217518861934498650827",
+              "median_r": "0.23403358699979459282751875218724407140706183838649",
+              "total_r": "-0.1666119308788769212184015104",
+              "baseline_trades": 87,
+              "retained_percentage": "0.8390804597701149425287356322"
+            },
+            {
+              "month": "2024-09",
+              "trades": 93,
+              "mean_r": "-0.2117477433354048310971844991",
+              "median_r": "0E+38",
+              "total_r": "-19.69254013019264929203815842",
+              "baseline_trades": 113,
+              "retained_percentage": "0.8230088495575221238938053097"
+            },
+            {
+              "month": "2024-10",
+              "trades": 70,
+              "mean_r": "0.381110142369733660209430045",
+              "median_r": "0.2306248098240118220391774500",
+              "total_r": "26.67770996588135621466010315",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8433734939759036144578313253"
+            },
+            {
+              "month": "2024-11",
+              "trades": 38,
+              "mean_r": "-0.3327763105020005028403682713",
+              "median_r": "-1",
+              "total_r": "-12.64549979907601910793399431",
+              "baseline_trades": 50,
+              "retained_percentage": "0.76"
+            },
+            {
+              "month": "2024-12",
+              "trades": 71,
+              "mean_r": "0.1182118089911610461181376729",
+              "median_r": "0.23520340157996310922538189235314689694709911719634",
+              "total_r": "8.393038438372434274387774773",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8765432098765432098765432099"
+            },
+            {
+              "month": "2025-01",
+              "trades": 55,
+              "mean_r": "-0.2176522417132873719434286491",
+              "median_r": "-1",
+              "total_r": "-11.97087329423080545688857570",
+              "baseline_trades": 87,
+              "retained_percentage": "0.6321839080459770114942528736"
+            },
+            {
+              "month": "2025-02",
+              "trades": 64,
+              "mean_r": "0.1294618237340388167733700288",
+              "median_r": "0.1735614359441555080932886876",
+              "total_r": "8.28555671897848427349568184",
+              "baseline_trades": 71,
+              "retained_percentage": "0.9014084507042253521126760563"
+            },
+            {
+              "month": "2025-03",
+              "trades": 52,
+              "mean_r": "0.1187263665900968248967320161",
+              "median_r": "0.1029872715003141739248560429",
+              "total_r": "6.173771062685034894630064839",
+              "baseline_trades": 57,
+              "retained_percentage": "0.9122807017543859649122807018"
+            },
+            {
+              "month": "2025-04",
+              "trades": 73,
+              "mean_r": "0.1121584211701417887686719193",
+              "median_r": "-0.0086375102427860545478911204381730521457621725377522",
+              "total_r": "8.187564745420350580113050110",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8795180722891566265060240964"
+            },
+            {
+              "month": "2025-05",
+              "trades": 67,
+              "mean_r": "-0.2015295466780351577608536619",
+              "median_r": "-1",
+              "total_r": "-13.50247962742835556997719535",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8271604938271604938271604938"
+            },
+            {
+              "month": "2025-06",
+              "trades": 71,
+              "mean_r": "0.07563600142469691444758544139",
+              "median_r": "0.22997014668555367087287104865970754207307521845634",
+              "total_r": "5.370156101153480925778566339",
+              "baseline_trades": 94,
+              "retained_percentage": "0.7553191489361702127659574468"
+            },
+            {
+              "month": "2025-07",
+              "trades": 68,
+              "mean_r": "-0.2546506681488948174088483693",
+              "median_r": "-1",
+              "total_r": "-17.31624543412484758380168911",
+              "baseline_trades": 92,
+              "retained_percentage": "0.7391304347826086956521739130"
+            },
+            {
+              "month": "2025-08",
+              "trades": 43,
+              "mean_r": "0.001099309627609127105703122721",
+              "median_r": "0.041422501716282636481635933485421068771170421866712",
+              "total_r": "0.047270313987192465545234277",
+              "baseline_trades": 55,
+              "retained_percentage": "0.7818181818181818181818181818"
+            },
+            {
+              "month": "2025-09",
+              "trades": 64,
+              "mean_r": "-0.06944756377836064186124406539",
+              "median_r": "0.09189533024794682833358810335",
+              "total_r": "-4.444644081815081079119620185",
+              "baseline_trades": 77,
+              "retained_percentage": "0.8311688311688311688311688312"
+            },
+            {
+              "month": "2025-10",
+              "trades": 63,
+              "mean_r": "0.1673998562683137383876281957",
+              "median_r": "0.15858571193088200100029931680528317549683149150162",
+              "total_r": "10.54619094490376551842057633",
+              "baseline_trades": 76,
+              "retained_percentage": "0.8289473684210526315789473684"
+            },
+            {
+              "month": "2025-11",
+              "trades": 50,
+              "mean_r": "0.2426673777959816923906496136",
+              "median_r": "0.2832153116397674524355391434",
+              "total_r": "12.13336888979908461953248068",
+              "baseline_trades": 58,
+              "retained_percentage": "0.8620689655172413793103448276"
+            },
+            {
+              "month": "2025-12",
+              "trades": 88,
+              "mean_r": "0.01074893013575262534928492007",
+              "median_r": "0.1577221722357717494309483969",
+              "total_r": "0.9459058519462310307370729660",
+              "baseline_trades": 103,
+              "retained_percentage": "0.8543689320388349514563106796"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "-0.00341051846168127332341901053",
+        "profit_factor_delta": "-0.0096399568687825085178414184",
+        "lomo_delta": "-0.00374112137590199030605290983",
+        "bootstrap_delta_low": "-0.04990753854863562915813567209",
+        "bootstrap_delta_median": "-0.003148318441095851673719790775",
+        "bootstrap_delta_high": "0.04120719500338885202029199643",
+        "stage15_1_mean_r_delta": "0.06410529459618821524353090223",
+        "direction_agrees_with_stage15_1": false,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": false,
+        "lomo_not_materially_deteriorated": false,
+        "bootstrap_shift_favorable": false,
+        "room_diagnostic": {
+          "variant_id": "EXCLUDE_NEG_1_4",
+          "removed_realized_n": 362,
+          "removed_sessions": 147,
+          "removed_median_five_mfe_atr": "0.3809646131008071600826173450",
+          "retained_median_five_mfe_atr": "0.3866169500594063919425507000",
+          "removed_median_five_mae_atr": "0.4479856438118253843625329074",
+          "retained_median_five_mae_atr": "0.3978652054702962939103252356",
+          "favorable_excursion_delta": "-0.0056523369585992318599333550",
+          "adverse_excursion_delta": "0.0501204383415290904522076718",
+          "classification": "EXIT_GEOMETRY_DEPENDENT"
+        },
+        "stage15_1_room_classification": "ENTRY_BEHAVIOR_SUPPORTED",
+        "room_diagnosis_replicated": false,
+        "claimed_entry_quality_supported": false,
+        "classification": "FAILED_TO_REPLICATE"
+      },
+      {
+        "candidate": "EXCLUDE_NEG_1_2_4",
+        "condition_ids": [
+          1,
+          2,
+          4
+        ],
+        "removal": {
+          "variant_id": "EXCLUDE_NEG_1_2_4",
+          "condition_ids": [
+            1,
+            2,
+            4
+          ],
+          "unique_membership_removed": 510,
+          "realized_removed": 457,
+          "unavailable_or_ambiguous_removed": 53,
+          "sessions_affected": 202,
+          "months_affected": 24
+        },
+        "metrics": {
+          "original_membership": 3375,
+          "retained_membership": 2865,
+          "retained_percentage": "0.8488888888888888888888888889",
+          "realized_retained": 1587,
+          "unavailable_or_ambiguous_retained": 1278,
+          "sessions": 374,
+          "win_rate": "0.5091367359798361688720856963",
+          "mean_r": "-0.03853375597802570587772315745",
+          "median_r": "0.034898032273189254675823933968890597538799435303257",
+          "standard_deviation_r": "1.134654707319828817983330679168888670198",
+          "profit_factor": "0.9198364875571995212067054754",
+          "target_hit_rate": "0.4990548204158790170132325142",
+          "stop_hit_rate": "0.4795211090107120352867044739",
+          "eod_exit_rate": "0.02142407057340894770006301197",
+          "median_mfe": "1.125000000000",
+          "median_mae": "1.145000000000",
+          "fifth_percentile_r": "-1.00",
+          "positive_months": 10,
+          "negative_months": 14,
+          "worst_month": "2024-11",
+          "worst_month_mean_r": "-0.4007051497038434603129241522",
+          "leave_one_month_out_min_mean_r": "-0.05851830085837164126653936366",
+          "bootstrap_mean_r_low": "-0.1106739519623041519165077844",
+          "bootstrap_mean_r_median": "-0.03861305967340179619291070080",
+          "bootstrap_mean_r_high": "0.03816588879853630010758962560",
+          "monthly": [
+            {
+              "month": "2024-01",
+              "trades": 88,
+              "mean_r": "-0.1326855989007385100431059951",
+              "median_r": "-1",
+              "total_r": "-11.67633270326498888379332757",
+              "baseline_trades": 110,
+              "retained_percentage": "0.8"
+            },
+            {
+              "month": "2024-02",
+              "trades": 65,
+              "mean_r": "-0.1804716480405678457961218188",
+              "median_r": "0.071832206331005661532270347699563925368025913150125",
+              "total_r": "-11.73065712263690997674791822",
+              "baseline_trades": 77,
+              "retained_percentage": "0.8441558441558441558441558442"
+            },
+            {
+              "month": "2024-03",
+              "trades": 94,
+              "mean_r": "-0.1905854580727891781312484133",
+              "median_r": "-1",
+              "total_r": "-17.91503305884218274433735085",
+              "baseline_trades": 107,
+              "retained_percentage": "0.8785046728971962616822429907"
+            },
+            {
+              "month": "2024-04",
+              "trades": 78,
+              "mean_r": "-0.01054772105940876875016384509",
+              "median_r": "-0.4825509838634053726620880330",
+              "total_r": "-0.8227222426338839625127799172",
+              "baseline_trades": 95,
+              "retained_percentage": "0.8210526315789473684210526316"
+            },
+            {
+              "month": "2024-05",
+              "trades": 70,
+              "mean_r": "0.01994994034364645084247652426",
+              "median_r": "0.03003360999510587287999815340",
+              "total_r": "1.396495824055251558973356698",
+              "baseline_trades": 100,
+              "retained_percentage": "0.7"
+            },
+            {
+              "month": "2024-06",
+              "trades": 84,
+              "mean_r": "-0.1927375030075179017345741799",
+              "median_r": "-1",
+              "total_r": "-16.18995025263150374570423111",
+              "baseline_trades": 113,
+              "retained_percentage": "0.7433628318584070796460176991"
+            },
+            {
+              "month": "2024-07",
+              "trades": 74,
+              "mean_r": "-0.01636705656434322973981694177",
+              "median_r": "0.1423513654770687310843867200",
+              "total_r": "-1.211162185761399000746453691",
+              "baseline_trades": 94,
+              "retained_percentage": "0.7872340425531914893617021277"
+            },
+            {
+              "month": "2024-08",
+              "trades": 66,
+              "mean_r": "-0.07001181562003359813887355871",
+              "median_r": "0.0516358355905341164039371143",
+              "total_r": "-4.620779830922217477165654875",
+              "baseline_trades": 87,
+              "retained_percentage": "0.7586206896551724137931034483"
+            },
+            {
+              "month": "2024-09",
+              "trades": 86,
+              "mean_r": "-0.1858747365195193377951027981",
+              "median_r": "0.01051507572864396773398561596",
+              "total_r": "-15.98522734067866305037884064",
+              "baseline_trades": 113,
+              "retained_percentage": "0.7610619469026548672566371681"
+            },
+            {
+              "month": "2024-10",
+              "trades": 69,
+              "mean_r": "0.4011262313895848726762333790",
+              "median_r": "0.23062480982401182203917745004852329672248941212528",
+              "total_r": "27.67770996588135621466010315",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8313253012048192771084337349"
+            },
+            {
+              "month": "2024-11",
+              "trades": 36,
+              "mean_r": "-0.4007051497038434603129241522",
+              "median_r": "-1",
+              "total_r": "-14.42538538933836457126526948",
+              "baseline_trades": 50,
+              "retained_percentage": "0.72"
+            },
+            {
+              "month": "2024-12",
+              "trades": 65,
+              "mean_r": "0.1441915319098777673657581374",
+              "median_r": "0.23520340157996310922538189235314689694709911719634",
+              "total_r": "9.372449574142054878774278933",
+              "baseline_trades": 81,
+              "retained_percentage": "0.8024691358024691358024691358"
+            },
+            {
+              "month": "2025-01",
+              "trades": 50,
+              "mean_r": "-0.2369509617975854212892281092",
+              "median_r": "-1",
+              "total_r": "-11.84754808987927106446140546",
+              "baseline_trades": 87,
+              "retained_percentage": "0.5747126436781609195402298851"
+            },
+            {
+              "month": "2025-02",
+              "trades": 61,
+              "mean_r": "0.1033582719326266449206014498",
+              "median_r": "0.14381483211828853891418184846489783125581549638324",
+              "total_r": "6.30485458789022534015668844",
+              "baseline_trades": 71,
+              "retained_percentage": "0.8591549295774647887323943662"
+            },
+            {
+              "month": "2025-03",
+              "trades": 49,
+              "mean_r": "0.1117675756483762920854956974",
+              "median_r": "0.10057137223104166380346269824623069858154870686550",
+              "total_r": "5.476611206770438312189289172",
+              "baseline_trades": 57,
+              "retained_percentage": "0.8596491228070175438596491228"
+            },
+            {
+              "month": "2025-04",
+              "trades": 69,
+              "mean_r": "0.1766313731220340663784500014",
+              "median_r": "0.072860191566806388988728244004170542381177427326084",
+              "total_r": "12.18756474542035058011305010",
+              "baseline_trades": 83,
+              "retained_percentage": "0.8313253012048192771084337349"
+            },
+            {
+              "month": "2025-05",
+              "trades": 63,
+              "mean_r": "-0.2636909054195472457226025405",
+              "median_r": "-1",
+              "total_r": "-16.61252704143147648052396005",
+              "baseline_trades": 81,
+              "retained_percentage": "0.7777777777777777777777777778"
+            },
+            {
+              "month": "2025-06",
+              "trades": 63,
+              "mean_r": "0.06133001469148428137404526365",
+              "median_r": "0.042540261318748100881191127316924946824673351564875",
+              "total_r": "3.863790925563509726564851610",
+              "baseline_trades": 94,
+              "retained_percentage": "0.6702127659574468085106382979"
+            },
+            {
+              "month": "2025-07",
+              "trades": 66,
+              "mean_r": "-0.2842845002940929788043694089",
+              "median_r": "-1",
+              "total_r": "-18.76277701941013660108838099",
+              "baseline_trades": 92,
+              "retained_percentage": "0.7173913043478260869565217391"
+            },
+            {
+              "month": "2025-08",
+              "trades": 40,
+              "mean_r": "-0.01632583518655726553658465928",
+              "median_r": "0.04142250171628263648163593348",
+              "total_r": "-0.653033407462290621463386371",
+              "baseline_trades": 55,
+              "retained_percentage": "0.7272727272727272727272727273"
+            },
+            {
+              "month": "2025-09",
+              "trades": 62,
+              "mean_r": "-0.06469374609283897951924740008",
+              "median_r": "0.09189533024794682833358810335",
+              "total_r": "-4.011012257756016730193338805",
+              "baseline_trades": 77,
+              "retained_percentage": "0.8051948051948051948051948052"
+            },
+            {
+              "month": "2025-10",
+              "trades": 59,
+              "mean_r": "0.1173667042725946798026923221",
+              "median_r": "0.040831978828723209962388091119320547848212979922232",
+              "total_r": "6.924635552083086108358847005",
+              "baseline_trades": 76,
+              "retained_percentage": "0.7763157894736842105263157895"
+            },
+            {
+              "month": "2025-11",
+              "trades": 43,
+              "mean_r": "0.2726547275709768628318718126",
+              "median_r": "0.28321531163976745243553914339985779668054786194678",
+              "total_r": "11.72415328555200510177048794",
+              "baseline_trades": 58,
+              "retained_percentage": "0.7413793103448275862068965517"
+            },
+            {
+              "month": "2025-12",
+              "trades": 87,
+              "mean_r": "0.004400132622577377711203380885",
+              "median_r": "0.14301041318748688339178337231402892316882861791976",
+              "total_r": "0.3828115381642318608746941370",
+              "baseline_trades": 103,
+              "retained_percentage": "0.8446601941747572815533980583"
+            }
+          ],
+          "periods": []
+        },
+        "mean_r_delta": "-0.01443758488210882077308298353",
+        "profit_factor_delta": "-0.0315229275373009133284866906",
+        "lomo_delta": "-0.01700882558305684578434435079",
+        "bootstrap_delta_low": "-0.06338260320849232990339173018",
+        "bootstrap_delta_median": "-0.01399014328991738684368400412",
+        "bootstrap_delta_high": "0.03347948397739442241727446559",
+        "stage15_1_mean_r_delta": "0.09428528867399297109317302773",
+        "direction_agrees_with_stage15_1": false,
+        "retains_70_percent_realized": true,
+        "represents_80_sessions": true,
+        "month_concentration_pass": true,
+        "no_heavily_reduced_month": true,
+        "profit_factor_not_deteriorated": false,
+        "lomo_not_materially_deteriorated": false,
+        "bootstrap_shift_favorable": false,
+        "room_diagnostic": {
+          "variant_id": "EXCLUDE_NEG_1_2_4",
+          "removed_realized_n": 457,
+          "removed_sessions": 188,
+          "removed_median_five_mfe_atr": "0.3815410108649720056060557743",
+          "retained_median_five_mfe_atr": "0.3861522385775756349674629124",
+          "removed_median_five_mae_atr": "0.4375862203480844772807344132",
+          "retained_median_five_mae_atr": "0.3988432230677390256686120193",
+          "favorable_excursion_delta": "-0.0046112277126036293614071381",
+          "adverse_excursion_delta": "0.0387429972803454516121223939",
+          "classification": "EXIT_GEOMETRY_DEPENDENT"
+        },
+        "stage15_1_room_classification": "MIXED",
+        "room_diagnosis_replicated": false,
+        "claimed_entry_quality_supported": true,
+        "classification": "FAILED_TO_REPLICATE"
+      }
+    ],
+    "observation_hash": "677136c5566497758e644e78f934de93bf8c12276c0809c421a3b6c9632d9e94"
+  },
+  "overall": [
+    {
+      "candidate": "BASE_SHORT_CONTROL",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "0E-29"
+        ],
+        [
+          "2024",
+          "0E-29"
+        ]
+      ],
+      "combined_mean_r_delta": "0E-29",
+      "all_unseen_years_directionally_agree": true,
+      "classification": "DESCRIPTIVELY_REPLICATED"
+    },
+    {
+      "candidate": "EXCLUDE_NEG_1",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "-0.02819540205473826165379965725"
+        ],
+        [
+          "2024",
+          "0.02710218908032785359123266826"
+        ]
+      ],
+      "combined_mean_r_delta": "0.00130392018987854122418657046",
+      "all_unseen_years_directionally_agree": false,
+      "classification": "FAILED_TO_REPLICATE"
+    },
+    {
+      "candidate": "EXCLUDE_NEG_4",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "-0.00739154115349796244830743527"
+        ],
+        [
+          "2024",
+          "-0.00201257611866956502911395875"
+        ]
+      ],
+      "combined_mean_r_delta": "-0.00413444946519889996787086979",
+      "all_unseen_years_directionally_agree": false,
+      "classification": "FAILED_TO_REPLICATE"
+    },
+    {
+      "candidate": "EXCLUDE_NEG_1_2",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "-0.03735492209736386723216551955"
+        ],
+        [
+          "2024",
+          "0.01715449229576952713260454992"
+        ]
+      ],
+      "combined_mean_r_delta": "-0.00839425740502501301517700368",
+      "all_unseen_years_directionally_agree": false,
+      "classification": "FAILED_TO_REPLICATE"
+    },
+    {
+      "candidate": "EXCLUDE_NEG_1_4",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "-0.03047201802535965419538772918"
+        ],
+        [
+          "2024",
+          "0.02006440331395047656483954321"
+        ]
+      ],
+      "combined_mean_r_delta": "-0.00341051846168127332341901053",
+      "all_unseen_years_directionally_agree": false,
+      "classification": "FAILED_TO_REPLICATE"
+    },
+    {
+      "candidate": "EXCLUDE_NEG_1_2_4",
+      "year_mean_r_deltas": [
+        [
+          "2025",
+          "-0.04340408131442412707431602150"
+        ],
+        [
+          "2024",
+          "0.01080886863626197558176967172"
+        ]
+      ],
+      "combined_mean_r_delta": "-0.01443758488210882077308298353",
+      "all_unseen_years_directionally_agree": false,
+      "classification": "FAILED_TO_REPLICATE"
+    }
+  ],
+  "hard_stop_applied": true
+}

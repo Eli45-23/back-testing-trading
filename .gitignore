@@ -10,6 +10,8 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/oos/raw/*
+data/oos/processed/*
 data/cache/*
 !data/cache/.gitkeep
 *.db

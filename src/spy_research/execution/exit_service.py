@@ -70,14 +70,16 @@ class ExitModelComparisonService:
         raw_store: RawBarStore,
         *,
         calendar: XNYSCalendar | None = None,
+        allow_oos: bool = False,
     ) -> None:
         self._config = config
         self._processed_store = processed_store
         self._raw_store = raw_store
         self._calendar = calendar or XNYSCalendar()
+        self._allow_oos = allow_oos
 
     def calculate(self, *, start: date, end: date) -> ExitModelComparisonReport:
-        if start != FROZEN_START or end != FROZEN_END:
+        if not self._allow_oos and (start != FROZEN_START or end != FROZEN_END):
             raise ExitComparisonInputError(
                 "Stage 13.2 requires the frozen 2026-01-02 through 2026-08-19 range"
             )
@@ -85,6 +87,7 @@ class ExitModelComparisonService:
             self._config,
             self._processed_store,
             self._raw_store,
+            allow_oos=self._allow_oos,
         ).calculate(start=start, end=end)
         setups, atr_by_id = self._setups_from_control(control)
         bars = self._processed_store.load_processed_5m_bars(
@@ -171,6 +174,11 @@ class ExitModelComparisonService:
                 views,
                 population=population,
                 variant=variant,
+                month_labels=(
+                    tuple(f"{start.year}-{month:02d}" for month in range(1, 13))
+                    if self._allow_oos
+                    else None
+                ),
             )
             for population in StrategyPopulation
             for variant in variants

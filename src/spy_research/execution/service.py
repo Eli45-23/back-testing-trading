@@ -35,13 +35,16 @@ class FixedRiskSimulationService:
         config: ResearchConfig,
         processed_store: ProcessedFiveMinuteStore,
         raw_store: RawBarStore,
+        *,
+        allow_oos: bool = False,
     ) -> None:
         self._config = config
         self._processed_store = processed_store
         self._raw_store = raw_store
+        self._allow_oos = allow_oos
 
     def calculate(self, *, start: date, end: date) -> FixedRiskSimulationReport:
-        if start != FROZEN_START or end != FROZEN_END:
+        if not self._allow_oos and (start != FROZEN_START or end != FROZEN_END):
             raise ExecutionInputError(
                 "Stage 13.1 requires the frozen 2026-01-02 through 2026-08-19 range"
             )
