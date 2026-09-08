@@ -1,0 +1,46 @@
+{
+  "version": "rejection-entry-study-v1",
+  "status": "DESIGN_FREEZE_ONLY",
+  "outcome_run_performed": false,
+  "outcome_window": {"start": "2026-01-02", "end": "2026-09-04"},
+  "prospective_data_rejected_from": "2026-09-08",
+  "inherited_population": "completed Key-Level Reactions V1 eligible interactions",
+  "level_families": ["PDH", "PDL", "PMH", "PML", "ORH5", "ORL5", "PWH", "PWL", "1H_HIGH", "1H_LOW"],
+  "entry_families": [
+    "IMMEDIATE_CLOSE_BACK",
+    "MOMENTUM_AWAY",
+    "ONE_RETEST_HOLD"
+  ],
+  "momentum_away_distance": "0.25",
+  "path_distances": ["0.25", "0.50", "1.00"],
+  "path_horizons_minutes": [5, 15, 30],
+  "bootstrap": {"draws": 2000, "seed": 20260908},
+  "hash_algorithm": "SHA-256",
+  "protocol_hash": "b6175efed8e555cc47bf7df90705cc32ea94e24a7fa30f78a69c115d3f3fa484",
+  "hash_plan": {
+    "protocol": "canonical protocol JSON",
+    "source": "all Python files under src/spy_research/rejection_entry_v1",
+    "outcomes": "must remain absent until separately authorized"
+  },
+  "klr_protocol_hash": "d39d4a67b22b7c2d775a7f7fbdece6dee1ca513ecf358e89c5d52140a0588592",
+  "source_files": [
+    "src/spy_research/rejection_entry_v1/__init__.py",
+    "src/spy_research/rejection_entry_v1/data.py",
+    "src/spy_research/rejection_entry_v1/engine.py",
+    "src/spy_research/rejection_entry_v1/manifest.py",
+    "src/spy_research/rejection_entry_v1/models.py",
+    "src/spy_research/rejection_entry_v1/population.py",
+    "src/spy_research/rejection_entry_v1/protocol.py",
+    "src/spy_research/rejection_entry_v1/reporting.py"
+  ],
+  "source_file_hashes": {
+    "src/spy_research/rejection_entry_v1/__init__.py": "7b3bae9c73bb4914acf6cece1414059144d491ba61234358aeff2414b4c5e488",
+    "src/spy_research/rejection_entry_v1/data.py": "dd0706044af9f1036e831afd5de5e26142d3eb4bf6492a6f10e950126cde42e8",
+    "src/spy_research/rejection_entry_v1/engine.py": "c5be12881bc2d038b6f231ad1fd0a9a23c64c78c68a75cabcf14be3abcc6ff63",
+    "src/spy_research/rejection_entry_v1/manifest.py": "4629549c5ba9e770a847cdf04438b4c8736855a49a7adbab9048a62309758494",
+    "src/spy_research/rejection_entry_v1/models.py": "24eb2966b36fa333f8e4099ffbcb1968d7607943f4e6d284864e10e79844443e",
+    "src/spy_research/rejection_entry_v1/population.py": "976bb35c01d30c18a7a8bcfecf6ecf2beed1aaa55f4d6037c738500af0ffd165",
+    "src/spy_research/rejection_entry_v1/protocol.py": "9a9ba0b98a863f794a7487c208dac7dbb19b263b44cf4bb55a9844f8bc695b9a",
+    "src/spy_research/rejection_entry_v1/reporting.py": "642eb41eec68f9e46d4dc5a59c01b33bbda099db1ecdc5822e622ff0389b8f68"
+  }
+}
