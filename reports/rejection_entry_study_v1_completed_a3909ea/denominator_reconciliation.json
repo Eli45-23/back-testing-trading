@@ -1,0 +1,44 @@
+{
+  "all_variants_reconcile": true,
+  "eligible_interactions": 6370,
+  "variants": {
+    "IMMEDIATE_CLOSE_BACK_1M": {
+      "executable_plus_non_executable": 6370,
+      "signals": 6370,
+      "status_counts": {
+        "CONFIRMED": 3356,
+        "NO_CONFIRMATION": 3014
+      },
+      "status_sum": 6370
+    },
+    "IMMEDIATE_CLOSE_BACK_5M": {
+      "executable_plus_non_executable": 6370,
+      "signals": 6370,
+      "status_counts": {
+        "CONFIRMED": 3319,
+        "NO_CONFIRMATION": 3051
+      },
+      "status_sum": 6370
+    },
+    "MOMENTUM_AWAY_025": {
+      "executable_plus_non_executable": 6370,
+      "signals": 6370,
+      "status_counts": {
+        "CENSORED_SESSION_CLOSE": 19,
+        "CONFIRMED": 6168,
+        "NO_CONFIRMATION": 183
+      },
+      "status_sum": 6370
+    },
+    "ONE_RETEST_HOLD": {
+      "executable_plus_non_executable": 6370,
+      "signals": 6370,
+      "status_counts": {
+        "CENSORED_SESSION_CLOSE": 159,
+        "CONFIRMED": 1045,
+        "NO_CONFIRMATION": 5166
+      },
+      "status_sum": 6370
+    }
+  }
+}
