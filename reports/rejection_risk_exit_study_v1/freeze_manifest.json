@@ -1,0 +1,78 @@
+{
+  "dependency_files": {
+    "reports/first_hold_prospective_freeze.json": "42b5b574c507d80ef32b442cdbfc6c071c59eef9a41101a52abb626db59f76f3",
+    "reports/key_level_reactions_v1/run_manifest.json": "9e382c518d707faaa207a71d8f1861f868e7d24d22778f649a616d92014c1ab6",
+    "reports/key_level_reactions_v1_completed_ae8e870/run_manifest.json": "9b31178316485681208267ad9fb28ae50155e7734c81a5f302a31ff8832c00c6",
+    "reports/rejection_entry_study_v1/freeze_manifest.json": "c8af0480f843b320dbb77005b0eb9225620263ca6ebec0363d75b63b69d1d5cb",
+    "reports/rejection_entry_study_v1_completed_a3909ea/run_manifest.json": "bcadd127fe4f9abb5a8812e1700b12a1f813f5900aa017686dec193391f3bb0f",
+    "src/spy_research/bars/models.py": "341d3a5835fecd7b6de6e4e1af65c6582772617d345d7b83c0c16dcbe898e622",
+    "src/spy_research/indicators/atr.py": "e209597f0bac9d7d1083176603085646b1a8b56f3e330644ee0f22bb9a5979e6",
+    "src/spy_research/market/sessions.py": "b7325cf7efd1f7b8deda26898cc2738ba3506610b2c52f8df2a59a77da54df0b",
+    "src/spy_research/rejection_entry_v1/__init__.py": "7b3bae9c73bb4914acf6cece1414059144d491ba61234358aeff2414b4c5e488",
+    "src/spy_research/rejection_entry_v1/data.py": "dd0706044af9f1036e831afd5de5e26142d3eb4bf6492a6f10e950126cde42e8",
+    "src/spy_research/rejection_entry_v1/engine.py": "c5be12881bc2d038b6f231ad1fd0a9a23c64c78c68a75cabcf14be3abcc6ff63",
+    "src/spy_research/rejection_entry_v1/manifest.py": "4629549c5ba9e770a847cdf04438b4c8736855a49a7adbab9048a62309758494",
+    "src/spy_research/rejection_entry_v1/models.py": "24eb2966b36fa333f8e4099ffbcb1968d7607943f4e6d284864e10e79844443e",
+    "src/spy_research/rejection_entry_v1/population.py": "976bb35c01d30c18a7a8bcfecf6ecf2beed1aaa55f4d6037c738500af0ffd165",
+    "src/spy_research/rejection_entry_v1/protocol.py": "9a9ba0b98a863f794a7487c208dac7dbb19b263b44cf4bb55a9844f8bc695b9a",
+    "src/spy_research/rejection_entry_v1/reporting.py": "642eb41eec68f9e46d4dc5a59c01b33bbda099db1ecdc5822e622ff0389b8f68"
+  },
+  "historical_risk_exit_outcomes_run": false,
+  "protocol": {
+    "ambiguity": "retain flag; stop-first primary; target-first sensitivity",
+    "archive_commit": "311f4ada80b4739c207cbdf4a8dda4cef703c632",
+    "atr": "calculate_session_atr: completed consecutive same-session RTH 5m prefix at signal_known_at; no fallback",
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260908,
+    "breakeven": "after first +1R minute completes, active next minute only",
+    "costs": [
+      "0",
+      "0.01",
+      "0.02"
+    ],
+    "decimal_precision": 80,
+    "end": "last RTH minute close; complete entry-to-close grid required",
+    "entries": [
+      "IMMEDIATE_CLOSE_BACK_1M",
+      "MOMENTUM_AWAY_025"
+    ],
+    "event_order": [
+      "entry_timestamp",
+      "interaction_id"
+    ],
+    "gaps": "stop at open; target at limit; evaluate open before high/low",
+    "historical_runner_enabled": false,
+    "models": [
+      "USD025_TARGET_1R",
+      "USD025_TARGET_1.5R",
+      "USD025_TARGET_2R",
+      "USD025_TARGET_2R_BE1R",
+      "USD030_TARGET_1R",
+      "USD030_TARGET_1.5R",
+      "USD030_TARGET_2R",
+      "USD030_TARGET_2R_BE1R",
+      "USD040_TARGET_1R",
+      "USD040_TARGET_1.5R",
+      "USD040_TARGET_2R",
+      "USD040_TARGET_2R_BE1R",
+      "ATR050_TARGET_1R",
+      "ATR050_TARGET_1.5R",
+      "ATR050_TARGET_2R",
+      "ATR050_TARGET_2R_BE1R"
+    ],
+    "outcome_dates": [
+      "2026-01-02",
+      "2026-09-04"
+    ],
+    "source_commit": "a3909eaa0271a381fd6e05756628c07148bac65c",
+    "version": "rejection-risk-exit-v1"
+  },
+  "protocol_sha256": "4836afdeb0d4e2db8eafeb16ed4a818b49a85284d43ea9ee0b420fc195f1a15a",
+  "source_files": {
+    "reports/rejection_risk_exit_study_v1/protocol.md": "e368823b08b016e42ddab9572bfe25afe563f1ffa9cc11230235bac4d6f3069e",
+    "src/spy_research/rejection_risk_exit_v1/__init__.py": "ae090ef31d3f611f74f73b5f0c625d799c779a51df1a138b6806eef955b06616",
+    "src/spy_research/rejection_risk_exit_v1/engine.py": "5cf1ab7bb4b9444e1f62c2bc87f798ee69e95256cad7c378edb72a7324ee49b2",
+    "src/spy_research/rejection_risk_exit_v1/protocol.py": "fd85b7d27cfd9b855373ebf2b03e876f0b558560e27545d04439d9ca1d8139c5",
+    "tests/unit/test_rejection_risk_exit_v1.py": "2f9b3572509481cbcc6ef147bf75b653a650704fbec4aec6dd792162a465a5c2"
+  }
+}
