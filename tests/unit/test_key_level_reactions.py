@@ -183,6 +183,94 @@ def test_continuous_contact_not_duplicate_episodes():
     assert ledger.touches[-1].episode_id is None
 
 
+@pytest.mark.parametrize("next_touch_minute", [30, 31, 35])
+@pytest.mark.parametrize("family", ["1H_HIGH", "1H_LOW"])
+def test_expired_episode_cannot_retest_its_own_first_touch(next_touch_minute, family):
+    # Exact blocker: touch, approach-side separation, expiration, then a new touch.
+    # Mirror support/resistance; test both the exact endpoint and a later restart.
+    resistance = family == "1H_HIGH"
+    def source(i):
+        touching = i in (0, next_touch_minute)
+        return bar(T+timedelta(minutes=i),
+            o="99.9" if resistance else "100.1",
+            h=("100" if touching else "99.95") if resistance else "100.2",
+            l="99.8" if resistance else ("100" if touching else "100.05"),
+            c="99.9" if resistance else "100.1")
+    ledger = build_ledger(tuple(source(i) for i in range(next_touch_minute+1)),
+        Registry((level(family=family),)))
+    first, second = ledger.episodes
+    assert first.start == T and first.end == T+timedelta(minutes=30)
+    assert second.start == T+timedelta(minutes=next_touch_minute)
+    assert first.retest_starts == second.retest_starts == ()
+    assert first.touch_ids == (ledger.touches[0].id,)
+    assert second.touch_ids == (ledger.touches[1].id,)
+    assert [t.episode_id for t in ledger.touches] == [first.id, second.id]
+    assert [t.session_touch_number for t in ledger.touches] == [1, 2]
+    assert [t.lifetime_touch_number for t in ledger.touches] == [1, 2]
+
+
+def test_retests_and_prior_histories_remain_independent_across_three_episodes():
+    touch_minutes = (0, 3, 30, 33, 60, 63)
+    breach_minutes = (0, 30, 60)
+    bs = tuple(bar(T+timedelta(minutes=i),
+        h="100.2" if i in breach_minutes else "100" if i in touch_minutes else "99.95",
+        c="100.1" if i in breach_minutes else "99.9") for i in range(64))
+    ledger = build_ledger(bs, Registry((level(),)))
+    assert len(ledger.episodes) == 3
+    assert len({e.id for e in ledger.episodes}) == 3
+    for i, ep in enumerate(ledger.episodes):
+        assert ep.start == T+timedelta(minutes=i*30)
+        assert ep.retest_starts == (T+timedelta(minutes=i*30+3),)
+        assert ep.touch_ids == tuple(t.id for t in ledger.touches[i*2:i*2+2])
+        assert all(ep.start < t < ep.end for t in ep.retest_starts)
+    # Episode-scoped cleanup must not reset level/session history.
+    for i, touch in enumerate(ledger.touches):
+        assert touch.session_touch_number == touch.lifetime_touch_number == i+1
+        assert touch.observed_session_touch_number == touch.observed_lifetime_touch_number == i+1
+        assert touch.prior_same_session_interactions == touch.prior_lifetime_interactions == i
+        assert touch.touch_run_number == i+1
+        assert touch.first_interaction_since_creation == (i == 0)
+        assert touch.history_complete_since_creation and touch.session_history_complete
+        assert touch.level_age_sessions == 0
+        prior_breaches = sum(m < touch_minutes[i] for m in breach_minutes)
+        assert touch.prior_breach_count == touch.observed_prior_breach_count == prior_breaches
+        assert touch.prior_breach_minute_count == touch.observed_prior_breach_minute_count == prior_breaches
+        assert touch.prior_close_through_count == touch.observed_prior_close_through_count == prior_breaches
+        assert touch.previously_closed_through == touch.prior_price_breached == bool(prior_breaches)
+        assert touch.first_breach_known_at == (T+timedelta(minutes=1) if i else None)
+        last_breach = next((m for m in reversed(breach_minutes) if m < touch_minutes[i]), None)
+        assert touch.last_breach_known_at == (None if last_breach is None else T+timedelta(minutes=last_breach+1))
+        assert touch.time_since_previous_touch == (None if i == 0 else (touch_minutes[i]-touch_minutes[i-1])*60)
+        assert touch.last_touch_known_at == (None if i == 0 else T+timedelta(minutes=touch_minutes[i-1]+1))
+    # Later episodes cannot change any already-observed history snapshot.
+    prefix = build_ledger(bs[:30], Registry((level(),)))
+    assert ledger.touches[:2] == prefix.touches
+    assert ledger.episodes[0] == prefix.episodes[0]
+    assert ledger.gap_crosses[:len(prefix.gap_crosses)] == prefix.gap_crosses
+
+
+def test_expiration_preserves_continuous_contact_separation_gate():
+    # Expiration alone cannot fabricate separation or another episode.
+    bs = tuple(bar(T+timedelta(minutes=i), h="99.95" if i == 35 else "100")
+        for i in range(37))
+    ledger = build_ledger(bs, Registry((level(),)))
+    assert [e.start for e in ledger.episodes] == [T, T+timedelta(minutes=36)]
+    assert all(not e.retest_starts for e in ledger.episodes)
+    assert all(t.episode_id is None for t in ledger.touches if 30 <= int((t.start-T).total_seconds()//60) < 35)
+    assert len(ledger.touches) == 36
+    assert ledger.touches[-1].lifetime_touch_number == ledger.touches[-1].session_touch_number == 36
+    assert ledger.touches[-1].touch_run_number == 2
+
+
+def test_episode_validator_still_rejects_retests_at_both_window_boundaries():
+    from spy_research.key_level_reactions.models import Episode
+    end = T+timedelta(minutes=30)
+    for invalid_retest in (T, end):
+        with pytest.raises(ValueError, match="Retest outside episode"):
+            Episode(id="boundary", level_id="a", start=T, end=end, approach="BELOW",
+                touch_ids=("first",), retest_starts=(invalid_retest,))
+
+
 def test_immediate_rejection_and_quick_reclaim():
     bs = [bar(o="99.9",h="100",l="99.7",c="99.7")]
     bs += [bar(T+timedelta(minutes=i),h="100.1",c="100.05") for i in range(1,30)]

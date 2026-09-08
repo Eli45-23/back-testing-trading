@@ -76,6 +76,9 @@ def build_ledger(bars, registry, calendar=None):
             old = st["episode"]
             if old is not None and b.timestamp >= old["end"]:
                 st["episode"] = None
+                # Retest arming belongs to the expired episode, not its successor.
+                # Keep the contact-separation gate and level histories intact.
+                st["retest_armed"] = False
             approach = _side(previous.close, level.price) if previous is not None and previous.timestamp.astimezone(NY).date() == day else _side(b.open, level.price)
             if touching:
                 if not st["touching"]:
