@@ -1,0 +1,90 @@
+{
+  "bootstrap_acceleration": "Lossless Decimal session aggregates to integer matrix; no floating point arithmetic",
+  "bootstrap_draws": 10000,
+  "bootstrap_percentile_method": "Decimal linear interpolation at .025 and .975",
+  "bootstrap_population": "Full session calendar with zero-event sessions retained",
+  "bootstrap_seed": 20260908,
+  "calendar_sessions": 170,
+  "cost_disclaimer": "SPY-equivalent underlying roundtrip research scenarios; not actual 0DTE option execution costs",
+  "decimal_precision": 80,
+  "decimal_rounding": "ROUND_HALF_EVEN",
+  "drawdown_disclaimer": "Cumulative event-order research diagnostic; not account-equity simulation",
+  "interval_disclaimer": "Pointwise descriptive intervals; unadjusted for selection among frozen models",
+  "inventory": [
+    {
+      "bytes": 36768,
+      "file": "model_results_32.csv",
+      "rows": 32
+    },
+    {
+      "bytes": 222846,
+      "file": "cost_sensitivity.csv",
+      "rows": 192
+    },
+    {
+      "bytes": 222846,
+      "file": "ambiguity_sensitivity.csv",
+      "rows": 192
+    },
+    {
+      "bytes": 353744,
+      "file": "direction_results.csv",
+      "rows": 384
+    },
+    {
+      "bytes": 1359990,
+      "file": "monthly_results.csv",
+      "rows": 1728
+    },
+    {
+      "bytes": 6613870,
+      "file": "session_results.csv",
+      "rows": 32640
+    },
+    {
+      "bytes": 1621876,
+      "file": "leave_one_month_out.csv",
+      "rows": 1728
+    },
+    {
+      "bytes": 4673896,
+      "file": "context_tables.csv",
+      "rows": 5376
+    },
+    {
+      "bytes": 74361,
+      "file": "denominator_reconciliation.json"
+    },
+    {
+      "bytes": 3407,
+      "file": "atr_availability.csv",
+      "rows": 24
+    },
+    {
+      "bytes": 230602,
+      "file": "common_atr_population_results.csv",
+      "rows": 192
+    },
+    {
+      "bytes": 67404,
+      "file": "common_atr_comparisons.csv",
+      "rows": 144
+    },
+    {
+      "bytes": 228973,
+      "file": "immediate_momentum_comparisons.csv",
+      "rows": 96
+    },
+    {
+      "bytes": 144251,
+      "file": "bootstrap_results.csv",
+      "rows": 480
+    },
+    {
+      "bytes": 29612,
+      "file": "breakeven_comparisons.csv",
+      "rows": 48
+    }
+  ],
+  "no_model_selection": true
+}

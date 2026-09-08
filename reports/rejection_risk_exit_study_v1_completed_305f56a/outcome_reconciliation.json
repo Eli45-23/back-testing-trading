@@ -1,0 +1,20 @@
+{
+  "combinations": 32,
+  "entry_counts": {
+    "IMMEDIATE_CLOSE_BACK_1M": 3311,
+    "MOMENTUM_AWAY_025": 6024
+  },
+  "expected_rows": 149360,
+  "models_per_entry": 16,
+  "rows": 149360,
+  "status_counts": {
+    "AMBIGUOUS_STOP_TARGET": 2839,
+    "BREAKEVEN": 6922,
+    "EOD": 637,
+    "STOP": 77088,
+    "STOP_OPEN": 892,
+    "TARGET": 49218,
+    "TARGET_OPEN": 96,
+    "UNAVAILABLE_ATR": 11668
+  }
+}

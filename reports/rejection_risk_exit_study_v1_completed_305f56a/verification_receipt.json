@@ -1,0 +1,36 @@
+{
+  "all_prior_frozen_artifacts_unchanged": true,
+  "archived_klr_blocked_hashes": 15,
+  "archived_klr_hashes": 63,
+  "archived_rejection_entry_hashes": 29,
+  "coverage_reconciliation": "PASS",
+  "denominator_reconciliation": "PASS",
+  "frozen_break_hold_hashes": 174,
+  "git_commit": "305f56a0ff607de34bafe8f528226192a5086bf6",
+  "historical_outcomes_generated": true,
+  "input_partition_count": 170,
+  "model_combinations": 32,
+  "network_attempts": [],
+  "network_or_alpaca_accessed": false,
+  "note": "output_hashes.json hashes all generated files except self-referential manifest/verification receipts; run_manifest records driver and frozen-check fingerprints.",
+  "opened_partition_count": 170,
+  "outcome_rows": 149360,
+  "outcome_window": {
+    "end": "2026-09-04",
+    "hard_cutoff": "2026-09-04",
+    "start": "2026-01-02"
+  },
+  "output_hashes_count": 27,
+  "output_hashes_file": "output_hashes.json",
+  "post_cutoff_partitions_opened": 0,
+  "prospective_data_accessed": false,
+  "protocol_sha256": "4836afdeb0d4e2db8eafeb16ed4a818b49a85284d43ea9ee0b420fc195f1a15a",
+  "risk_exit_design_fingerprint_files": 21,
+  "run_kind": "COMPLETED_HISTORICAL_RISK_EXIT_V1",
+  "sessions": 170,
+  "source_entries": {
+    "IMMEDIATE_CLOSE_BACK_1M": 3311,
+    "MOMENTUM_AWAY_025": 6024
+  },
+  "stage14_untouched": true
+}

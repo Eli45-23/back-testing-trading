@@ -1,0 +1,13 @@
+{
+  "additional_context_partitions_opened": 0,
+  "atr_warmup": "Same-session completed RTH 5m prefix only",
+  "development_sessions": 170,
+  "duplicate_minutes": 0,
+  "early_closes": [],
+  "missing_rth_minutes": 0,
+  "pmh_pml_certified_sessions": 4,
+  "pmh_pml_uncertified_sessions": 166,
+  "premarket_policy": "Inherited certified source level identities only; no coverage relaxation or reconstruction",
+  "rth_minutes": 66300,
+  "source_entry_mismatches": 0
+}
