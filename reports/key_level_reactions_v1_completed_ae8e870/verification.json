@@ -1,0 +1,48 @@
+{
+  "blocked_run_artifacts": {
+    "all_match": true,
+    "manifest_sha256": "9e382c518d707faaa207a71d8f1861f868e7d24d22778f649a616d92014c1ab6",
+    "output_hashes_recorded": 15
+  },
+  "completed_output_hashes": {
+    "all_match": true,
+    "recorded": 62
+  },
+  "context_window": [
+    "2025-12-22",
+    "2026-01-01"
+  ],
+  "driver_hash": "6aa154a2204301e1f01b7ec3c8afc0f8e60366446c191cc0f07f79153dfe2eef",
+  "engine_commit": "ae8e87092e53e1ae73e7a6344325f53f39041202",
+  "engine_source_hash": "5bb6c029218c461882009f0edc7e80d41df3fa1411a63020bc88e6fa12966960",
+  "focused_klr_tests": {
+    "command": "PYTHONPATH=src .venv/bin/python pytest -q tests/unit/test_key_level_reactions.py",
+    "result": "68 passed"
+  },
+  "frozen_break_hold_hashes": {
+    "expected": 174,
+    "matched": 174,
+    "result": "174/174"
+  },
+  "full_project_tests": {
+    "command": "PYTHONPATH=src .venv/bin/python pytest -q",
+    "result": "1239 passed"
+  },
+  "generated_text_whitespace_findings": [],
+  "network_policy": "DENIED",
+  "opened_partition_count": 177,
+  "post_cutoff_outcome_data_opened": false,
+  "post_cutoff_partitions_opened": 0,
+  "prospective_data_policy": "DENIED",
+  "protocol_hash": "d39d4a67b22b7c2d775a7f7fbdece6dee1ca513ecf358e89c5d52140a0588592",
+  "reporting_plan_hash": "879d299f2c2fdfbd1f61aa1f9e3554352f2d9e098f996597ed5a2d0c004ee11a",
+  "run_kind": "COMPLETED_REPAIRED_RERUN",
+  "stage14_tracked_changes": [],
+  "study_outcome_window": [
+    "2026-01-02",
+    "2026-09-04"
+  ],
+  "tracked_worktree_changes": [],
+  "validated_input_view_hash": "e90d13ee2c61f6f9ba4d590c531e085435bba034dc636327a5a908a164e6f2f2",
+  "verification_timestamp_utc": "2026-09-08T12:50:06.955988+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "context_early_closes": [
+    "2025-12-24"
+  ],
+  "context_sessions": 7,
+  "development_sessions": 170,
+  "duplicates": 0,
+  "early_closes": [],
+  "error_codes": {},
+  "expected_rth_minutes": 66300,
+  "missing_rth_minutes": 0,
+  "observed_rth_minutes": 66300,
+  "passed_rth": true,
+  "premarket_certified_sessions": 4,
+  "premarket_expected_minutes": 56100,
+  "premarket_observed_minutes": 51685,
+  "premarket_unavailable_sessions": 166,
+  "prior_session_unavailable": 0,
+  "prior_week_unavailable": 0,
+  "withheld_uncertified_premarket_rows_including_context": 52278
+}

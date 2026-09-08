@@ -1,0 +1,83 @@
+{
+  "compiled_report_helpers": [
+    "check_coverage_independently.py",
+    "reproduce_blocker.py",
+    "run_study.py"
+  ],
+  "focused_tests": {
+    "exit_code": 0,
+    "passed": 59,
+    "seconds": "1.56"
+  },
+  "freeze_hashes_matched": 174,
+  "full_suite": {
+    "exit_code": 0,
+    "passed": 1230,
+    "seconds": "6.35"
+  },
+  "git_diff_check": "PASS",
+  "network_contacts": 0,
+  "post_cutoff_historical_partition_opens": 0,
+  "prospective_artifacts_unchanged": true,
+  "reaction_denominator_checks": "NOT_RUN_ENGINE_BLOCKED",
+  "stage14_unchanged": true,
+  "status": "?? reports/key_level_reactions_v1/",
+  "tracked_changes": "",
+  "whitespace_checks": [
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/blocker.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/check_coverage_independently.py",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/coverage_raw.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/coverage_sessions.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/coverage_summary.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/findings.md",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/independent_coverage_reconciliation.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/reporting_plan.md",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/reproduce_blocker.py",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/run_manifest.json",
+      "returncode": 1
+    },
+    {
+      "diagnostic": "",
+      "path": "reports/key_level_reactions_v1/run_study.py",
+      "returncode": 1
+    }
+  ]
+}

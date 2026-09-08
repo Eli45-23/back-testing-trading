@@ -1,0 +1,11 @@
+family,unique_level_identities_including_context,created_in_development,touched_level_identities,availability_issue_rows,pm_unverified_issue_rows,active_identity_instances
+PDH,176,169,86,1,0,170
+PDL,176,169,66,1,0,170
+PMH,4,4,2,177,4,4
+PML,4,4,2,177,4,4
+ORH5,177,170,154,0,0,170
+ORL5,177,170,145,0,0,170
+PWH,36,35,19,4,0,36
+PWL,36,35,17,4,0,36
+1H_HIGH,142,137,129,0,0,142
+1H_LOW,139,134,123,0,0,139

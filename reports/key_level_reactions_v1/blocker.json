@@ -1,0 +1,29 @@
+{
+  "diagnosis": "retest_armed survives expiration of an earlier episode; the first touch of a new episode is appended as its own retest",
+  "expected_behavior": "A new episode's first touch is not its own retest; strict episode validation must remain intact",
+  "historical_context_reproduction": {
+    "end": "2025-12-22 15:36:00+00:00",
+    "episode_id": "ORL5:2025-12-22T14:35:00+00:00@2025-12-22T15:06:00+00:00",
+    "message": "Value error, Retest outside episode",
+    "retest_at_episode_start": true,
+    "retest_starts": [
+      "2025-12-22 15:06:00+00:00",
+      "2025-12-22 15:09:00+00:00",
+      "2025-12-22 15:23:00+00:00",
+      "2025-12-22 15:35:00+00:00"
+    ],
+    "start": "2025-12-22 15:06:00+00:00"
+  },
+  "reaction_outcomes_calculated": false,
+  "source_change_made": false,
+  "synthetic_reproduction": {
+    "end": "2026-01-05 10:30:00-05:00",
+    "episode_id": "synthetic-resistance@2026-01-05T15:00:00+00:00",
+    "message": "Value error, Retest outside episode",
+    "retest_at_episode_start": true,
+    "retest_starts": [
+      "2026-01-05 10:00:00-05:00"
+    ],
+    "start": "2026-01-05 10:00:00-05:00"
+  }
+}
