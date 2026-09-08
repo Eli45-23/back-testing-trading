@@ -1,0 +1,113 @@
+{
+  "automatic_extension": false,
+  "candidates": [
+    "USD040_TARGET_2R_BE1R",
+    "USD040_TARGET_1.5R",
+    "ATR050_TARGET_1R"
+  ],
+  "control": "USD040_TARGET_2R",
+  "declared_on": "2026-09-08",
+  "design_only": true,
+  "development_outcome_end": "2026-09-04",
+  "entry_variant": "IMMEDIATE_CLOSE_BACK_1M",
+  "fixed_session_count": 60,
+  "frozen_hash_scope": "Design package, regression tests, and declarative report contracts only; this manifest is excluded to avoid self-reference.",
+  "minimum_contributing_sessions": 40,
+  "minimum_executable_outcomes": 200,
+  "models": [
+    "USD040_TARGET_2R_BE1R",
+    "USD040_TARGET_1.5R",
+    "ATR050_TARGET_1R",
+    "USD040_TARGET_2R"
+  ],
+  "network_or_alpaca_accessed": false,
+  "outcome_data_generated": false,
+  "outcome_data_opened": false,
+  "post_development_outcome_data_opened": false,
+  "prospective_end": "2026-12-01",
+  "prospective_start": "2026-09-08",
+  "protocol": {
+    "ambiguity": {
+      "primary": "stop_first",
+      "sensitivity": "target_first",
+      "zero_r_break_even_is_win": false
+    },
+    "atr": {
+      "fallback": false,
+      "implementation": "existing calculate_session_atr unchanged",
+      "prior_session_inheritance": false,
+      "unavailable_policy": "retain ATR-unavailable explicitly; no substitution"
+    },
+    "bootstrap": {
+      "bonferroni_alpha": "0.016666666666666666666666666666666666666666666666666666666666666666666666666666667",
+      "bonferroni_comparisons": 3,
+      "draws": 10000,
+      "paired_candidate_control": true,
+      "seed": 20260908,
+      "unit": "whole_session"
+    },
+    "candidates": [
+      "USD040_TARGET_2R_BE1R",
+      "USD040_TARGET_1.5R",
+      "ATR050_TARGET_1R"
+    ],
+    "control": "USD040_TARGET_2R",
+    "costs": [
+      "0",
+      "0.01",
+      "0.02"
+    ],
+    "coverage": {
+      "automatic_extension": false,
+      "feed": "Alpaca SIP SPY 1-minute RTH",
+      "missing_data_policy": "block; never fill or replace",
+      "required_every_session": true
+    },
+    "development_end": "2026-09-04",
+    "entry_semantics": {
+      "availability": "completed 1-minute close-back confirmation",
+      "confirming_bar_lookahead": false,
+      "executable_entry": "first same-session 1-minute bar OPEN at or after signal availability",
+      "include_entry_minute": true
+    },
+    "entry_variant": "IMMEDIATE_CLOSE_BACK_1M",
+    "fixed_sessions": 60,
+    "historical_outcomes_enabled_in_design": false,
+    "interim_status": "INTERIM_NO_SELECTION",
+    "minimum_contributing_sessions": 40,
+    "minimum_executable_outcomes": 200,
+    "models": [
+      "USD040_TARGET_2R_BE1R",
+      "USD040_TARGET_1.5R",
+      "ATR050_TARGET_1R",
+      "USD040_TARGET_2R"
+    ],
+    "network_enabled_in_design": false,
+    "paper_live_enabled_in_design": false,
+    "prospective_end": "2026-12-01",
+    "prospective_start": "2026-09-08",
+    "version": "rejection-prospective-validation-v1"
+  },
+  "protocol_sha256": "7347b8ca847a9b460fc09cf80bec8d636b1d6a350ddabedb5277fa39458dc066",
+  "session_calendar": "session_calendar.json",
+  "source_evidence_commit": "305f56a0ff607de34bafe8f528226192a5086bf6",
+  "source_file_count": 14,
+  "source_files": {
+    "reports/rejection_prospective_validation_v1/comparison_bootstrap_plan.md": "7ca1f0067830c68ad0cddb8ce3ad078d1e75ccb1f560bb7b4999bcf43e0c16e9",
+    "reports/rejection_prospective_validation_v1/data_validity_rules.md": "c334d727fc43ce6593147c27e76c2509a8540efc929516f6945ecc9503fb7136",
+    "reports/rejection_prospective_validation_v1/denominator_rules.md": "c16aab2ea4c235d3a08c01bd3ba197e3acb8404f56fe23607119d14dfe3112a3",
+    "reports/rejection_prospective_validation_v1/endpoint_report_schema.json": "18c8477cf80e95068d4deecfca4cbb57e41d2bb2773c94775bcb7e174ce56948",
+    "reports/rejection_prospective_validation_v1/model_manifest.json": "18e9fcd0a05058b774867ee98159d0fb401ff4bbc9b7ac5db843ea8d3a62ab2a",
+    "reports/rejection_prospective_validation_v1/protocol.md": "2c184ff3a7ec629b1952295685a039cb8f0ee78e8db04c922939c2b694a6d4d6",
+    "reports/rejection_prospective_validation_v1/session_calendar.json": "a77cea39d2ee5fb2fd880a6009520f173c5b6f86d663f5f2288e43479328d9b6",
+    "reports/rejection_prospective_validation_v1/verification.md": "925ed205ab80c9a49518eaf286f3123a58739799f407c41f94866ef53860fee6",
+    "src/spy_research/rejection_prospective_v1/__init__.py": "926d674278e69c5a536844449dfe6a6cb3c9554fd34c306cc6718030a375be66",
+    "src/spy_research/rejection_prospective_v1/guards.py": "776d5b726725b3b6ee5c86bab07d9ab69cd34c599906f2d1f1bb5a409b7b3a5d",
+    "src/spy_research/rejection_prospective_v1/models.py": "e99ddc8578b7b5dab130385749014f7440f8ab36f0d83c1fd6f8e1b9128db339",
+    "src/spy_research/rejection_prospective_v1/protocol.py": "11c4bdb560669972012a97f42559ec2d0f0c2f8c58317a739ddb892aab142424",
+    "src/spy_research/rejection_prospective_v1/report_schema.py": "c7a8766779ecf07174ace1603e6983b0d147b65fbaca5265a026783c1f673519",
+    "tests/unit/test_rejection_prospective_v1.py": "e94d63951a7c83f6d3646e16d8000bedb4dadc89004a21855118a1e9df9d24a7"
+  },
+  "stage14_untouched": true,
+  "version": "rejection-prospective-validation-v1"
+}

@@ -1,0 +1,25 @@
+{
+  "automatic_extension": false,
+  "current_commit": "58d81f29ee4a9e3df58874dd4b5e85bc8e376c5b",
+  "design_only": true,
+  "focused_tests": {
+    "file": "tests/unit/test_rejection_prospective_v1.py",
+    "passed": 25
+  },
+  "frozen_hash_checks": {
+    "break_and_hold": "174/174",
+    "key_level_reactions_blocked": "15/15",
+    "key_level_reactions_completed": "63/63",
+    "rejection_entry_completed": "29/29",
+    "rejection_risk_exit_completed": "27/27"
+  },
+  "full_suite_tests_passed": 1306,
+  "market_data_partitions_opened": 0,
+  "network_or_alpaca_accessed": false,
+  "no_protocol_or_strategy_changes": true,
+  "notes": "Design-only receipt. Outcome generation remains disabled; no prospective data was loaded or inspected.",
+  "prospective_outcome_data_opened": false,
+  "prospective_outcome_files_generated": false,
+  "protocol_sha256": "7347b8ca847a9b460fc09cf80bec8d636b1d6a350ddabedb5277fa39458dc066",
+  "stage14_untouched": true
+}

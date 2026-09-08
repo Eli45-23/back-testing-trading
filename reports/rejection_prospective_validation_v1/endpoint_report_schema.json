@@ -1,0 +1,43 @@
+{
+  "version": "rejection-prospective-validation-v1",
+  "status_values": [
+    "INTERIM_NO_SELECTION",
+    "BLOCKED_DATA_QUALITY",
+    "ENDPOINT_REACHED_NO_SELECTION",
+    "ENDPOINT_REPORT_ELIGIBLE",
+    "INSUFFICIENT_PROSPECTIVE_DATA"
+  ],
+  "required_files": [
+    "findings.md",
+    "run_manifest.json",
+    "coverage_report.json",
+    "denominator_reconciliation.json",
+    "model_results.csv",
+    "cost_sensitivity.csv",
+    "atr_availability.csv",
+    "common_atr_comparisons.csv",
+    "candidate_control_comparisons.csv",
+    "monthly_results.csv",
+    "session_results.csv",
+    "leave_one_month_out.csv",
+    "bootstrap_results.csv",
+    "context_tables.csv",
+    "ambiguity_sensitivity.csv",
+    "verification_receipt.json",
+    "output_hashes.json"
+  ],
+  "metric_fields": [
+    "eligible_entries", "executable_outcomes", "unavailable_outcomes",
+    "atr_unavailable", "ambiguous_outcomes", "contributing_sessions",
+    "zero_signal_sessions", "wins", "losses", "zero_r_outcomes", "win_rate",
+    "average_win_r", "average_loss_r", "mean_r", "median_r", "profit_factor",
+    "event_order_max_drawdown_r", "longest_losing_streak", "long_mean_r",
+    "short_mean_r", "monthly_mean_r", "positive_months", "negative_months",
+    "worst_month", "leave_one_month_out_minimum_mean_r", "bootstrap_ci_low",
+    "bootstrap_ci_high"
+  ],
+  "cost_scenarios": ["0", "0.01", "0.02"],
+  "ambiguity_sensitivities": ["stop_first", "target_first"],
+  "decimal_arithmetic": "80-digit Decimal HALF_EVEN; no binary floats",
+  "no_automatic_selection": true
+}

@@ -1,0 +1,47 @@
+{
+  "entry_variant": "IMMEDIATE_CLOSE_BACK_1M",
+  "control": "USD040_TARGET_2R",
+  "candidates": [
+    "USD040_TARGET_2R_BE1R",
+    "USD040_TARGET_1.5R",
+    "ATR050_TARGET_1R"
+  ],
+  "models": [
+    {
+      "name": "USD040_TARGET_2R_BE1R",
+      "role": "PRIMARY",
+      "stop": "USD040",
+      "target": "TARGET_2R",
+      "breakeven": "after +1R, next minute only",
+      "natural_population": "all executable Immediate Close-Back signals"
+    },
+    {
+      "name": "USD040_TARGET_1.5R",
+      "role": "SECONDARY",
+      "stop": "USD040",
+      "target": "TARGET_1.5R",
+      "breakeven": false,
+      "natural_population": "all executable Immediate Close-Back signals"
+    },
+    {
+      "name": "ATR050_TARGET_1R",
+      "role": "EXPLORATORY_ATR",
+      "stop": "ATR050",
+      "target": "TARGET_1R",
+      "breakeven": false,
+      "natural_population": "ATR-available executable Immediate Close-Back signals"
+    },
+    {
+      "name": "USD040_TARGET_2R",
+      "role": "CONTROL",
+      "stop": "USD040",
+      "target": "TARGET_2R",
+      "breakeven": false,
+      "natural_population": "all executable Immediate Close-Back signals"
+    }
+  ],
+  "matrix_size": 4,
+  "no_other_models": true,
+  "development_source_commit": "305f56a0ff607de34bafe8f528226192a5086bf6",
+  "no_outcome_selection": true
+}
